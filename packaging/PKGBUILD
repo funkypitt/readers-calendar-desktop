@@ -1,0 +1,25 @@
+# Maintainer: funkypitt <pierregallaz@gmail.com>
+# Arch / Manjaro: cd packaging && makepkg -si
+pkgname=readers-calendar
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Black-and-white, text-only CalDAV calendar (Infomaniak, Nextcloud, Radicale…)"
+arch=('any')
+url="https://github.com/funkypitt/readers-calendar-desktop"
+license=('MIT')
+depends=('python' 'python-pyqt5' 'python-requests' 'python-dateutil')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/funkypitt/readers-calendar-desktop/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  cd "$srcdir/readers-calendar-desktop-$pkgver"
+  install -Dm755 readers_calendar.py "$pkgdir/usr/lib/readers-calendar/readers_calendar.py"
+  install -Dm644 caldav_events.py "$pkgdir/usr/lib/readers-calendar/caldav_events.py"
+  install -Dm755 /dev/stdin "$pkgdir/usr/bin/readers-calendar" <<'SH'
+#!/bin/sh
+exec python3 /usr/lib/readers-calendar/readers_calendar.py "$@"
+SH
+  install -Dm644 packaging/readers-calendar.desktop "$pkgdir/usr/share/applications/readers-calendar.desktop"
+  install -Dm644 packaging/readers-calendar.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/readers-calendar.svg"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

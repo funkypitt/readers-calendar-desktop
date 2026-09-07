@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Reader's Calendar
+Comment=Black-and-white, text-only CalDAV calendar (Infomaniak, Nextcloud, Radicale…)
+Exec=readers-calendar
+Icon=readers-calendar
+Terminal=false
+Categories=Office;Calendar;Qt;
+Keywords=calendar;agenda;caldav;
