@@ -17,7 +17,7 @@ sys.path.insert(0, "/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -162,6 +162,23 @@ class MonthGrid(QtWidgets.QWidget):
 # Week grid (the time grid, painted)
 # ------------------------------------------------------------------------------------------
 
+def place_lanes(items):
+    """Google-Calendar style lanes: overlapping events share the column side by side.
+    items: [(start_min, end_min, occ)] -> [(start_min, end_min, occ, lane, lanes)]."""
+    out = []; cluster = []; lane_ends = []; cluster_end = -1
+    def flush():
+        for row in cluster: row[4] = len(lane_ends)
+        out.extend(cluster); cluster.clear(); lane_ends.clear()
+    for s, e, o in sorted(items, key=lambda x: (x[0], -x[1])):
+        if cluster and s >= cluster_end: flush()
+        lane = next((i for i, le in enumerate(lane_ends) if le <= s), -1)
+        if lane < 0: lane_ends.append(e); lane = len(lane_ends) - 1
+        else: lane_ends[lane] = e
+        cluster.append([s, e, o, lane, 1]); cluster_end = max(cluster_end, e)
+    flush()
+    return out
+
+
 class WeekHead(QtWidgets.QWidget):
     """Day headers and the all-day strip: stays put while the time grid scrolls."""
     event_clicked = QtCore.pyqtSignal(object)
@@ -169,7 +186,7 @@ class WeekHead(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.start = date.today()
+        self.start = date.today(); self.ndays = 7
         self.occs = []
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self._boxes = []
@@ -178,33 +195,37 @@ class WeekHead(QtWidgets.QWidget):
     def set_colors(self, fg, bg):
         self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
 
-    def set_data(self, start, occs):
-        self.start = start
+    def set_data(self, start, ndays, occs):
+        self.start = start; self.ndays = ndays
         self.occs = [o for o in occs if o.event.all_day]
-        rows = max((sum(1 for o in self.occs if o.start.date() <= start + timedelta(days=i) < o.end.date()) for i in range(7)), default=0)
-        self.setFixedHeight(56 + rows * 22 + 4)
+        rows = max((sum(1 for o in self.occs if o.start.date() <= start + timedelta(days=i) < o.end.date()) for i in range(ndays)), default=0)
+        self.setFixedHeight((56 if ndays > 1 else 4) + rows * 22 + 4)
         self.update()
 
     def paintEvent(self, e):
         p = QtGui.QPainter(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
-        w = self.width(); gutter, header = self.GUTTER, 56
-        colw = (w - gutter - 8) / 7
+        w = self.width(); gutter, header = self.GUTTER, (56 if self.ndays > 1 else 4)
+        colw = (w - gutter - 8) / self.ndays
         dim = QtGui.QColor(self.fg); dim.setAlphaF(0.55)
         small = QtGui.QFont(self.font()); small.setPointSizeF(self.font().pointSizeF() * 0.78)
         today = date.today()
-        self._boxes = []
-        for i in range(7):
+        self._boxes = []; self._heads = []
+        for i in range(self.ndays if self.ndays > 1 else 0):
             d = self.start + timedelta(days=i)
             rect = QtCore.QRectF(gutter + i * colw, 0, colw, header).adjusted(2, 4, -2, -4)
+            if self.ndays > 1:
+                rect = QtCore.QRectF(rect.center().x() - 30, rect.top(), 60, rect.height())
+            self._heads.append((rect, d))
             if d == today:
                 p.fillRect(rect, self.fg); p.setPen(self.bg)
             else:
                 p.setPen(dim)
-            p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, d.strftime("%a").lower())
+            label = d.strftime("%a").lower() if self.ndays > 1 else d.strftime("%A %-d %B").lower()
+            p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, label)
             p.setPen(self.bg if d == today else self.fg); p.setFont(self.font())
             p.drawText(rect.adjusted(0, rect.height() / 2 - 4, 0, 0), QtCore.Qt.AlignCenter, str(d.day))
-        for i in range(7):
+        for i in range(self.ndays):
             d = self.start + timedelta(days=i)
             y = header
             for o in self.occs:
@@ -214,21 +235,28 @@ class WeekHead(QtWidgets.QWidget):
                     p.drawText(rect.adjusted(4, 0, -4, 0), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, p.fontMetrics().elidedText(o.event.summary, QtCore.Qt.ElideRight, int(rect.width()) - 8))
                     self._boxes.append((rect, o)); y += 22
 
+    day_clicked = QtCore.pyqtSignal(object)
+
     def mousePressEvent(self, e):
         for rect, o in self._boxes:
             if rect.contains(e.pos()):
                 self.event_clicked.emit(o); return
+        if self.ndays > 1:
+            for rect, d in self._heads:
+                if rect.contains(e.pos()):
+                    self.day_clicked.emit(d); return
 
 
 class WeekGrid(QtWidgets.QWidget):
     """The 24-hour time grid of one week (scrolls)."""
     event_clicked = QtCore.pyqtSignal(object)
+    slot_clicked = QtCore.pyqtSignal(object, int)   # (date, hour)
     HOUR = 48
     TOP = 8
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.start = date.today()
+        self.start = date.today(); self.ndays = 7
         self.occs = []
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self.setMinimumHeight(24 * self.HOUR + 2 * self.TOP)
@@ -241,9 +269,10 @@ class WeekGrid(QtWidgets.QWidget):
         p = QtGui.QPainter(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
         w = self.width(); gutter, top = WeekHead.GUTTER, self.TOP
-        colw = (w - gutter - 8) / 7
+        colw = (w - gutter - 8) / self.ndays
         dim = QtGui.QColor(self.fg); dim.setAlphaF(0.55)
         rule = QtGui.QColor(self.fg); rule.setAlphaF(0.25)
+        dimbg = QtGui.QColor(self.bg); dimbg.setAlphaF(0.7)
         small = QtGui.QFont(self.font()); small.setPointSizeF(self.font().pointSizeF() * 0.78)
         today = date.today()
         self._boxes = []
@@ -251,50 +280,62 @@ class WeekGrid(QtWidgets.QWidget):
         for hh in range(25):
             y = top + hh * self.HOUR
             p.drawLine(QtCore.QPointF(gutter, y), QtCore.QPointF(w - 8, y))
-        for i in range(8):
+        for i in range(self.ndays + 1):
             x = gutter + i * colw
             p.drawLine(QtCore.QPointF(x, top), QtCore.QPointF(x, top + 24 * self.HOUR))
         p.setPen(dim); p.setFont(small)
         for hh in range(24):
             p.drawText(QtCore.QRectF(0, top + hh * self.HOUR - 8, gutter - 6, 16), QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, f"{hh:02d}")
         fm_small = QtGui.QFontMetrics(small)
-        for o in self.occs:
-            if o.event.all_day:
-                continue
-            for i in range(7):
-                d = self.start + timedelta(days=i)
-                if o.start.date() != d:
+        for i in range(self.ndays):
+            d = self.start + timedelta(days=i)
+            items = []
+            for o in self.occs:
+                if o.event.all_day or o.start.date() != d:
                     continue
-                s = o.start.hour + o.start.minute / 60
+                s = o.start.hour * 60 + o.start.minute
                 e_end = o.end if o.end.date() == d else datetime.combine(d, datetime.max.time(), tzinfo=o.start.tzinfo)
-                e = e_end.hour + e_end.minute / 60
-                y0 = top + s * self.HOUR; y1 = top + max(e, s + 0.45) * self.HOUR
-                rect = QtCore.QRectF(gutter + i * colw + 2, y0, colw - 4, y1 - y0)
-                p.fillRect(rect, self.bg); p.setPen(QtGui.QPen(self.fg, 1)); p.drawRect(rect)
+                e = max(e_end.hour * 60 + e_end.minute, s + 25)
+                items.append((s, e, o))
+            for s, e, o, lane, lanes in place_lanes(items):
+                lane_w = (colw - 4) / lanes
+                x0 = gutter + i * colw + 2 + lane * lane_w
+                y0 = top + s / 60 * self.HOUR; y1 = top + e / 60 * self.HOUR
+                # solid blocks: the white between them is the free time
+                rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
+                p.fillRect(rect, self.fg)
                 show_time = rect.height() >= fm_small.height() * 2 + 8
                 inner = rect.adjusted(4, 2, -4, -(fm_small.height() + 3) if show_time else -2)
                 whole = int(inner.height() // fm_small.lineSpacing()) * fm_small.lineSpacing()
                 inner.setHeight(max(whole, fm_small.lineSpacing()))
-                p.save(); p.setClipRect(inner)
-                p.setFont(small); p.setPen(self.fg)
-                p.drawText(inner, QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft | QtCore.Qt.TextWordWrap, o.event.summary)
-                p.restore()
+                p.save(); p.setClipRect(rect.adjusted(2, 1, -2, -1))
+                p.setFont(small); p.setPen(self.bg)
+                flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft | (QtCore.Qt.TextWordWrap if lane_w >= 44 else 0)
+                p.drawText(inner, flags, o.event.summary)
                 if show_time:
-                    p.setFont(small); p.setPen(dim)
-                    p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, fmt_time(o.start))
+                    p.setPen(dimbg)
+                    label = fmt_time(o.start) + (" · " + o.event.location if self.ndays == 1 and o.event.location else "")
+                    p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, label)
+                p.restore()
                 self._boxes.append((rect, o))
-        if self.start <= today < self.start + timedelta(days=7):
+        if self.start <= today < self.start + timedelta(days=self.ndays):
             i = (today - self.start).days
             now = datetime.now()
             y = top + (now.hour + now.minute / 60) * self.HOUR
-            p.setPen(QtGui.QPen(self.fg, 2))
-            p.drawLine(QtCore.QPointF(gutter + i * colw, y), QtCore.QPointF(gutter + (i + 1) * colw, y))
+            p.setPen(QtGui.QPen(self.bg, 4)); p.drawLine(QtCore.QPointF(gutter + i * colw, y), QtCore.QPointF(gutter + (i + 1) * colw, y))
+            p.setPen(QtGui.QPen(self.fg, 2)); p.drawLine(QtCore.QPointF(gutter + i * colw, y), QtCore.QPointF(gutter + (i + 1) * colw, y))
+            p.setBrush(self.bg); p.setPen(QtCore.Qt.NoPen); p.drawEllipse(QtCore.QPointF(gutter + i * colw, y), 5, 5)
             p.setBrush(self.fg); p.drawEllipse(QtCore.QPointF(gutter + i * colw, y), 3, 3)
 
     def mousePressEvent(self, e):
         for rect, o in reversed(self._boxes):
             if rect.contains(e.pos()):
                 self.event_clicked.emit(o); return
+        gutter = WeekHead.GUTTER; colw = (self.width() - gutter - 8) / self.ndays
+        if e.pos().x() >= gutter and self.TOP <= e.pos().y() < self.TOP + 24 * self.HOUR:
+            i = int((e.pos().x() - gutter) / colw)
+            if 0 <= i < self.ndays:
+                self.slot_clicked.emit(self.start + timedelta(days=i), int((e.pos().y() - self.TOP) / self.HOUR))
 
 
 # ------------------------------------------------------------------------------------------
@@ -417,6 +458,7 @@ class Main(QtWidgets.QMainWindow):
         self.grid = MonthGrid(); self.grid.setFixedHeight(250); ll.addWidget(self.grid)
         ll.addSpacing(10)
         self.nav_agenda = row("agenda", click=lambda: self.show_agenda()); ll.addWidget(self.nav_agenda)
+        self.nav_day = row("day", click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
         self.nav_week = row("week", click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
         self.nav_new = row("+ new event", click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
         ll.addStretch(1)
@@ -437,8 +479,8 @@ class Main(QtWidgets.QMainWindow):
         for l in (self.w_prev, self.w_next, self.w_today): l.setCursor(QtCore.Qt.PointingHandCursor)
         wnav.addWidget(self.w_prev); wnav.addWidget(self.w_title, 1, QtCore.Qt.AlignLeft); wnav.addWidget(self.w_today); wnav.addWidget(self.w_next)
         wl.addLayout(wnav)
-        self.week_head = WeekHead(); self.week_head.event_clicked.connect(self.show_event); wl.addWidget(self.week_head)
-        self.week = WeekGrid(); self.week.event_clicked.connect(self.show_event)
+        self.week_head = WeekHead(); self.week_head.event_clicked.connect(self.show_event); self.week_head.day_clicked.connect(self.show_day_grid); wl.addWidget(self.week_head)
+        self.week = WeekGrid(); self.week.event_clicked.connect(self.show_event); self.week.slot_clicked.connect(self.new_at)
         wscroll = QtWidgets.QScrollArea(); wscroll.setWidgetResizable(True); wscroll.setFrameShape(QtWidgets.QFrame.NoFrame); wscroll.setWidget(self.week)
         self.week_scroll = wscroll; wl.addWidget(wscroll, 1)
         self.pages.addWidget(self.page_week)
@@ -449,13 +491,13 @@ class Main(QtWidgets.QMainWindow):
         self.m_next.mousePressEvent = lambda e: self.move_month(1)
         self.m_title.mousePressEvent = lambda e: self.go_today()
         self.grid.day_clicked.connect(self.show_day)
-        self.w_prev.mousePressEvent = lambda e: self.show_week(self.week.start - timedelta(days=7))
-        self.w_next.mousePressEvent = lambda e: self.show_week(self.week.start + timedelta(days=7))
-        self.w_today.mousePressEvent = lambda e: self.show_week(date.today())
+        self.w_prev.mousePressEvent = lambda e: self.step_grid(-1)
+        self.w_next.mousePressEvent = lambda e: self.step_grid(1)
+        self.w_today.mousePressEvent = lambda e: (self.show_week if self.week.ndays > 1 else self.show_day_grid)(date.today())
 
         for seq, fn in (("Ctrl+T", self.toggle_theme), ("F5", self.sync), ("Ctrl+R", self.sync), ("Ctrl+N", lambda: self.edit_event(None)),
                         ("Ctrl+=", lambda: self.zoom(1)), ("Ctrl++", lambda: self.zoom(1)), ("Ctrl+-", lambda: self.zoom(-1)),
-                        ("Ctrl+,", self.setup), ("Ctrl+Q", self.close), ("Escape", self.show_agenda), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+D", self.go_today)):
+                        ("Ctrl+,", self.setup), ("Ctrl+Q", self.close), ("Escape", self.show_agenda), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today()))):
             QtWidgets.QShortcut(QtGui.QKeySequence(seq), self, fn)
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
@@ -638,7 +680,7 @@ class Main(QtWidgets.QMainWindow):
             if d != cur:
                 cur = d
                 h = QtWidgets.QLabel(day_label(d, today)); h.setObjectName("" if d == today else "dim")
-                h.setContentsMargins(0, 14, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_week(dd)
+                h.setContentsMargins(0, 14, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_day_grid(dd)
                 lay.insertWidget(i, h); i += 1
             sec = o.when() + (" · " + o.event.location if o.event.location else "")
             lay.insertWidget(i, row(o.event.summary, sec, size=self.font_size + 4, click=lambda oo=o: self.show_event(oo))); i += 1
@@ -650,15 +692,39 @@ class Main(QtWidgets.QMainWindow):
     def show_week(self, d):
         first = 0 if self.cfg.get("week_monday", True) else 6
         start = d - timedelta(days=(d.weekday() - first) % 7)
-        self.week.start = start
+        self.week.start = start; self.week.ndays = 7; self.week_head.ndays = 7
         self.w_title.setText(start.strftime("%-d %b") + " – " + (start + timedelta(days=6)).strftime("%-d %b %Y").lower())
+        self._open_grid()
+
+    def show_day_grid(self, d):
+        """One day as a time grid: the same page, one column wide."""
+        self.week.start = d; self.week.ndays = 1; self.week_head.ndays = 1
+        self.w_title.setText(day_label(d, date.today()))
+        self._open_grid()
+
+    def step_grid(self, delta):
+        n = self.week.ndays
+        (self.show_week if n > 1 else self.show_day_grid)(self.week.start + timedelta(days=n * delta))
+
+    def _open_grid(self):
         self.pages.setCurrentIndex(1); self.render_week()
-        QtCore.QTimer.singleShot(0, lambda: self.week_scroll.verticalScrollBar().setValue(int(WeekGrid.HOUR * 7.5)))
+        # open an hour before the first thing shown (or now, if today is shown); 08:00 when empty
+        days = [self.week.start + timedelta(days=i) for i in range(self.week.ndays)]
+        firsts = [o.start.hour for o in self.week.occs if not o.event.all_day and o.start.date() in days]
+        if date.today() in days: firsts.append(datetime.now().hour)
+        target = max(0, min(18, (min(firsts) if firsts else 8) - 1))
+        QtCore.QTimer.singleShot(0, lambda: self.week_scroll.verticalScrollBar().setValue(int(WeekGrid.HOUR * target)))
+
+    def new_at(self, d, hour):
+        self.edit_event(None)
+        st = self._edit_state
+        st["start"] = datetime.combine(d, datetime.min.time(), LOCAL).replace(hour=hour); st["end"] = st["start"] + timedelta(hours=1)
+        self.render_edit()
 
     def render_week(self):
-        s = self.week.start; e = s + timedelta(days=7)
+        s = self.week.start; e = s + timedelta(days=self.week.ndays)
         self.week.occs = [o for o in self.occs if o.start.date() < e and o.end.date() >= s]
-        self.week_head.set_data(s, self.week.occs)
+        self.week_head.set_data(s, self.week.ndays, self.week.occs)
         self.week.update()
 
     def show_event(self, o, refresh=False):
