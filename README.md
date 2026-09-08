@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.4.0_all.deb
+sudo apt install ./readers-calendar_1.5.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -58,6 +58,7 @@ Click a calendar name at the bottom of the left column to hide or show it.
 | a day in the month grid | agenda from that day |
 | ‹ › around the month, click the month name | previous, next, back to today |
 | a day heading in the agenda, or "day" | that day as a time grid: solid blocks over the hours, overlaps side by side, the place next to the time |
+| "workdays" | the week with Monday to Friday full width, Saturday and Sunday sharing one column, each a half |
 | "week", or a day header in the week | the week as a time grid, one column per day; click a day header for that day |
 | an empty slot in a grid | a new event at that hour |
 | an event | its page: date, time, reminder, calendar, place and notes in two columns |
@@ -67,7 +68,7 @@ Click a calendar name at the bottom of the left column to hide or show it.
 | Key | Effect |
 |---|---|
 | Ctrl+N | new event |
-| Ctrl+W | this week · Ctrl+J today as a grid · Ctrl+D today's agenda · Escape agenda |
+| Ctrl+W | this week · Ctrl+Shift+W workdays · Ctrl+J today as a grid · Ctrl+D today's agenda · Escape agenda |
 | F5 | sync now (also every 5 minutes) |
 | Ctrl+T | white on black / black on white |
 | Ctrl+= / Ctrl+- | text size |

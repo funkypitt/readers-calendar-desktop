@@ -18,7 +18,7 @@ sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -30,7 +30,7 @@ LOCAL = ce.LOCAL
 # ------------------------------------------------------------------------------------------
 
 _TR = {
- "fr": {"opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+ "fr": {"workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
@@ -39,7 +39,7 @@ _TR = {
         "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV."},
- "de": {"opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+ "de": {"workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
@@ -48,7 +48,7 @@ _TR = {
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern."},
- "es": {"opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+ "es": {"workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
@@ -57,7 +57,7 @@ _TR = {
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV."},
- "pt": {"opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+ "pt": {"workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
@@ -66,7 +66,7 @@ _TR = {
         "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV."},
- "ru": {"opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+ "ru": {"workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
@@ -251,6 +251,18 @@ def place_lanes(items):
     return out
 
 
+def week_columns(start, ndays, workdays, x0, total_w):
+    """[(date, x, width)]: equal columns, or — in the workdays view — Saturday and Sunday
+    sharing one column, each half of it."""
+    days = [start + timedelta(days=i) for i in range(ndays)]
+    weights = [0.5 if (workdays and d.weekday() >= 5) else 1.0 for d in days]
+    unit = total_w / sum(weights)
+    out, x = [], x0
+    for d, wgt in zip(days, weights):
+        out.append((d, x, unit * wgt)); x += unit * wgt
+    return out
+
+
 class WeekHead(QtWidgets.QWidget):
     """Day headers and the all-day strip: stays put while the time grid scrolls."""
     event_clicked = QtCore.pyqtSignal(object)
@@ -258,7 +270,7 @@ class WeekHead(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.start = date.today(); self.ndays = 7
+        self.start = date.today(); self.ndays = 7; self.workdays = False
         self.occs = []
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self._boxes = []
@@ -267,8 +279,8 @@ class WeekHead(QtWidgets.QWidget):
     def set_colors(self, fg, bg):
         self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
 
-    def set_data(self, start, ndays, occs):
-        self.start = start; self.ndays = ndays
+    def set_data(self, start, ndays, occs, workdays=False):
+        self.start = start; self.ndays = ndays; self.workdays = workdays
         self.occs = [o for o in occs if o.event.all_day]
         rows = max((sum(1 for o in self.occs if o.start.date() <= start + timedelta(days=i) < o.end.date()) for i in range(ndays)), default=0)
         self.setFixedHeight((56 if ndays > 1 else 4) + rows * 22 + 4)
@@ -278,31 +290,30 @@ class WeekHead(QtWidgets.QWidget):
         p = QtGui.QPainter(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
         w = self.width(); gutter, header = self.GUTTER, (56 if self.ndays > 1 else 4)
-        colw = (w - gutter - 8) / self.ndays
+        cols = week_columns(self.start, self.ndays, self.workdays, gutter, w - gutter - 8)
         dim = QtGui.QColor(self.fg); dim.setAlphaF(0.55)
         small = QtGui.QFont(self.font()); small.setPointSizeF(self.font().pointSizeF() * 0.78)
         today = date.today()
         self._boxes = []; self._heads = []
-        for i in range(self.ndays if self.ndays > 1 else 0):
-            d = self.start + timedelta(days=i)
-            rect = QtCore.QRectF(gutter + i * colw, 0, colw, header).adjusted(2, 4, -2, -4)
-            if self.ndays > 1:
+        for d, x, colw in (cols if self.ndays > 1 else []):
+            narrow = colw < 70
+            rect = QtCore.QRectF(x, 0, colw, header).adjusted(2, 4, -2, -4)
+            if not narrow:
                 rect = QtCore.QRectF(rect.center().x() - 30, rect.top(), 60, rect.height())
             self._heads.append((rect, d))
             if d == today:
                 p.fillRect(rect, self.fg); p.setPen(self.bg)
             else:
                 p.setPen(dim)
-            label = d.strftime("%a").lower() if self.ndays > 1 else d.strftime("%A %-d %B").lower()
+            label = d.strftime("%a").lower()[:1 if narrow else 3]
             p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, label)
-            p.setPen(self.bg if d == today else self.fg); p.setFont(self.font())
+            p.setPen(self.bg if d == today else self.fg); p.setFont(small if narrow else self.font())
             p.drawText(rect.adjusted(0, rect.height() / 2 - 4, 0, 0), QtCore.Qt.AlignCenter, str(d.day))
-        for i in range(self.ndays):
-            d = self.start + timedelta(days=i)
+        for d, x, colw in cols:
             y = header
             for o in self.occs:
                 if o.start.date() <= d < o.end.date():
-                    rect = QtCore.QRectF(gutter + i * colw, y, colw, 20).adjusted(2, 0, -2, 0)
+                    rect = QtCore.QRectF(x, y, colw, 20).adjusted(2, 0, -2, 0)
                     p.fillRect(rect, self.fg); p.setPen(self.bg); p.setFont(small)
                     p.drawText(rect.adjusted(4, 0, -4, 0), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, p.fontMetrics().elidedText(o.event.summary, QtCore.Qt.ElideRight, int(rect.width()) - 8))
                     self._boxes.append((rect, o)); y += 22
@@ -328,7 +339,7 @@ class WeekGrid(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.start = date.today(); self.ndays = 7
+        self.start = date.today(); self.ndays = 7; self.workdays = False
         self.occs = []
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self.setMinimumHeight(24 * self.HOUR + 2 * self.TOP)
@@ -341,7 +352,7 @@ class WeekGrid(QtWidgets.QWidget):
         p = QtGui.QPainter(self)
         p.setRenderHint(QtGui.QPainter.Antialiasing)
         w = self.width(); gutter, top = WeekHead.GUTTER, self.TOP
-        colw = (w - gutter - 8) / self.ndays
+        cols = week_columns(self.start, self.ndays, self.workdays, gutter, w - gutter - 8)
         dim = QtGui.QColor(self.fg); dim.setAlphaF(0.55)
         rule = QtGui.QColor(self.fg); rule.setAlphaF(0.25)
         dimbg = QtGui.QColor(self.bg); dimbg.setAlphaF(0.7)
@@ -352,15 +363,13 @@ class WeekGrid(QtWidgets.QWidget):
         for hh in range(25):
             y = top + hh * self.HOUR
             p.drawLine(QtCore.QPointF(gutter, y), QtCore.QPointF(w - 8, y))
-        for i in range(self.ndays + 1):
-            x = gutter + i * colw
+        for x in [c[1] for c in cols] + [w - 8]:
             p.drawLine(QtCore.QPointF(x, top), QtCore.QPointF(x, top + 24 * self.HOUR))
         p.setPen(dim); p.setFont(small)
         for hh in range(24):
             p.drawText(QtCore.QRectF(0, top + hh * self.HOUR - 8, gutter - 6, 16), QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, f"{hh:02d}")
         fm_small = QtGui.QFontMetrics(small)
-        for i in range(self.ndays):
-            d = self.start + timedelta(days=i)
+        for d, cx, colw in cols:
             items = []
             for o in self.occs:
                 if o.event.all_day or o.start.date() != d:
@@ -371,7 +380,7 @@ class WeekGrid(QtWidgets.QWidget):
                 items.append((s, e, o))
             for s, e, o, lane, lanes in place_lanes(items):
                 lane_w = (colw - 4) / lanes
-                x0 = gutter + i * colw + 2 + lane * lane_w
+                x0 = cx + 2 + lane * lane_w
                 y0 = top + s / 60 * self.HOUR; y1 = top + e / 60 * self.HOUR
                 # solid blocks: the white between them is the free time
                 rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
@@ -390,24 +399,25 @@ class WeekGrid(QtWidgets.QWidget):
                     p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, label)
                 p.restore()
                 self._boxes.append((rect, o))
-        if self.start <= today < self.start + timedelta(days=self.ndays):
-            i = (today - self.start).days
+        for d, cx, colw in cols:
+            if d != today:
+                continue
             now = datetime.now()
             y = top + (now.hour + now.minute / 60) * self.HOUR
-            p.setPen(QtGui.QPen(self.bg, 4)); p.drawLine(QtCore.QPointF(gutter + i * colw, y), QtCore.QPointF(gutter + (i + 1) * colw, y))
-            p.setPen(QtGui.QPen(self.fg, 2)); p.drawLine(QtCore.QPointF(gutter + i * colw, y), QtCore.QPointF(gutter + (i + 1) * colw, y))
-            p.setBrush(self.bg); p.setPen(QtCore.Qt.NoPen); p.drawEllipse(QtCore.QPointF(gutter + i * colw, y), 5, 5)
-            p.setBrush(self.fg); p.drawEllipse(QtCore.QPointF(gutter + i * colw, y), 3, 3)
+            p.setPen(QtGui.QPen(self.bg, 4)); p.drawLine(QtCore.QPointF(cx, y), QtCore.QPointF(cx + colw, y))
+            p.setPen(QtGui.QPen(self.fg, 2)); p.drawLine(QtCore.QPointF(cx, y), QtCore.QPointF(cx + colw, y))
+            p.setBrush(self.bg); p.setPen(QtCore.Qt.NoPen); p.drawEllipse(QtCore.QPointF(cx, y), 5, 5)
+            p.setBrush(self.fg); p.drawEllipse(QtCore.QPointF(cx, y), 3, 3)
 
     def mousePressEvent(self, e):
         for rect, o in reversed(self._boxes):
             if rect.contains(e.pos()):
                 self.event_clicked.emit(o); return
-        gutter = WeekHead.GUTTER; colw = (self.width() - gutter - 8) / self.ndays
-        if e.pos().x() >= gutter and self.TOP <= e.pos().y() < self.TOP + 24 * self.HOUR:
-            i = int((e.pos().x() - gutter) / colw)
-            if 0 <= i < self.ndays:
-                self.slot_clicked.emit(self.start + timedelta(days=i), int((e.pos().y() - self.TOP) / self.HOUR))
+        gutter = WeekHead.GUTTER
+        if self.TOP <= e.pos().y() < self.TOP + 24 * self.HOUR:
+            for d, cx, colw in week_columns(self.start, self.ndays, self.workdays, gutter, self.width() - gutter - 8):
+                if cx <= e.pos().x() < cx + colw:
+                    self.slot_clicked.emit(d, int((e.pos().y() - self.TOP) / self.HOUR)); return
 
 
 # ------------------------------------------------------------------------------------------
@@ -532,6 +542,7 @@ class Main(QtWidgets.QMainWindow):
         self.nav_agenda = row(_("agenda"), click=lambda: self.show_agenda()); ll.addWidget(self.nav_agenda)
         self.nav_day = row(_("day"), click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
         self.nav_week = row(_("week"), click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
+        self.nav_workdays = row(_("workdays"), click=lambda: self.show_week(date.today(), workdays=True)); ll.addWidget(self.nav_workdays)
         self.nav_new = row(_("+ new event"), click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
         ll.addStretch(1)
         self.cal_box = QtWidgets.QVBoxLayout(); ll.addLayout(self.cal_box)
@@ -565,17 +576,17 @@ class Main(QtWidgets.QMainWindow):
         self.grid.day_clicked.connect(self.show_day)
         self.w_prev.mousePressEvent = lambda e: self.step_grid(-1)
         self.w_next.mousePressEvent = lambda e: self.step_grid(1)
-        self.w_today.mousePressEvent = lambda e: (self.show_week if self.week.ndays > 1 else self.show_day_grid)(date.today())
+        self.w_today.mousePressEvent = lambda e: (self.show_week(date.today(), workdays=self.week.workdays) if self.week.ndays > 1 else self.show_day_grid(date.today()))
 
         for seq, fn in (("Ctrl+T", self.toggle_theme), ("F5", self.sync), ("Ctrl+R", self.sync), ("Ctrl+N", lambda: self.edit_event(None)),
                         ("Ctrl+=", lambda: self.zoom(1)), ("Ctrl++", lambda: self.zoom(1)), ("Ctrl+-", lambda: self.zoom(-1)),
-                        ("Ctrl+,", self.setup), ("Ctrl+Q", self.close), ("Escape", self.show_agenda), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today()))):
+                        ("Ctrl+,", self.setup), ("Ctrl+Q", self.close), ("Escape", self.show_agenda), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+Shift+W", lambda: self.show_week(date.today(), workdays=True)), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today()))):
             QtWidgets.QShortcut(QtGui.QKeySequence(seq), self, fn)
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
         self.refresh_month_title()
         # the view the window opens on: the week unless configured otherwise
-        {"week": lambda: self.show_week(date.today()), "day": lambda: self.show_day_grid(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
+        {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
         if self.cfg.get("url") or self.cfg.get("subscriptions"):
             self.connect_client()
         else:
@@ -652,7 +663,7 @@ class Main(QtWidgets.QMainWindow):
         subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
         form.addRow(_("feeds"), subs)
         view = QtWidgets.QComboBox()
-        for key, label in (("week", _("week")), ("day", _("day")), ("agenda", _("agenda"))):
+        for key, label in (("week", _("week")), ("workdays", _("workdays")), ("day", _("day")), ("agenda", _("agenda"))):
             view.addItem(label, key)
         view.setCurrentIndex(max(0, view.findData(self.cfg.get("default_view", "week"))))
         form.addRow(_("opens on"), view)
@@ -792,22 +803,25 @@ class Main(QtWidgets.QMainWindow):
     def more_days(self):
         self.window_days += 60; self.sync()
 
-    def show_week(self, d):
-        first = 0 if self.cfg.get("week_monday", True) else 6
+    def show_week(self, d, workdays=False):
+        first = 0 if (workdays or self.cfg.get("week_monday", True)) else 6
         start = d - timedelta(days=(d.weekday() - first) % 7)
         self.week.start = start; self.week.ndays = 7; self.week_head.ndays = 7
+        self.week.workdays = workdays; self.week_head.workdays = workdays
         self.w_title.setText(start.strftime("%-d %b") + " – " + (start + timedelta(days=6)).strftime("%-d %b %Y").lower())
         self._open_grid()
 
     def show_day_grid(self, d):
         """One day as a time grid: the same page, one column wide."""
         self.week.start = d; self.week.ndays = 1; self.week_head.ndays = 1
+        self.week.workdays = False; self.week_head.workdays = False
         self.w_title.setText(day_label(d, date.today()))
         self._open_grid()
 
     def step_grid(self, delta):
         n = self.week.ndays
-        (self.show_week if n > 1 else self.show_day_grid)(self.week.start + timedelta(days=n * delta))
+        if n > 1: self.show_week(self.week.start + timedelta(days=n * delta), workdays=self.week.workdays)
+        else: self.show_day_grid(self.week.start + timedelta(days=delta))
 
     def _open_grid(self):
         self.pages.setCurrentIndex(1); self.render_week()
@@ -827,7 +841,7 @@ class Main(QtWidgets.QMainWindow):
     def render_week(self):
         s = self.week.start; e = s + timedelta(days=self.week.ndays)
         self.week.occs = [o for o in self.occs if o.start.date() < e and o.end.date() >= s]
-        self.week_head.set_data(s, self.week.ndays, self.week.occs)
+        self.week_head.set_data(s, self.week.ndays, self.week.occs, self.week.workdays)
         self.week.update()
 
     def show_event(self, o, refresh=False):
