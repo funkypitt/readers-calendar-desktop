@@ -18,11 +18,82 @@ sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
 LOCAL = ce.LOCAL
+
+
+# ------------------------------------------------------------------------------------------
+# Six languages, the English text as the key (the launcher's languages: en, fr, de, es, pt, ru)
+# ------------------------------------------------------------------------------------------
+
+_TR = {
+ "fr": {"today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+        "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
+        "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
+        "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
+        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable",
+        "title": "titre", "all day: ": "toute la journée : ", "on": "oui", "off": "non", "starts": "début", "start time": "heure de début", "ends": "fin", "end time": "heure de fin", "calendar": "agenda", "reminder": "rappel", "repeat": "répétition", "location": "lieu", "description": "description",
+        "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
+        "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV."},
+ "de": {"today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+        "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
+        "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
+        "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
+        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender",
+        "title": "Titel", "all day: ": "ganztägig: ", "on": "an", "off": "aus", "starts": "beginnt", "start time": "Beginn", "ends": "endet", "end time": "Ende", "calendar": "Kalender", "reminder": "Erinnerung", "repeat": "Wiederholung", "location": "Ort", "description": "Beschreibung",
+        "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
+        "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern."},
+ "es": {"today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+        "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
+        "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
+        "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
+        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable",
+        "title": "título", "all day: ": "todo el día: ", "on": "sí", "off": "no", "starts": "empieza", "start time": "hora de inicio", "ends": "termina", "end time": "hora de fin", "calendar": "calendario", "reminder": "recordatorio", "repeat": "repetición", "location": "lugar", "description": "descripción",
+        "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
+        "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV."},
+ "pt": {"today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+        "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
+        "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
+        "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
+        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável",
+        "title": "título", "all day: ": "todo o dia: ", "on": "sim", "off": "não", "starts": "começa", "start time": "hora de início", "ends": "termina", "end time": "hora de fim", "calendar": "calendário", "reminder": "lembrete", "repeat": "repetição", "location": "local", "description": "descrição",
+        "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
+        "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV."},
+ "ru": {"today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+        "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
+        "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
+        "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
+        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи",
+        "title": "название", "all day: ": "весь день: ", "on": "вкл", "off": "выкл", "starts": "начало", "start time": "время начала", "ends": "конец", "end time": "время окончания", "calendar": "календарь", "reminder": "напоминание", "repeat": "повтор", "location": "место", "description": "описание",
+        "save": "сохранить", "the end is before the start": "конец раньше начала", "saving…": "сохранение…", "start time (hh:mm)": "время начала (чч:мм)", "end time (hh:mm)": "время окончания (чч:мм)",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Календари CalDAV. Infomaniak: https://sync.infomaniak.com, имя вида AB12345,\nпароль приложения при двухфакторной аутентификации. Nextcloud, Radicale… тоже подходят.",
+        "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Ленты только для чтения, по одной в строке:  имя | адрес  (.ics или webcal). Google Календарь: настройки\nкалендаря › Интеграция календаря › Закрытый адрес в формате iCal. Показываются рядом с календарями CalDAV."},
+}
+
+
+def _lang():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        v = os.environ.get(var)
+        if v:
+            return v[:2].lower()
+    return "en"
+
+
+_LANG = _lang()
+
+
+def _(key, *args):
+    s = _TR.get(_LANG, {}).get(key, key)
+    for i, a in enumerate(args):
+        s = s.replace("%" + str(i + 1), str(a))
+    return s
 
 
 def load_config():
@@ -45,9 +116,9 @@ def save_config(cfg):
 def day_label(d, today):
     base = d.strftime("%A %-d %B").lower()
     if d == today:
-        return "today · " + base
+        return _("today · ") + base
     if d == today + timedelta(days=1):
-        return "tomorrow · " + base
+        return _("tomorrow · ") + base
     return base if d.year == today.year else base + f" {d.year}"
 
 
@@ -66,7 +137,7 @@ class Occ:
 
     def when(self):
         if self.event.all_day:
-            return "all day"
+            return _("all day")
         if self.end.date() == self.start.date():
             return f"{fmt_time(self.start)} – {fmt_time(self.end)}"
         return f"{fmt_time(self.start)} – {self.end.strftime('%-d %b')} {fmt_time(self.end)}"
@@ -371,8 +442,8 @@ class TextPrompt(QtWidgets.QDialog):
             self.edit = QtWidgets.QLineEdit(initial); self.edit.returnPressed.connect(self.accept)
         lay.addWidget(self.edit)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
-        c = QtWidgets.QPushButton("cancel"); c.clicked.connect(self.reject); btns.addWidget(c)
-        ok = QtWidgets.QPushButton("ok"); ok.setDefault(True); ok.clicked.connect(self.accept); btns.addWidget(ok)
+        c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(self.reject); btns.addWidget(c)
+        ok = QtWidgets.QPushButton(_("ok")); ok.setDefault(True); ok.clicked.connect(self.accept); btns.addWidget(ok)
         lay.addLayout(btns)
         self.resize(520, 300 if multiline else 120)
 
@@ -383,7 +454,7 @@ class TextPrompt(QtWidgets.QDialog):
 class DatePick(QtWidgets.QDialog):
     def __init__(self, initial, fg, bg, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("date")
+        self.setWindowTitle(_("date"))
         self.value = initial
         lay = QtWidgets.QVBoxLayout(self)
         nav = QtWidgets.QHBoxLayout()
@@ -419,15 +490,15 @@ class DatePick(QtWidgets.QDialog):
 # ------------------------------------------------------------------------------------------
 
 REMINDERS = [None, 0, 10, 30, 60, 120, 1440]
-REPEATS = [("", "does not repeat"), ("FREQ=DAILY", "every day"), ("FREQ=WEEKLY", "every week"), ("FREQ=MONTHLY", "every month"), ("FREQ=YEARLY", "every year")]
+REPEATS = [("", _("does not repeat")), ("FREQ=DAILY", _("every day")), ("FREQ=WEEKLY", _("every week")), ("FREQ=MONTHLY", _("every month")), ("FREQ=YEARLY", _("every year"))]
 
 
 def reminder_label(m):
-    if m is None: return "no reminder"
-    if m == 0: return "at the time of the event"
-    if m < 60: return f"{m} minutes before"
-    if m < 1440: return f"{m // 60} hours before"
-    return f"{m // 1440} days before"
+    if m is None: return _("no reminder")
+    if m == 0: return _("at the time of the event")
+    if m < 60: return _("%1 minutes before", m)
+    if m < 1440: return _("%1 hours before", m // 60)
+    return _("%1 days before", m // 1440)
 
 
 class Main(QtWidgets.QMainWindow):
@@ -458,10 +529,10 @@ class Main(QtWidgets.QMainWindow):
         ll.addLayout(mnav)
         self.grid = MonthGrid(); self.grid.setFixedHeight(250); ll.addWidget(self.grid)
         ll.addSpacing(10)
-        self.nav_agenda = row("agenda", click=lambda: self.show_agenda()); ll.addWidget(self.nav_agenda)
-        self.nav_day = row("day", click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
-        self.nav_week = row("week", click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
-        self.nav_new = row("+ new event", click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
+        self.nav_agenda = row(_("agenda"), click=lambda: self.show_agenda()); ll.addWidget(self.nav_agenda)
+        self.nav_day = row(_("day"), click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
+        self.nav_week = row(_("week"), click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
+        self.nav_new = row(_("+ new event"), click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
         ll.addStretch(1)
         self.cal_box = QtWidgets.QVBoxLayout(); ll.addLayout(self.cal_box)
         self.status = QtWidgets.QLabel(""); self.status.setObjectName("dim"); self.status.setWordWrap(True)
@@ -476,7 +547,7 @@ class Main(QtWidgets.QMainWindow):
         self.page_agenda = self._page_scroll(); self.pages.addWidget(self.page_agenda[0])
         self.page_week = QtWidgets.QWidget(); wl = QtWidgets.QVBoxLayout(self.page_week); wl.setContentsMargins(24, 18, 24, 12)
         wnav = QtWidgets.QHBoxLayout()
-        self.w_prev = QtWidgets.QLabel("‹"); self.w_next = QtWidgets.QLabel("›"); self.w_title = QtWidgets.QLabel(); self.w_title.setObjectName("dim"); self.w_today = QtWidgets.QLabel("today")
+        self.w_prev = QtWidgets.QLabel("‹"); self.w_next = QtWidgets.QLabel("›"); self.w_title = QtWidgets.QLabel(); self.w_title.setObjectName("dim"); self.w_today = QtWidgets.QLabel(_("today"))
         for l in (self.w_prev, self.w_next, self.w_today): l.setCursor(QtCore.Qt.PointingHandCursor)
         wnav.addWidget(self.w_prev); wnav.addWidget(self.w_title, 1, QtCore.Qt.AlignLeft); wnav.addWidget(self.w_today); wnav.addWidget(self.w_next)
         wl.addLayout(wnav)
@@ -569,21 +640,21 @@ class Main(QtWidgets.QMainWindow):
     def setup(self):
         dlg = QtWidgets.QDialog(self); dlg.setWindowTitle("reader's calendar")
         form = QtWidgets.QFormLayout(dlg); form.setSpacing(12)
-        intro = QtWidgets.QLabel("CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.")
+        intro = QtWidgets.QLabel(_("CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too."))
         intro.setObjectName("dim"); form.addRow(intro)
         url = QtWidgets.QLineEdit(self.cfg.get("url", "")); user = QtWidgets.QLineEdit(self.cfg.get("username", "")); pw = QtWidgets.QLineEdit(self.cfg.get("password", "")); pw.setEchoMode(QtWidgets.QLineEdit.Password)
-        form.addRow("server", url); form.addRow("username", user); form.addRow("app password", pw)
-        sub_hint = QtWidgets.QLabel("Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.")
+        form.addRow(_("server"), url); form.addRow(_("username"), user); form.addRow(_("app password"), pw)
+        sub_hint = QtWidgets.QLabel(_("Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars."))
         sub_hint.setObjectName("dim"); form.addRow(sub_hint)
         subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
         subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
-        form.addRow("feeds", subs)
+        form.addRow(_("feeds"), subs)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
-        c = QtWidgets.QPushButton("cancel"); c.clicked.connect(dlg.reject); btns.addWidget(c)
-        ok = QtWidgets.QPushButton("connect"); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
+        c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(dlg.reject); btns.addWidget(c)
+        ok = QtWidgets.QPushButton(_("connect")); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
         form.addRow(btns); dlg.resize(640, 420)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
-            if not self.cfg.get("url") and not self.cfg.get("subscriptions"): self.status.setText("not connected — Ctrl+, to set up")
+            if not self.cfg.get("url") and not self.cfg.get("subscriptions"): self.status.setText(_("not connected — Ctrl+, to set up"))
             return
         parsed = []
         for line in subs.toPlainText().splitlines():
@@ -603,7 +674,7 @@ class Main(QtWidgets.QMainWindow):
             self.client = None
             self.got_calendars([]); return
         self.client = ce.CalDAV(self.cfg["url"], self.cfg.get("username", ""), self.cfg.get("password", ""))
-        self.status.setText("connecting…")
+        self.status.setText(_("connecting…"))
         self.run(self.client.calendars, self.got_calendars)
 
     def feed_urls(self):
@@ -615,7 +686,7 @@ class Main(QtWidgets.QMainWindow):
         self._clear_calbox()
         hidden = set(self.cfg.get("hidden_calendars", []))
         for name, url, writable in self.calendars:
-            lab = QtWidgets.QLabel(("" if url in hidden else "■ ") + name + ("" if writable else "  (read only)"))
+            lab = QtWidgets.QLabel(("" if url in hidden else "■ ") + name + ("" if writable else _("  (read only)")))
             lab.setObjectName("dim" if url in hidden else ""); lab.setCursor(QtCore.Qt.PointingHandCursor)
             lab.mousePressEvent = lambda e, u=url: self.toggle_calendar(u)
             self.cal_box.addWidget(lab)
@@ -641,7 +712,7 @@ class Main(QtWidgets.QMainWindow):
     def sync(self):
         if not self.calendars:
             return
-        self.status.setText("syncing…")
+        self.status.setText(_("syncing…"))
         hidden = set(self.cfg.get("hidden_calendars", []))
         ws, we = self.window()
         cals = [(n, u) for n, u, _ in self.calendars if u not in hidden]
@@ -662,7 +733,7 @@ class Main(QtWidgets.QMainWindow):
     def got_events(self, occs):
         self.occs = occs
         self.grid.marked = {o.date for o in occs}; self.grid.update()
-        self.status.setText(f"synced {datetime.now().strftime('%H:%M')}")
+        self.status.setText(_("synced %1", datetime.now().strftime("%H:%M")))
         self.render_current()
 
     # ---- pages -------------------------------------------------------------------------
@@ -698,7 +769,7 @@ class Main(QtWidgets.QMainWindow):
         occs = [o for o in self.occs if o.end > datetime.combine(start, datetime.min.time(), LOCAL)]
         i = 0
         if not occs:
-            lay.insertWidget(i, row("nothing planned", obj="dim")); i += 1
+            lay.insertWidget(i, row(_("nothing planned"), obj="dim")); i += 1
         cur = None
         for o in occs:
             d = o.date if o.date >= start else start
@@ -709,7 +780,7 @@ class Main(QtWidgets.QMainWindow):
                 lay.insertWidget(i, h); i += 1
             sec = o.when() + (" · " + o.event.location if o.event.location else "")
             lay.insertWidget(i, row(o.event.summary, sec, size=self.font_size + 4, click=lambda oo=o: self.show_event(oo))); i += 1
-        more = row("show more days", obj="dim", click=self.more_days); lay.insertWidget(i, more)
+        more = row(_("show more days"), obj="dim", click=self.more_days); lay.insertWidget(i, more)
 
     def more_days(self):
         self.window_days += 60; self.sync()
@@ -765,7 +836,7 @@ class Main(QtWidgets.QMainWindow):
             when = o.start.strftime("%-d %b").lower() + " – " + (o.end - timedelta(seconds=1)).strftime("%-d %b %Y").lower()
         left.addSpacing(10); left.addWidget(QtWidgets.QLabel(when)); left.addWidget(QtWidgets.QLabel(o.when()))
         if ev.rrule:
-            r = QtWidgets.QLabel(dict(REPEATS).get(ev.rrule, "repeats")); r.setObjectName("dim"); left.addWidget(r)
+            r = QtWidgets.QLabel(dict(REPEATS).get(ev.rrule, _("repeats"))); r.setObjectName("dim"); left.addWidget(r)
         if ev.reminder is not None:
             r = QtWidgets.QLabel(reminder_label(ev.reminder)); r.setObjectName("dim"); left.addWidget(r)
         # the calendar it belongs to: a quiet line of text, never a colour
@@ -782,9 +853,9 @@ class Main(QtWidgets.QMainWindow):
         two.addLayout(left, 45); two.addSpacing(24); two.addLayout(right, 55)
         lay.insertLayout(0, two)
         actions = QtWidgets.QHBoxLayout(); actions.setSpacing(28); actions.setContentsMargins(0, 18, 0, 0)
-        pairs = [("← back", self.show_agenda)] + ([("edit", lambda: self.edit_event(o)), ("delete", lambda: self.delete_event(o))] if ev.writable else [])
+        pairs = [(_("← back"), self.show_agenda)] + ([(_("edit"), lambda: self.edit_event(o)), (_("delete"), lambda: self.delete_event(o))] if ev.writable else [])
         if not ev.writable:
-            c.setText(o.cal_name + " · read-only")
+            c.setText(o.cal_name + _(" · read-only"))
         for text, fn in pairs:
             l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e, f=fn: f(); actions.addWidget(l)
         actions.addStretch(1)
@@ -793,21 +864,21 @@ class Main(QtWidgets.QMainWindow):
 
     def delete_event(self, o):
         m = QtWidgets.QMenu(self)
-        m.addAction("delete" + (" the whole series" if o.event.rrule else ""), lambda: self._do_delete(o))
+        m.addAction(_("delete") + (_(" the whole series") if o.event.rrule else ""), lambda: self._do_delete(o))
         m.exec_(QtGui.QCursor.pos())
 
     def _do_delete(self, o):
-        self.status.setText("deleting…")
+        self.status.setText(_("deleting…"))
         self.run(lambda: self.client.delete(o.event.href), lambda _: (self.show_agenda(), self.sync()))
 
     # ---- edit --------------------------------------------------------------------------
 
     def edit_event(self, o):
         if o is not None and not o.event.writable:
-            self.status.setText("this event comes from a read-only feed"); return
+            self.status.setText(_("this event comes from a read-only feed")); return
         writable = [(n, u) for n, u, w in self.calendars if w]
         if not writable:
-            self.status.setText("no writable calendar"); return
+            self.status.setText(_("no writable calendar")); return
         ev = o.event if o else None
         now = datetime.now(LOCAL).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
         state = {
@@ -825,7 +896,7 @@ class Main(QtWidgets.QMainWindow):
         self.render_edit()
         self.pages.setCurrentIndex(3)
         if not ev:
-            QtCore.QTimer.singleShot(0, lambda: self._prompt("summary", "title"))
+            QtCore.QTimer.singleShot(0, lambda: self._prompt("summary", _("title")))
 
     def render_edit(self):
         st = self._edit_state
@@ -835,27 +906,27 @@ class Main(QtWidgets.QMainWindow):
         def add(w):
             nonlocal i
             lay.insertWidget(i, w); i += 1
-        add(row(st["summary"] or "title", size=self.font_size + 6, click=lambda: self._prompt("summary", "title")))
+        add(row(st["summary"] or _("title"), size=self.font_size + 6, click=lambda: self._prompt("summary", _("title"))))
         two = QtWidgets.QHBoxLayout(); left = QtWidgets.QVBoxLayout(); right = QtWidgets.QVBoxLayout()
-        left.addWidget(row("all day: " + ("on" if st["all_day"] else "off"), click=lambda: self._set("all_day", not st["all_day"])))
-        left.addWidget(row(st["start"].strftime("%A %-d %B %Y").lower(), "starts", click=lambda: self._pick_date("start")))
+        left.addWidget(row(_("all day: ") + (_("on") if st["all_day"] else _("off")), click=lambda: self._set("all_day", not st["all_day"])))
+        left.addWidget(row(st["start"].strftime("%A %-d %B %Y").lower(), _("starts"), click=lambda: self._pick_date("start")))
         if not st["all_day"]:
-            left.addWidget(row(fmt_time(st["start"]), "start time", click=lambda: self._pick_time("start")))
-        left.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), "ends", click=lambda: self._pick_date("end")))
+            left.addWidget(row(fmt_time(st["start"]), _("start time"), click=lambda: self._pick_time("start")))
+        left.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), _("ends"), click=lambda: self._pick_date("end")))
         if not st["all_day"]:
-            left.addWidget(row(fmt_time(st["end"]), "end time", click=lambda: self._pick_time("end")))
+            left.addWidget(row(fmt_time(st["end"]), _("end time"), click=lambda: self._pick_time("end")))
         left.addStretch(1)
         cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
-        right.addWidget(row(cal_name, "calendar", click=self._pick_calendar))
-        right.addWidget(row(reminder_label(st["reminder"]), "reminder", click=self._pick_reminder))
-        right.addWidget(row(dict(REPEATS).get(st["rrule"], "repeats (custom rule)"), "repeat", click=self._pick_repeat))
-        right.addWidget(row(st["location"] or "location", "location" if st["location"] else None, click=lambda: self._prompt("location", "location")))
-        right.addWidget(row((st["description"][:80] + "…") if len(st["description"]) > 80 else (st["description"] or "description"), "description" if st["description"] else None, click=lambda: self._prompt("description", "description", True)))
+        right.addWidget(row(cal_name, _("calendar"), click=self._pick_calendar))
+        right.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
+        right.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
+        right.addWidget(row(st["location"] or _("location"), _("location") if st["location"] else None, click=lambda: self._prompt("location", _("location"))))
+        right.addWidget(row((st["description"][:80] + "…") if len(st["description"]) > 80 else (st["description"] or _("description")), _("description") if st["description"] else None, click=lambda: self._prompt("description", _("description"), True)))
         right.addStretch(1)
         two.addLayout(left, 1); two.addSpacing(24); two.addLayout(right, 1)
         lay.insertLayout(i, two); i += 1
         actions = QtWidgets.QHBoxLayout(); actions.setSpacing(28); actions.setContentsMargins(0, 18, 0, 0)
-        for text, fn in (("cancel", self.show_agenda), ("save", self.save_event)):
+        for text, fn in ((_("cancel"), self.show_agenda), (_("save"), self.save_event)):
             l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e, f=fn: f(); actions.addWidget(l)
         actions.addStretch(1)
         lay.insertLayout(i, actions)
@@ -915,20 +986,20 @@ class Main(QtWidgets.QMainWindow):
     def save_event(self):
         st = self._edit_state
         if not st["summary"]:
-            self._prompt("summary", "title"); return
+            self._prompt("summary", _("title")); return
         if st["all_day"]:
             start, end = st["start"].date(), st["end"].date()
-            if end < start: self.status.setText("the end is before the start"); return
+            if end < start: self.status.setText(_("the end is before the start")); return
         else:
             start, end = st["start"], st["end"]
-            if end <= start: self.status.setText("the end is before the start"); return
+            if end <= start: self.status.setText(_("the end is before the start")); return
         keep = []
         if st["href"]:
             src = next((o.event for o in self.occs if o.event.href == st["href"]), None)
             if src:
                 keep = [l for l in src.lines if l.split(":", 1)[0].split(";", 1)[0].upper() in ("EXDATE", "CREATED", "SEQUENCE", "CLASS", "STATUS", "TRANSP", "CATEGORIES")]
         kw = dict(summary=st["summary"], start=start, end=end, all_day=st["all_day"], location=st["location"], description=st["description"], rrule=st["rrule"], reminder=st["reminder"], keep_lines=keep)
-        self.status.setText("saving…")
+        self.status.setText(_("saving…"))
         if st["href"]:
             fn = lambda: self.client.put(st["href"], ce.build_ics(st["uid"], **kw), etag=st["etag"])
         else:

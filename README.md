@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.2.0_all.deb
+sudo apt install ./readers-calendar_1.3.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -69,6 +69,11 @@ Click a calendar name at the bottom of the left column to hide or show it.
 | Ctrl+T | white on black / black on white |
 | Ctrl+= / Ctrl+- | text size |
 | Ctrl+, | account |
+
+## Languages
+
+English, French, German, Spanish, Portuguese and Russian, following the system language
+(`LANG`). Dates follow the system locale too.
 
 ## What it does not do
 
