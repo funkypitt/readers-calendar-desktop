@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.3.0_all.deb
+sudo apt install ./readers-calendar_1.4.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -45,6 +45,9 @@ Any `.ics` or `webcal://` address works the same way (holidays, a club's schedul
 are read-only: their events appear in the agenda, the week and the day like the others,
 with "read-only" next to the calendar name on the event page. Google refreshes a secret
 address every few hours. The app can run on feeds alone, with no CalDAV account.
+
+The window opens on the week; the account dialog's *opens on* switches that to the day or the
+agenda.
 
 Click a calendar name at the bottom of the left column to hide or show it.
 

@@ -18,7 +18,7 @@ sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -30,7 +30,7 @@ LOCAL = ce.LOCAL
 # ------------------------------------------------------------------------------------------
 
 _TR = {
- "fr": {"today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+ "fr": {"opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
@@ -39,7 +39,7 @@ _TR = {
         "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV."},
- "de": {"today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+ "de": {"opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
@@ -48,7 +48,7 @@ _TR = {
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern."},
- "es": {"today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+ "es": {"opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
@@ -57,7 +57,7 @@ _TR = {
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV."},
- "pt": {"today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+ "pt": {"opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
@@ -66,7 +66,7 @@ _TR = {
         "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV."},
- "ru": {"today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+ "ru": {"opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
@@ -574,6 +574,8 @@ class Main(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
         self.refresh_month_title()
+        # the view the window opens on: the week unless configured otherwise
+        {"week": lambda: self.show_week(date.today()), "day": lambda: self.show_day_grid(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
         if self.cfg.get("url") or self.cfg.get("subscriptions"):
             self.connect_client()
         else:
@@ -611,7 +613,7 @@ class Main(QtWidgets.QMainWindow):
             QScrollArea, QScrollArea > QWidget > QWidget {{ background: {bg}; }}
             QScrollBar:vertical {{ background: {bg}; width: 6px; }} QScrollBar::handle:vertical {{ background: {rule}; min-height: 24px; }} QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
             QMenu {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }} QMenu::item:selected {{ background: {fg}; color: {bg}; }}
-            QLineEdit, QPlainTextEdit {{ background: {bg}; color: {fg}; border: 1px solid {rule}; padding: 6px; }}
+            QLineEdit, QPlainTextEdit, QComboBox {{ background: {bg}; color: {fg}; border: 1px solid {rule}; padding: 6px; }} QComboBox QAbstractItemView {{ background: {bg}; color: {fg}; selection-background-color: {fg}; selection-color: {bg}; }}
             QPushButton {{ background: {bg}; color: {fg}; border: 1px solid {fg}; padding: 6px 18px; }} QPushButton:default {{ background: {fg}; color: {bg}; }}
             QDialog {{ background: {bg}; }} QToolTip {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }}
         """)
@@ -649,6 +651,11 @@ class Main(QtWidgets.QMainWindow):
         subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
         subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
         form.addRow(_("feeds"), subs)
+        view = QtWidgets.QComboBox()
+        for key, label in (("week", _("week")), ("day", _("day")), ("agenda", _("agenda"))):
+            view.addItem(label, key)
+        view.setCurrentIndex(max(0, view.findData(self.cfg.get("default_view", "week"))))
+        form.addRow(_("opens on"), view)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
         c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(dlg.reject); btns.addWidget(c)
         ok = QtWidgets.QPushButton(_("connect")); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
@@ -665,7 +672,7 @@ class Main(QtWidgets.QMainWindow):
             u = u.strip()
             if u:
                 parsed.append({"name": name.strip() or "feed", "url": u})
-        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed}); save_config(self.cfg)
+        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed, "default_view": view.currentData()}); save_config(self.cfg)
         self.connect_client()
 
     def connect_client(self):
