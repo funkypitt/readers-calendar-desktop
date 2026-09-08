@@ -12,12 +12,13 @@ from datetime import date, datetime, timedelta
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+# the module next to this file first; the installed copy only as a fallback
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/usr/lib/readers-calendar")
+sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -502,7 +503,7 @@ class Main(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
         self.refresh_month_title()
-        if self.cfg.get("url"):
+        if self.cfg.get("url") or self.cfg.get("subscriptions"):
             self.connect_client()
         else:
             QtCore.QTimer.singleShot(0, self.setup)
@@ -572,26 +573,48 @@ class Main(QtWidgets.QMainWindow):
         intro.setObjectName("dim"); form.addRow(intro)
         url = QtWidgets.QLineEdit(self.cfg.get("url", "")); user = QtWidgets.QLineEdit(self.cfg.get("username", "")); pw = QtWidgets.QLineEdit(self.cfg.get("password", "")); pw.setEchoMode(QtWidgets.QLineEdit.Password)
         form.addRow("server", url); form.addRow("username", user); form.addRow("app password", pw)
+        sub_hint = QtWidgets.QLabel("Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.")
+        sub_hint.setObjectName("dim"); form.addRow(sub_hint)
+        subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
+        subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
+        form.addRow("feeds", subs)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
         c = QtWidgets.QPushButton("cancel"); c.clicked.connect(dlg.reject); btns.addWidget(c)
         ok = QtWidgets.QPushButton("connect"); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
-        form.addRow(btns); dlg.resize(560, 260)
+        form.addRow(btns); dlg.resize(640, 420)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
-            if not self.cfg.get("url"): self.status.setText("not connected — Ctrl+, to set up")
+            if not self.cfg.get("url") and not self.cfg.get("subscriptions"): self.status.setText("not connected — Ctrl+, to set up")
             return
-        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text()}); save_config(self.cfg)
+        parsed = []
+        for line in subs.toPlainText().splitlines():
+            if "|" in line:
+                name, u = line.split("|", 1)
+            else:
+                name, u = "", line
+            u = u.strip()
+            if u:
+                parsed.append({"name": name.strip() or "feed", "url": u})
+        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed}); save_config(self.cfg)
         self.connect_client()
 
     def connect_client(self):
+        if not self.cfg.get("url"):
+            # feeds only: no CalDAV account
+            self.client = None
+            self.got_calendars([]); return
         self.client = ce.CalDAV(self.cfg["url"], self.cfg.get("username", ""), self.cfg.get("password", ""))
         self.status.setText("connecting…")
         self.run(self.client.calendars, self.got_calendars)
 
+    def feed_urls(self):
+        return {x["url"] for x in self.cfg.get("subscriptions", [])}
+
     def got_calendars(self, cals):
-        self.calendars = cals
+        # CalDAV calendars first, then the read-only feeds
+        self.calendars = [c for c in cals if c[1] not in self.feed_urls()] + [(x["name"], x["url"], False) for x in self.cfg.get("subscriptions", [])]
         self._clear_calbox()
         hidden = set(self.cfg.get("hidden_calendars", []))
-        for name, url, writable in cals:
+        for name, url, writable in self.calendars:
             lab = QtWidgets.QLabel(("" if url in hidden else "■ ") + name + ("" if writable else "  (read only)"))
             lab.setObjectName("dim" if url in hidden else ""); lab.setCursor(QtCore.Qt.PointingHandCursor)
             lab.mousePressEvent = lambda e, u=url: self.toggle_calendar(u)
@@ -616,17 +639,19 @@ class Main(QtWidgets.QMainWindow):
         return start, start + timedelta(days=45 + self.window_days)
 
     def sync(self):
-        if not self.client or not self.calendars:
+        if not self.calendars:
             return
         self.status.setText("syncing…")
         hidden = set(self.cfg.get("hidden_calendars", []))
         ws, we = self.window()
         cals = [(n, u) for n, u, _ in self.calendars if u not in hidden]
+        feeds = self.feed_urls(); client = self.client
 
         def fetch():
             out = []
             for name, url in cals:
-                for ev in self.client.events(url, ws, we):
+                events = ce.parse_feed(ce.fetch_feed(url), name) if url in feeds else (client.events(url, ws, we) if client else [])
+                for ev in events:
                     ev.cal_url = url
                     for s, e in ev.occurrences(ws, we):
                         out.append(Occ(ev, name, s, e))
@@ -757,7 +782,10 @@ class Main(QtWidgets.QMainWindow):
         two.addLayout(left, 45); two.addSpacing(24); two.addLayout(right, 55)
         lay.insertLayout(0, two)
         actions = QtWidgets.QHBoxLayout(); actions.setSpacing(28); actions.setContentsMargins(0, 18, 0, 0)
-        for text, fn in (("← back", self.show_agenda), ("edit", lambda: self.edit_event(o)), ("delete", lambda: self.delete_event(o))):
+        pairs = [("← back", self.show_agenda)] + ([("edit", lambda: self.edit_event(o)), ("delete", lambda: self.delete_event(o))] if ev.writable else [])
+        if not ev.writable:
+            c.setText(o.cal_name + " · read-only")
+        for text, fn in pairs:
             l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e, f=fn: f(); actions.addWidget(l)
         actions.addStretch(1)
         lay.insertLayout(1, actions)
@@ -775,6 +803,8 @@ class Main(QtWidgets.QMainWindow):
     # ---- edit --------------------------------------------------------------------------
 
     def edit_event(self, o):
+        if o is not None and not o.event.writable:
+            self.status.setText("this event comes from a read-only feed"); return
         writable = [(n, u) for n, u, w in self.calendars if w]
         if not writable:
             self.status.setText("no writable calendar"); return

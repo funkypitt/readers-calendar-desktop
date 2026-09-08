@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.1.0_all.deb
+sudo apt install ./readers-calendar_1.2.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -35,6 +35,16 @@ The first run asks for the server, the username and a password. Infomaniak:
 password if two-factor authentication is on. Nextcloud and Radicale take their usual
 address. The password is stored in `~/.config/readers-calendar/config.json`, readable by
 you only. Ctrl+, reopens the dialog.
+
+## Google Calendar and other feeds
+
+Google's CalDAV needs an OAuth client; the app takes the simpler road. In Google Calendar,
+open the calendar's settings › *Integrate calendar* › *Secret address in iCal format*, and
+paste that address in the account dialog under *feeds*, one per line as `name | address`.
+Any `.ics` or `webcal://` address works the same way (holidays, a club's schedule). Feeds
+are read-only: their events appear in the agenda, the week and the day like the others,
+with "read-only" next to the calendar name on the event page. Google refreshes a secret
+address every few hours. The app can run on feeds alone, with no CalDAV account.
 
 Click a calendar name at the bottom of the left column to hide or show it.
 

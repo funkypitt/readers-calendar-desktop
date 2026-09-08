@@ -94,6 +94,7 @@ class Event:
 
     def __init__(self, href, etag, ics):
         self.href, self.etag, self.ics = href, etag, ics
+        self.writable = True
         lines = unfold(ics)
         start = next((i for i, l in enumerate(lines) if l.upper().startswith("BEGIN:VEVENT")), 0)
         end = next((i for i, l in enumerate(lines) if l.upper().startswith("END:VEVENT")), len(lines))
@@ -161,6 +162,52 @@ class Event:
             if e_dt > window_start and s_dt < window_end:
                 out.append((s_dt, e_dt))   # always datetimes; all-day ones at local midnight
         return out
+
+
+def parse_feed(text, source=""):
+    """All VEVENTs of an iCalendar feed (Google's secret address, any .ics). Modified instances
+    (RECURRENCE-ID) become standalone events and are excluded from their master. Read-only."""
+    lines = unfold(text)
+    blocks, cur = [], None
+    for l in lines:
+        u = l.upper()
+        if u.startswith("BEGIN:VEVENT"):
+            cur = [l]
+        elif cur is not None:
+            cur.append(l)
+            if u.startswith("END:VEVENT"):
+                blocks.append(cur); cur = None
+    events, overrides = [], {}
+    for i, b in enumerate(blocks):
+        try:
+            ev = Event(f"{source}#{i}", None, "\r\n".join(b))
+        except Exception:
+            continue
+        ev.writable = False
+        p = props_of(b)
+        if "RECURRENCE-ID" in p:
+            try:
+                d, _ = parse_dt(*p["RECURRENCE-ID"])
+                overrides.setdefault(ev.uid, set()).add(d if not isinstance(d, datetime) else d.date())
+            except ValueError:
+                pass
+        events.append(ev)
+    for ev in events:
+        if ev.rrule and ev.uid in overrides:
+            ev.exdates |= overrides[ev.uid]
+    return events
+
+
+def fetch_feed(url, timeout=30):
+    """The text of an ICS feed over HTTP(S); Google's webcal:// links are plain https."""
+    u = url.strip()
+    if u.lower().startswith("webcal://"):
+        u = "https://" + u[9:]
+    r = requests.get(u, timeout=timeout, headers={"User-Agent": "readers-calendar"})
+    if r.status_code >= 400:
+        raise CalDAVError(f"feed: HTTP {r.status_code}")
+    r.encoding = "utf-8"
+    return r.text
 
 
 def parse_duration(d):
