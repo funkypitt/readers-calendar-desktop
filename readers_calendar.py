@@ -18,7 +18,7 @@ sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -251,16 +251,22 @@ def place_lanes(items):
     return out
 
 
+STRIP_W = 28   # the folded weekend, in the workdays view
+
+
 def week_columns(start, ndays, workdays, x0, total_w):
-    """[(date, x, width)]: equal columns, or — in the workdays view — Saturday and Sunday
-    sharing one column, each half of it."""
+    """[(date, x, width)]: equal columns; in the workdays view only Monday to Friday, the
+    weekend folded into a strip of STRIP_W at the right (see weekend_strip)."""
     days = [start + timedelta(days=i) for i in range(ndays)]
-    weights = [0.5 if (workdays and d.weekday() >= 5) else 1.0 for d in days]
-    unit = total_w / sum(weights)
-    out, x = [], x0
-    for d, wgt in zip(days, weights):
-        out.append((d, x, unit * wgt)); x += unit * wgt
-    return out
+    if workdays:
+        days = [d for d in days if d.weekday() < 5]; total_w -= STRIP_W
+    unit = total_w / max(1, len(days))
+    return [(d, x0 + i * unit, unit) for i, d in enumerate(days)]
+
+
+def weekend_strip(x0, total_w):
+    """The strip's x and width."""
+    return x0 + total_w - STRIP_W, STRIP_W
 
 
 class WeekHead(QtWidgets.QWidget):
@@ -279,8 +285,11 @@ class WeekHead(QtWidgets.QWidget):
     def set_colors(self, fg, bg):
         self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
 
+    weekend_clicked = QtCore.pyqtSignal()
+
     def set_data(self, start, ndays, occs, workdays=False):
         self.start = start; self.ndays = ndays; self.workdays = workdays
+        self.all_occs = list(occs)
         self.occs = [o for o in occs if o.event.all_day]
         rows = max((sum(1 for o in self.occs if o.start.date() <= start + timedelta(days=i) < o.end.date()) for i in range(ndays)), default=0)
         self.setFixedHeight((56 if ndays > 1 else 4) + rows * 22 + 4)
@@ -309,6 +318,15 @@ class WeekHead(QtWidgets.QWidget):
             p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, label)
             p.setPen(self.bg if d == today else self.fg); p.setFont(small if narrow else self.font())
             p.drawText(rect.adjusted(0, rect.height() / 2 - 4, 0, 0), QtCore.Qt.AlignCenter, str(d.day))
+        self._strip = None
+        if self.workdays and self.ndays > 1:
+            sx, sw = weekend_strip(gutter, w - gutter - 8)
+            self._strip = QtCore.QRectF(sx, 0, sw, self.height())
+            busy = {o.start.date() for o in self.all_occs}
+            p.setFont(small)
+            for i, d in enumerate([self.start + timedelta(days=k) for k in range(self.ndays) if (self.start + timedelta(days=k)).weekday() >= 5]):
+                p.setPen(self.fg if d == today else dim)
+                p.drawText(QtCore.QRectF(sx, 8 + i * 22, sw, 20), QtCore.Qt.AlignCenter, d.strftime("%a").lower()[:2] + ("·" if d in busy else ""))
         for d, x, colw in cols:
             y = header
             for o in self.occs:
@@ -324,6 +342,8 @@ class WeekHead(QtWidgets.QWidget):
         for rect, o in self._boxes:
             if rect.contains(e.pos()):
                 self.event_clicked.emit(o); return
+        if getattr(self, "_strip", None) is not None and self._strip.contains(e.pos()):
+            self.weekend_clicked.emit(); return
         if self.ndays > 1:
             for rect, d in self._heads:
                 if rect.contains(e.pos()):
@@ -334,6 +354,7 @@ class WeekGrid(QtWidgets.QWidget):
     """The 24-hour time grid of one week (scrolls)."""
     event_clicked = QtCore.pyqtSignal(object)
     slot_clicked = QtCore.pyqtSignal(object, int)   # (date, hour)
+    weekend_clicked = QtCore.pyqtSignal()
     HOUR = 48
     TOP = 8
 
@@ -363,7 +384,8 @@ class WeekGrid(QtWidgets.QWidget):
         for hh in range(25):
             y = top + hh * self.HOUR
             p.drawLine(QtCore.QPointF(gutter, y), QtCore.QPointF(w - 8, y))
-        for x in [c[1] for c in cols] + [w - 8]:
+        edges = [c[1] for c in cols] + ([weekend_strip(gutter, w - gutter - 8)[0]] if self.workdays else []) + [w - 8]
+        for x in edges:
             p.drawLine(QtCore.QPointF(x, top), QtCore.QPointF(x, top + 24 * self.HOUR))
         p.setPen(dim); p.setFont(small)
         for hh in range(24):
@@ -414,6 +436,10 @@ class WeekGrid(QtWidgets.QWidget):
             if rect.contains(e.pos()):
                 self.event_clicked.emit(o); return
         gutter = WeekHead.GUTTER
+        if self.workdays:
+            sx, sw = weekend_strip(gutter, self.width() - gutter - 8)
+            if sx <= e.pos().x() < sx + sw:
+                self.weekend_clicked.emit(); return
         if self.TOP <= e.pos().y() < self.TOP + 24 * self.HOUR:
             for d, cx, colw in week_columns(self.start, self.ndays, self.workdays, gutter, self.width() - gutter - 8):
                 if cx <= e.pos().x() < cx + colw:
@@ -564,6 +590,7 @@ class Main(QtWidgets.QMainWindow):
         wl.addLayout(wnav)
         self.week_head = WeekHead(); self.week_head.event_clicked.connect(self.show_event); self.week_head.day_clicked.connect(self.show_day_grid); wl.addWidget(self.week_head)
         self.week = WeekGrid(); self.week.event_clicked.connect(self.show_event); self.week.slot_clicked.connect(self.new_at)
+        self.week.weekend_clicked.connect(lambda: self.show_week(self.week.start)); self.week_head.weekend_clicked.connect(lambda: self.show_week(self.week.start))
         wscroll = QtWidgets.QScrollArea(); wscroll.setWidgetResizable(True); wscroll.setFrameShape(QtWidgets.QFrame.NoFrame); wscroll.setWidget(self.week)
         self.week_scroll = wscroll; wl.addWidget(wscroll, 1)
         self.pages.addWidget(self.page_week)
