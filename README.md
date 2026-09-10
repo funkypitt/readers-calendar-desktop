@@ -84,6 +84,10 @@ English, French, German, Spanish, Portuguese and Russian, following the system l
 Meeting invitations, attendees, time zones other than yours, and colours. Recurring events
 are edited and deleted as a whole series.
 
-## Licence
+## Crédits / Credits
 
-MIT.
+© 2026 Pierre Gallaz. Développé avec [Claude Code](https://claude.com/claude-code) (Anthropic).
+Licence MIT, voir `LICENSE`.
+
+© 2026 Pierre Gallaz. Developed with [Claude Code](https://claude.com/claude-code) (Anthropic).
+MIT licence, see `LICENSE`.
