@@ -1,7 +1,7 @@
 # Maintainer: funkypitt <pierregallaz@gmail.com>
 # Arch / Manjaro: cd packaging && makepkg -si
 pkgname=readers-calendar
-pkgver=1.6.0
+pkgver=1.7.0
 pkgrel=1
 pkgdesc="Black-and-white, text-only CalDAV calendar (Infomaniak, Nextcloud, Radicale…)"
 arch=('any')
@@ -15,6 +15,7 @@ package() {
   cd "$srcdir/readers-calendar-desktop-$pkgver"
   install -Dm755 readers_calendar.py "$pkgdir/usr/lib/readers-calendar/readers_calendar.py"
   install -Dm644 caldav_events.py "$pkgdir/usr/lib/readers-calendar/caldav_events.py"
+  install -Dm644 google_calendar.py "$pkgdir/usr/lib/readers-calendar/google_calendar.py"
   install -Dm755 /dev/stdin "$pkgdir/usr/bin/readers-calendar" <<'SH'
 #!/bin/sh
 exec python3 /usr/lib/readers-calendar/readers_calendar.py "$@"

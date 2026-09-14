@@ -16,9 +16,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
+import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -30,7 +31,7 @@ LOCAL = ce.LOCAL
 # ------------------------------------------------------------------------------------------
 
 _TR = {
- "fr": {"workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+ "fr": {"Google account": "compte Google", "client ID": "ID client", "client secret": "secret client", "connect the Google account": "connecter le compte Google", "forget the Google account": "oublier le compte Google", "waiting for the browser…": "en attente du navigateur…", "Google account connected": "compte Google connecté", "Google: %1": "Google : %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Agenda, en lecture seule, avec votre propre client OAuth : console.cloud.google.com › nouveau projet › API et services › activer\nl'API Google Calendar › écran de consentement OAuth (externe, en test, vous-même comme testeur) › Identifiants › ID client OAuth,\ntype Application de bureau. Copiez l'ID et le secret ici, puis connectez : le navigateur s'ouvre sur Google et revient tout seul.", "workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
@@ -40,7 +41,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · développé avec Claude Code"},
- "de": {"workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+ "de": {"Google account": "Google-Konto", "client ID": "Client-ID", "client secret": "Client-Geheimnis", "connect the Google account": "Google-Konto verbinden", "forget the Google account": "Google-Konto vergessen", "waiting for the browser…": "warte auf den Browser…", "Google account connected": "Google-Konto verbunden", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Kalender, nur lesen, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, in Tests, Sie selbst als Tester) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App.\nID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet Google und kommt von selbst zurück.", "workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
@@ -50,7 +51,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · entwickelt mit Claude Code"},
- "es": {"workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+ "es": {"Google account": "cuenta de Google", "client ID": "ID de cliente", "client secret": "secreto de cliente", "connect the Google account": "conectar la cuenta de Google", "forget the Google account": "olvidar la cuenta de Google", "waiting for the browser…": "esperando al navegador…", "Google account connected": "cuenta de Google conectada", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Calendar, solo lectura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, en pruebas, usted como probador) › Credenciales › ID de cliente OAuth,\ntipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el navegador abre Google y vuelve solo.", "workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
@@ -60,7 +61,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desarrollado con Claude Code"},
- "pt": {"workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+ "pt": {"Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Calendar, só leitura, com o seu próprio cliente OAuth: console.cloud.google.com › novo projeto › APIs e serviços › ativar a\nAPI Google Calendar › ecrã de consentimento OAuth (externo, em teste, você como testador) › Credenciais › ID de cliente OAuth,\ntipo Aplicação de computador. Copie o ID e o segredo aqui e ligue: o navegador abre o Google e volta sozinho.", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
@@ -70,7 +71,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desenvolvido com Claude Code"},
- "ru": {"workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+ "ru": {"Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Календарь, только чтение, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, в тестировании, вы как тестировщик) › Учётные данные › идентификатор клиента OAuth,\nтип «Компьютерное приложение». Вставьте ID и секрет сюда и подключите: браузер откроет Google и вернётся сам.", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
@@ -619,7 +620,7 @@ class Main(QtWidgets.QMainWindow):
         self.refresh_month_title()
         # the view the window opens on: the week unless configured otherwise
         {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
-        if self.cfg.get("url") or self.cfg.get("subscriptions"):
+        if self.cfg.get("url") or self.cfg.get("subscriptions") or self.google_ready():
             self.connect_client()
         else:
             QtCore.QTimer.singleShot(0, self.setup)
@@ -672,9 +673,9 @@ class Main(QtWidgets.QMainWindow):
 
     # ---- network -----------------------------------------------------------------------
 
-    def run(self, fn, on_done):
+    def run(self, fn, on_done, on_failed=None):
         thread = QtCore.QThread(self); worker = Worker(fn); worker.moveToThread(thread)
-        thread.started.connect(worker.run); worker.done.connect(on_done); worker.failed.connect(self.show_error)
+        thread.started.connect(worker.run); worker.done.connect(on_done); worker.failed.connect(on_failed or self.show_error)
         worker.done.connect(thread.quit); worker.failed.connect(thread.quit)
         pair = (thread, worker); thread.finished.connect(lambda: self.threads.remove(pair) if pair in self.threads else None)
         self.threads.append(pair); thread.start()
@@ -694,6 +695,30 @@ class Main(QtWidgets.QMainWindow):
         subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
         subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
         form.addRow(_("feeds"), subs)
+        g_hint = QtWidgets.QLabel(_("Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself."))
+        g_hint.setObjectName("dim"); form.addRow(g_hint)
+        g = self.cfg.get("google", {})
+        g_id = QtWidgets.QLineEdit(g.get("client_id", "")); g_secret = QtWidgets.QLineEdit(g.get("client_secret", "")); g_secret.setEchoMode(QtWidgets.QLineEdit.Password)
+        form.addRow(_("client ID"), g_id); form.addRow(_("client secret"), g_secret)
+        g_row = QtWidgets.QHBoxLayout(); g_state = QtWidgets.QLabel(_("Google account connected") if g.get("tokens") else ""); g_state.setObjectName("dim")
+        g_connect = QtWidgets.QPushButton(_("forget the Google account") if g.get("tokens") else _("connect the Google account"))
+        def google_click():
+            cur = self.cfg.get("google", {})
+            if cur.get("tokens"):
+                cur.pop("tokens", None); self.cfg["google"] = cur; save_config(self.cfg)
+                g_state.setText(""); g_connect.setText(_("connect the Google account")); return
+            cid, sec = g_id.text().strip(), g_secret.text().strip()
+            if not cid: return
+            self.cfg["google"] = {"client_id": cid, "client_secret": sec}; save_config(self.cfg)
+            g_state.setText(_("waiting for the browser…")); g_connect.setEnabled(False)
+            def done(tokens):
+                self.cfg["google"]["tokens"] = tokens; save_config(self.cfg)
+                g_state.setText(_("Google account connected")); g_connect.setText(_("forget the Google account")); g_connect.setEnabled(True)
+            def failed(msg):
+                g_state.setText(_("Google: %1", msg)); g_connect.setEnabled(True)
+            self.run(lambda: gc.connect(cid, sec), done, failed)
+        g_connect.clicked.connect(google_click); g_row.addWidget(g_connect); g_row.addWidget(g_state); g_row.addStretch(1)
+        form.addRow(_("Google account"), g_row)
         view = QtWidgets.QComboBox()
         for key, label in (("week", _("week")), ("workdays", _("workdays")), ("day", _("day")), ("agenda", _("agenda"))):
             view.addItem(label, key)
@@ -706,7 +731,7 @@ class Main(QtWidgets.QMainWindow):
         credits = QtWidgets.QLabel(f"reader's calendar {VERSION} · " + _("Pierre Gallaz · developed with Claude Code")); credits.setObjectName("dim"); form.addRow(credits)
         dlg.resize(640, 440)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
-            if not self.cfg.get("url") and not self.cfg.get("subscriptions"): self.status.setText(_("not connected — Ctrl+, to set up"))
+            if not self.cfg.get("url") and not self.cfg.get("subscriptions") and not self.google_ready(): self.status.setText(_("not connected — Ctrl+, to set up"))
             return
         parsed = []
         for line in subs.toPlainText().splitlines():
@@ -717,12 +742,24 @@ class Main(QtWidgets.QMainWindow):
             u = u.strip()
             if u:
                 parsed.append({"name": name.strip() or "feed", "url": u})
-        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed, "default_view": view.currentData()}); save_config(self.cfg)
+        gcfg = dict(self.cfg.get("google", {})); gcfg["client_id"] = g_id.text().strip(); gcfg["client_secret"] = g_secret.text().strip()
+        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed, "default_view": view.currentData(), "google": gcfg}); save_config(self.cfg)
         self.connect_client()
+
+    def google_ready(self):
+        g = self.cfg.get("google", {})
+        return bool(g.get("client_id") and g.get("tokens"))
+
+    def google_client(self):
+        """The Google account, when one is connected; its renewed tokens are saved as they change."""
+        if not self.google_ready():
+            return None
+        g = self.cfg["google"]
+        return gc.Google(g["client_id"], g.get("client_secret", ""), g["tokens"])
 
     def connect_client(self):
         if not self.cfg.get("url"):
-            # feeds only: no CalDAV account
+            # feeds and Google only: no CalDAV account
             self.client = None
             self.got_calendars([]); return
         self.client = ce.CalDAV(self.cfg["url"], self.cfg.get("username", ""), self.cfg.get("password", ""))
@@ -733,8 +770,12 @@ class Main(QtWidgets.QMainWindow):
         return {x["url"] for x in self.cfg.get("subscriptions", [])}
 
     def got_calendars(self, cals):
-        # CalDAV calendars first, then the read-only feeds
+        # CalDAV calendars first, then the read-only feeds, then the Google account's calendars
         self.calendars = [c for c in cals if c[1] not in self.feed_urls()] + [(x["name"], x["url"], False) for x in self.cfg.get("subscriptions", [])]
+        google = self.google_client()
+        if google and not any(u.startswith(gc.PREFIX) for _, u, _ in self.calendars):
+            self.status.setText(_("connecting…"))
+            self.run(google.calendars, lambda gcals: self.got_calendars(self.calendars + gcals)); return
         self._clear_calbox()
         hidden = set(self.cfg.get("hidden_calendars", []))
         for name, url, writable in self.calendars:
@@ -768,12 +809,14 @@ class Main(QtWidgets.QMainWindow):
         hidden = set(self.cfg.get("hidden_calendars", []))
         ws, we = self.window()
         cals = [(n, u) for n, u, _ in self.calendars if u not in hidden]
-        feeds = self.feed_urls(); client = self.client
+        feeds = self.feed_urls(); client = self.client; google = self.google_client()
 
         def fetch():
             out = []
             for name, url in cals:
-                events = ce.parse_feed(ce.fetch_feed(url), name) if url in feeds else (client.events(url, ws, we) if client else [])
+                if url in feeds: events = ce.parse_feed(ce.fetch_feed(url), name)
+                elif url.startswith(gc.PREFIX): events = google.events(url, ws, we) if google else []
+                else: events = client.events(url, ws, we) if client else []
                 for ev in events:
                     ev.cal_url = url
                     for s, e in ev.occurrences(ws, we):
@@ -783,6 +826,7 @@ class Main(QtWidgets.QMainWindow):
         self.run(fetch, self.got_events)
 
     def got_events(self, occs):
+        if self.google_ready(): save_config(self.cfg)   # the access token may have been renewed
         self.occs = occs
         self.grid.marked = {o.date for o in occs}; self.grid.update()
         self.status.setText(_("synced %1", datetime.now().strftime("%H:%M")))

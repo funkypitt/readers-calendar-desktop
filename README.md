@@ -36,20 +36,24 @@ password if two-factor authentication is on. Nextcloud and Radicale take their u
 address. The password is stored in `~/.config/readers-calendar/config.json`, readable by
 you only. Ctrl+, reopens the dialog.
 
-## Google Calendar and other feeds
+## Google Calendar
 
-Google's CalDAV needs an OAuth client; the app takes the simpler road. In Google Calendar,
-open the calendar's settings › *Integrate calendar* › *Secret address in iCal format*, and
-paste that address in the account dialog under *feeds*, one per line as `name | address`.
-Any `.ics` or `webcal://` address works the same way (holidays, a club's schedule). Feeds
-are read-only: their events appear in the agenda, the week and the day like the others,
-with "read-only" next to the calendar name on the event page. Google refreshes a secret
-address every few hours. The app can run on feeds alone, with no CalDAV account.
+Two roads. The simple one: in Google Calendar, a calendar's settings › Integrate calendar ›
+"Secret address in iCal format", pasted in the ⚙ dialog as a feed (`name | address`); Google
+refreshes that address every few hours, and the calendar is read-only.
 
-The window opens on the week; the account dialog's *opens on* switches that to the day or the
-agenda.
+The direct one, since 1.7.0: your own Google account, through Google's API and OAuth. It takes an
+OAuth client of your own — Google issues none for a program like this — made once in the
+[Google Cloud console](https://console.cloud.google.com): new project › APIs & Services › enable
+the *Google Calendar API* › OAuth consent screen (external, left in testing, yourself as a test
+user) › Credentials › OAuth client ID, type *Desktop app*. Copy the client ID and the client
+secret into the ⚙ dialog and press *connect the Google account*: the browser opens Google's
+consent page and comes back by itself to a page this program serves on 127.0.0.1 for a moment.
+All the calendars of the account then appear, read-only, up to date at every sync; the refresh
+token is kept in the configuration file (mode 0600) and can be forgotten from the same dialog.
+The permission asked is *calendar.readonly*: the program can read, never write.
 
-Click a calendar name at the bottom of the left column to hide or show it.
+Other `.ics` feeds work the same way as Google's secret address.
 
 ## Use
 
