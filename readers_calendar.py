@@ -19,7 +19,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.7.0"
+VERSION = "1.8.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -35,7 +35,7 @@ _TR = {
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
-        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable",
+        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "move the whole series": "déplacer toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable",
         "title": "titre", "all day: ": "toute la journée : ", "on": "oui", "off": "non", "starts": "début", "start time": "heure de début", "ends": "fin", "end time": "heure de fin", "calendar": "agenda", "reminder": "rappel", "repeat": "répétition", "location": "lieu", "description": "description",
         "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
@@ -45,7 +45,7 @@ _TR = {
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
-        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender",
+        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender",
         "title": "Titel", "all day: ": "ganztägig: ", "on": "an", "off": "aus", "starts": "beginnt", "start time": "Beginn", "ends": "endet", "end time": "Ende", "calendar": "Kalender", "reminder": "Erinnerung", "repeat": "Wiederholung", "location": "Ort", "description": "Beschreibung",
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
@@ -55,7 +55,7 @@ _TR = {
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
-        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable",
+        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable",
         "title": "título", "all day: ": "todo el día: ", "on": "sí", "off": "no", "starts": "empieza", "start time": "hora de inicio", "ends": "termina", "end time": "hora de fin", "calendar": "calendario", "reminder": "recordatorio", "repeat": "repetición", "location": "lugar", "description": "descripción",
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
@@ -65,7 +65,7 @@ _TR = {
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
-        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável",
+        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "move the whole series": "mover toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável",
         "title": "título", "all day: ": "todo o dia: ", "on": "sim", "off": "não", "starts": "começa", "start time": "hora de início", "ends": "termina", "end time": "hora de fim", "calendar": "calendário", "reminder": "lembrete", "repeat": "repetição", "location": "local", "description": "descrição",
         "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
@@ -75,7 +75,7 @@ _TR = {
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
-        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи",
+        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи",
         "title": "название", "all day: ": "весь день: ", "on": "вкл", "off": "выкл", "starts": "начало", "start time": "время начала", "ends": "конец", "end time": "время окончания", "calendar": "календарь", "reminder": "напоминание", "repeat": "повтор", "location": "место", "description": "описание",
         "save": "сохранить", "the end is before the start": "конец раньше начала", "saving…": "сохранение…", "start time (hh:mm)": "время начала (чч:мм)", "end time (hh:mm)": "время окончания (чч:мм)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Календари CalDAV. Infomaniak: https://sync.infomaniak.com, имя вида AB12345,\nпароль приложения при двухфакторной аутентификации. Nextcloud, Radicale… тоже подходят.",
@@ -357,8 +357,10 @@ class WeekHead(QtWidgets.QWidget):
 
 
 class WeekGrid(QtWidgets.QWidget):
-    """The 24-hour time grid of one week (scrolls)."""
+    """The 24-hour time grid of one week (scrolls). A block dragged with the mouse moves by
+    quarter hours and whole columns; event_moved carries the shift on release."""
     event_clicked = QtCore.pyqtSignal(object)
+    event_moved = QtCore.pyqtSignal(object, int, int)   # (occ, days, minutes)
     slot_clicked = QtCore.pyqtSignal(object, int)   # (date, hour)
     weekend_clicked = QtCore.pyqtSignal()
     HOUR = 48
@@ -371,6 +373,12 @@ class WeekGrid(QtWidgets.QWidget):
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self.setMinimumHeight(24 * self.HOUR + 2 * self.TOP)
         self._boxes = []
+        self._press = None    # (occ, column index, start minute, end minute, press point) while the mouse is down on a block
+        self._drag = None     # (occ, days shift, new start minute) while it is dragged
+        self._settled = None  # the last drop, kept in place until the events come back refreshed
+
+    def set_occs(self, occs):
+        self.occs = occs; self._settled = None; self.update()
 
     def set_colors(self, fg, bg):
         self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
@@ -397,7 +405,9 @@ class WeekGrid(QtWidgets.QWidget):
         for hh in range(24):
             p.drawText(QtCore.QRectF(0, top + hh * self.HOUR - 8, gutter - 6, 16), QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, f"{hh:02d}")
         fm_small = QtGui.QFontMetrics(small)
-        for d, cx, colw in cols:
+        ghost = self._drag or self._settled
+        lifted = None   # the dragged block, painted last so that it sits over the others
+        for ci, (d, cx, colw) in enumerate(cols):
             items = []
             for o in self.occs:
                 if o.event.all_day or o.start.date() != d:
@@ -409,24 +419,12 @@ class WeekGrid(QtWidgets.QWidget):
             for s, e, o, lane, lanes in place_lanes(items):
                 lane_w = (colw - 4) / lanes
                 x0 = cx + 2 + lane * lane_w
-                y0 = top + s / 60 * self.HOUR; y1 = top + e / 60 * self.HOUR
-                # solid blocks: the white between them is the free time
-                rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
-                p.fillRect(rect, self.fg)
-                show_time = rect.height() >= fm_small.height() * 2 + 8
-                inner = rect.adjusted(4, 2, -4, -(fm_small.height() + 3) if show_time else -2)
-                whole = int(inner.height() // fm_small.lineSpacing()) * fm_small.lineSpacing()
-                inner.setHeight(max(whole, fm_small.lineSpacing()))
-                p.save(); p.setClipRect(rect.adjusted(2, 1, -2, -1))
-                p.setFont(small); p.setPen(self.bg)
-                flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft | (QtCore.Qt.TextWordWrap if lane_w >= 44 else 0)
-                p.drawText(inner, flags, o.event.summary)
-                if show_time:
-                    p.setPen(dimbg)
-                    label = fmt_time(o.start) + (" · " + o.event.location if self.ndays == 1 and o.event.location else "")
-                    p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, label)
-                p.restore()
-                self._boxes.append((rect, o))
+                if ghost and ghost[0] is o:
+                    # where it was lifted from: the column and time it was dropped on, whole width
+                    tci = max(0, min(len(cols) - 1, ci + ghost[1])); ns = ghost[2]
+                    lifted = (o, cols[tci][1], cols[tci][2], ns, ns + e - s, lane_w, lane, lanes, ci, s, e)
+                    continue
+                self._paint_block(p, o, cx, colw, lane_w, lane, lanes, s, e, fm_small, small, dimbg, label=fmt_time(o.start))
         for d, cx, colw in cols:
             if d != today:
                 continue
@@ -436,20 +434,85 @@ class WeekGrid(QtWidgets.QWidget):
             p.setPen(QtGui.QPen(self.fg, 2)); p.drawLine(QtCore.QPointF(cx, y), QtCore.QPointF(cx + colw, y))
             p.setBrush(self.bg); p.setPen(QtCore.Qt.NoPen); p.drawEllipse(QtCore.QPointF(cx, y), 5, 5)
             p.setBrush(self.fg); p.drawEllipse(QtCore.QPointF(cx, y), 3, 3)
+        if lifted:
+            o, cx, colw, s, e, lane_w, lane, lanes, ci, s0, e0 = lifted
+            self._boxes.append((QtCore.QRectF(cols[ci][1] + 2 + lane * lane_w, top + s0 / 60 * self.HOUR, lane_w, (e0 - s0) / 60 * self.HOUR), o))
+            label = f"{s // 60:02d}:{s % 60:02d} – {(e // 60) % 24:02d}:{e % 60:02d}"
+            self._paint_block(p, o, cx, colw, colw - 4, 0, 1, s, e, fm_small, small, dimbg, label=label, frame=True)
+
+    def _paint_block(self, p, o, cx, colw, lane_w, lane, lanes, s, e, fm_small, small, dimbg, label, frame=False):
+        top = self.TOP
+        x0 = cx + 2 + lane * lane_w
+        y0 = top + s / 60 * self.HOUR; y1 = top + e / 60 * self.HOUR
+        # solid blocks: the white between them is the free time
+        rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
+        p.fillRect(rect, self.fg)
+        if frame:
+            p.setPen(QtGui.QPen(self.bg, 1)); p.setBrush(QtCore.Qt.NoBrush); p.drawRect(rect.adjusted(1, 1, -1, -1))
+        show_time = rect.height() >= fm_small.height() * 2 + 8
+        inner = rect.adjusted(4, 2, -4, -(fm_small.height() + 3) if show_time else -2)
+        whole = int(inner.height() // fm_small.lineSpacing()) * fm_small.lineSpacing()
+        inner.setHeight(max(whole, fm_small.lineSpacing()))
+        p.save(); p.setClipRect(rect.adjusted(2, 1, -2, -1))
+        p.setFont(small); p.setPen(self.bg)
+        flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft | (QtCore.Qt.TextWordWrap if lane_w >= 44 else 0)
+        p.drawText(inner, flags, o.event.summary)
+        if show_time:
+            p.setPen(dimbg)
+            if not frame and self.ndays == 1 and o.event.location:
+                label += " · " + o.event.location
+            p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, label)
+        p.restore()
+        if not frame:
+            self._boxes.append((rect, o))
+
+    def _columns(self):
+        gutter = WeekHead.GUTTER
+        return week_columns(self.start, self.ndays, self.workdays, gutter, self.width() - gutter - 8)
 
     def mousePressEvent(self, e):
         for rect, o in reversed(self._boxes):
             if rect.contains(e.pos()):
-                self.event_clicked.emit(o); return
+                # a click opens the event on release; a move first lifts it
+                ci = next((i for i, (d, cx, colw) in enumerate(self._columns()) if cx <= rect.center().x() < cx + colw), 0)
+                s = int(round((rect.top() - self.TOP) / self.HOUR * 60)); en = int(round((rect.bottom() + 1 - self.TOP) / self.HOUR * 60))
+                self._press = (o, ci, s, en, e.pos()); return
         gutter = WeekHead.GUTTER
         if self.workdays:
             sx, sw = weekend_strip(gutter, self.width() - gutter - 8)
             if sx <= e.pos().x() < sx + sw:
                 self.weekend_clicked.emit(); return
         if self.TOP <= e.pos().y() < self.TOP + 24 * self.HOUR:
-            for d, cx, colw in week_columns(self.start, self.ndays, self.workdays, gutter, self.width() - gutter - 8):
+            for d, cx, colw in self._columns():
                 if cx <= e.pos().x() < cx + colw:
                     self.slot_clicked.emit(d, int((e.pos().y() - self.TOP) / self.HOUR)); return
+
+    def mouseMoveEvent(self, e):
+        if not self._press:
+            return
+        o, ci, s, en, at = self._press
+        dx, dy = e.pos().x() - at.x(), e.pos().y() - at.y()
+        if not self._drag and abs(dx) < 6 and abs(dy) < 6:
+            return
+        cols = self._columns()
+        days = max(-ci, min(len(cols) - 1 - ci, int(round(dx / cols[0][2]))))
+        raw = dy / self.HOUR * 60
+        ns = s if abs(raw) < 5 else max(0, min(1440 - min(en - s, 1440), int(round((s + raw) / 15)) * 15))
+        self._drag = (o, days, ns); self.update()
+
+    def mouseReleaseEvent(self, e):
+        press, drag = self._press, self._drag
+        self._press = self._drag = None
+        if not press:
+            return
+        o, ci, s, en, at = press
+        if drag is None:
+            self.event_clicked.emit(o); return
+        _, days, ns = drag
+        if days or ns != s:
+            self._settled = drag
+            self.event_moved.emit(o, days, ns - s)
+        self.update()
 
 
 # ------------------------------------------------------------------------------------------
@@ -473,7 +536,9 @@ def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=Non
 
 
 class TextPrompt(QtWidgets.QDialog):
-    def __init__(self, title, initial="", multiline=False, parent=None):
+    """A line (or a box) of text to type. With select_all the suggestion opens selected, so the
+    first key replaces it instead of landing after its last character."""
+    def __init__(self, title, initial="", multiline=False, parent=None, select_all=False):
         super().__init__(parent)
         self.setWindowTitle(title)
         lay = QtWidgets.QVBoxLayout(self)
@@ -482,6 +547,8 @@ class TextPrompt(QtWidgets.QDialog):
             self.edit = QtWidgets.QPlainTextEdit(initial)
         else:
             self.edit = QtWidgets.QLineEdit(initial); self.edit.returnPressed.connect(self.accept)
+            if select_all:
+                self.edit.selectAll()
         lay.addWidget(self.edit)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
         c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(self.reject); btns.addWidget(c)
@@ -595,7 +662,7 @@ class Main(QtWidgets.QMainWindow):
         wnav.addWidget(self.w_prev); wnav.addWidget(self.w_title, 1, QtCore.Qt.AlignLeft); wnav.addWidget(self.w_today); wnav.addWidget(self.w_next)
         wl.addLayout(wnav)
         self.week_head = WeekHead(); self.week_head.event_clicked.connect(self.show_event); self.week_head.day_clicked.connect(self.show_day_grid); wl.addWidget(self.week_head)
-        self.week = WeekGrid(); self.week.event_clicked.connect(self.show_event); self.week.slot_clicked.connect(self.new_at)
+        self.week = WeekGrid(); self.week.event_clicked.connect(self.show_event); self.week.slot_clicked.connect(self.new_at); self.week.event_moved.connect(self.move_event)
         self.week.weekend_clicked.connect(lambda: self.show_week(self.week.start)); self.week_head.weekend_clicked.connect(lambda: self.show_week(self.week.start))
         wscroll = QtWidgets.QScrollArea(); wscroll.setWidgetResizable(True); wscroll.setFrameShape(QtWidgets.QFrame.NoFrame); wscroll.setWidget(self.week)
         self.week_scroll = wscroll; wl.addWidget(wscroll, 1)
@@ -918,9 +985,33 @@ class Main(QtWidgets.QMainWindow):
 
     def render_week(self):
         s = self.week.start; e = s + timedelta(days=self.week.ndays)
-        self.week.occs = [o for o in self.occs if o.start.date() < e and o.end.date() >= s]
+        self.week.set_occs([o for o in self.occs if o.start.date() < e and o.end.date() >= s])
         self.week_head.set_data(s, self.week.ndays, self.week.occs, self.week.workdays)
-        self.week.update()
+
+    # ---- moving an event by dragging it in the grid ---------------------------------------
+
+    def move_event(self, o, days, minutes):
+        """A block dropped elsewhere: the event shifted by whole days and minutes, nothing else
+        touched. A series asks first, since every occurrence moves with it."""
+        ev = o.event
+        if not ev.writable:
+            self.status.setText(_("this event comes from a read-only feed")); self.render_week(); return
+        if ev.rrule:
+            m = QtWidgets.QMenu(self)
+            m.addAction(_("move the whole series"), lambda: self._do_move(o, days, minutes))
+            if m.exec_(QtGui.QCursor.pos()) is None:
+                self.render_week()   # no choice: the block goes back
+            return
+        self._do_move(o, days, minutes)
+
+    def _do_move(self, o, days, minutes):
+        ev = o.event; delta = timedelta(days=days, minutes=0 if ev.all_day else minutes)
+        start = ev.start + delta
+        end = (ev.end - timedelta(days=1) if ev.all_day else ev.end) + delta
+        keep = [l for l in ev.lines if l.split(":", 1)[0].split(";", 1)[0].upper() in ("EXDATE", "CREATED", "SEQUENCE", "CLASS", "STATUS", "TRANSP", "CATEGORIES")]
+        kw = dict(summary=ev.summary, start=start, end=end, all_day=ev.all_day, location=ev.location, description=ev.description, rrule=ev.rrule, reminder=ev.reminder, keep_lines=keep)
+        self.status.setText(_("saving…"))
+        self.run(lambda: self.client.put(ev.href, ce.build_ics(ev.uid, **kw), etag=ev.etag), lambda _: self.sync(), lambda err: (self.status.setText(str(err)), self.render_week()))
 
     def show_event(self, o, refresh=False):
         self._event = o
@@ -1048,7 +1139,7 @@ class Main(QtWidgets.QMainWindow):
             st[key] = new; self.render_edit()
 
     def _pick_time(self, key):
-        dlg = TextPrompt(("start" if key == "start" else "end") + " time (hh:mm)", fmt_time(self._edit_state[key]), False, self)
+        dlg = TextPrompt(("start" if key == "start" else "end") + " time (hh:mm)", fmt_time(self._edit_state[key]), False, self, select_all=True)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
             return
         import re
