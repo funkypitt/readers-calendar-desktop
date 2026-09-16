@@ -19,7 +19,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.8.0"
+VERSION = "1.8.1"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -535,10 +535,65 @@ def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=Non
     return w
 
 
+class TimeMask:
+    """A time typed as digits around a ":" that is always there: "1830", "18.30", "18,30",
+    "18h30", "9h15", "930" all read as hours and minutes. A separator typed by hand fixes where
+    the hour ends; otherwise it is guessed ("18" → 18:, "9" → 9:, "230" → 2:30, "1830" → 18:30).
+    Backspace over the ":" removes the hour's last digit, so the separator never goes away."""
+    SEPS = ":.,hH"
+
+    def __init__(self, initial=""):
+        self.digits = "".join(c for c in initial if c.isdigit())[:4]
+        self.cut = None   # the hour's length when the user typed a separator, else guessed
+
+    def hour_len(self):
+        d = self.digits
+        if self.cut is not None:
+            return min(self.cut, len(d))
+        if len(d) <= 1: return len(d)
+        if len(d) == 2: return 2 if int(d) <= 23 else 1
+        if len(d) == 3: return 1 if int(d[1:]) <= 59 else 2
+        return 2
+
+    @property
+    def text(self):
+        h = self.hour_len()
+        return self.digits[:h] + ":" + self.digits[h:]
+
+    def apply(self, typed):
+        """What the field should show after a keystroke that left it as `typed`."""
+        nd = "".join(c for c in typed if c.isdigit())
+        seps = sum(1 for c in typed if c in self.SEPS)
+        if nd == self.digits:
+            if seps == 0 and self.digits:          # the ":" was deleted: the hour loses a digit
+                h = self.hour_len(); self.digits = self.digits[:h - 1] + self.digits[h:]; self.cut = None
+            elif seps > 1 and self.digits:         # a separator typed: the hour ends here
+                self.cut = min(len(self.digits), 2)
+        else:
+            if not nd.startswith(self.digits):     # replaced, not extended: guess again
+                self.cut = None
+            self.digits = nd[:4 if self.cut is None else self.cut + 2]
+            if self.cut is not None and len(self.digits) < self.cut:
+                self.cut = None
+        return self.text
+
+    @staticmethod
+    def parse(text):
+        """(hour, minute) of a masked text, or None. A lone minute digit is tens: 18:3 → 18:30."""
+        if ":" not in text:
+            return None
+        h, m = text.split(":", 1)
+        if not h.isdigit() or (m and not m.isdigit()):
+            return None
+        hh, mm = int(h), (int(m.ljust(2, "0")) if m else 0)
+        return (hh, mm) if 0 <= hh <= 23 and 0 <= mm <= 59 else None
+
+
 class TextPrompt(QtWidgets.QDialog):
     """A line (or a box) of text to type. With select_all the suggestion opens selected, so the
-    first key replaces it instead of landing after its last character."""
-    def __init__(self, title, initial="", multiline=False, parent=None, select_all=False):
+    first key replaces it instead of landing after its last character; time_mask keeps a ":"
+    in the field whatever is typed (see TimeMask)."""
+    def __init__(self, title, initial="", multiline=False, parent=None, select_all=False, time_mask=False):
         super().__init__(parent)
         self.setWindowTitle(title)
         lay = QtWidgets.QVBoxLayout(self)
@@ -547,6 +602,9 @@ class TextPrompt(QtWidgets.QDialog):
             self.edit = QtWidgets.QPlainTextEdit(initial)
         else:
             self.edit = QtWidgets.QLineEdit(initial); self.edit.returnPressed.connect(self.accept)
+            if time_mask:
+                self.mask = TimeMask(initial); self.edit.setText(self.mask.text)
+                self.edit.textEdited.connect(self._masked)
             if select_all:
                 self.edit.selectAll()
         lay.addWidget(self.edit)
@@ -555,6 +613,9 @@ class TextPrompt(QtWidgets.QDialog):
         ok = QtWidgets.QPushButton(_("ok")); ok.setDefault(True); ok.clicked.connect(self.accept); btns.addWidget(ok)
         lay.addLayout(btns)
         self.resize(520, 300 if multiline else 120)
+
+    def _masked(self, typed):
+        self.edit.setText(self.mask.apply(typed)); self.edit.setCursorPosition(len(self.edit.text()))
 
     def value(self):
         return self.edit.toPlainText() if isinstance(self.edit, QtWidgets.QPlainTextEdit) else self.edit.text()
@@ -1139,16 +1200,13 @@ class Main(QtWidgets.QMainWindow):
             st[key] = new; self.render_edit()
 
     def _pick_time(self, key):
-        dlg = TextPrompt(("start" if key == "start" else "end") + " time (hh:mm)", fmt_time(self._edit_state[key]), False, self, select_all=True)
+        dlg = TextPrompt(("start" if key == "start" else "end") + " time (hh:mm)", fmt_time(self._edit_state[key]), False, self, select_all=True, time_mask=True)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
             return
-        import re
-        m = re.match(r"^\s*(\d{1,2})\s*[:hH.]?\s*(\d{2})?\s*$", dlg.value())
-        if not m:
+        parsed = TimeMask.parse(dlg.value())
+        if parsed is None:
             return
-        h, mi = int(m.group(1)), int(m.group(2) or 0)
-        if not (0 <= h <= 23 and 0 <= mi <= 59):
-            return
+        h, mi = parsed
         st = self._edit_state; old = st[key]; new = old.replace(hour=h, minute=mi)
         if key == "start":
             st["end"] = st["end"] + (new - old)
