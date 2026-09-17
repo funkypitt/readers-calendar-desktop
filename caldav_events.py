@@ -2,6 +2,7 @@
 """CalDAV events for Reader's Calendar (desktop): discovery, VEVENT listing with recurrence
 expansion, create, update, delete. Plain HTTP (requests) and python-dateutil for RRULE."""
 
+import os
 import re
 import uuid
 import xml.etree.ElementTree as ET
@@ -13,7 +14,32 @@ import requests
 from dateutil.rrule import rrulestr
 
 NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav"}
-LOCAL = datetime.now().astimezone().tzinfo
+
+
+def _local_zone():
+    """The system's time zone with its rules (Europe/Zurich), not today's fixed offset: with a fixed
+    +02:00 a 09:00 event in December showed at 10:00, and times written in summer for winter
+    dates were an hour off."""
+    names = [os.environ.get("TZ", "").lstrip(":")]
+    try:
+        names.append(os.path.realpath("/etc/localtime").split("/zoneinfo/", 1)[1])
+    except (IndexError, OSError):
+        pass
+    try:
+        with open("/etc/timezone") as f:
+            names.append(f.read().strip())
+    except OSError:
+        pass
+    for name in names:
+        if name:
+            try:
+                return ZoneInfo(name)
+            except Exception:
+                continue
+    return datetime.now().astimezone().tzinfo
+
+
+LOCAL = _local_zone()
 
 
 class CalDAVError(Exception):

@@ -19,7 +19,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.8.1"
+VERSION = "1.9.0"
 CONFIG_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), APP)
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 SYNC_MINUTES = 5
@@ -31,51 +31,51 @@ LOCAL = ce.LOCAL
 # ------------------------------------------------------------------------------------------
 
 _TR = {
- "fr": {"Google account": "compte Google", "client ID": "ID client", "client secret": "secret client", "connect the Google account": "connecter le compte Google", "forget the Google account": "oublier le compte Google", "waiting for the browser…": "en attente du navigateur…", "Google account connected": "compte Google connecté", "Google: %1": "Google : %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Agenda, en lecture seule, avec votre propre client OAuth : console.cloud.google.com › nouveau projet › API et services › activer\nl'API Google Calendar › écran de consentement OAuth (externe, en test, vous-même comme testeur) › Identifiants › ID client OAuth,\ntype Application de bureau. Copiez l'ID et le secret ici, puis connectez : le navigateur s'ouvre sur Google et revient tout seul.", "workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+ "fr": {"Google account": "compte Google", "client ID": "ID client", "client secret": "secret client", "connect the Google account": "connecter le compte Google", "forget the Google account": "oublier le compte Google", "waiting for the browser…": "en attente du navigateur…", "Google account connected": "compte Google connecté", "Google: %1": "Google : %1", "workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
-        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "move the whole series": "déplacer toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable",
+        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "move the whole series": "déplacer toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable", "Google: the event changed elsewhere — shown again as it is now": "Google : l'événement a changé ailleurs — le voici tel qu'il est maintenant", "move only this event": "déplacer seulement cet événement", "edit only this event": "modifier seulement cet événement", "edit the whole series": "modifier toute la série", "delete only this event": "supprimer seulement cet événement", "part of a series": "fait partie d'une série", "this calendar is read-only": "cet agenda est en lecture seule", "Google: connect the account again (Ctrl+,) to edit its events": "Google : reconnectez le compte (Ctrl+,) pour modifier ses événements", "connected read-only — forget, then connect again to edit": "connecté en lecture seule — oubliez, puis reconnectez pour modifier", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Agenda, lecture et écriture, avec votre propre client OAuth : console.cloud.google.com › nouveau projet › API et services › activer\nl'API Google Calendar › écran de consentement OAuth (externe, vous-même comme testeur, puis Publier l'application : en mode Test, Google\ndemande de reconnecter tous les 7 jours) › Identifiants › ID client OAuth, type Application de bureau. Copiez l'ID et le secret ici, puis\nconnectez : le navigateur s'ouvre sur Google (« Google n'a pas validé cette application » : Paramètres avancés › continuer — c'est votre\npropre client) et revient tout seul.",
         "title": "titre", "all day: ": "toute la journée : ", "on": "oui", "off": "non", "starts": "début", "start time": "heure de début", "ends": "fin", "end time": "heure de fin", "calendar": "agenda", "reminder": "rappel", "repeat": "répétition", "location": "lieu", "description": "description",
         "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · développé avec Claude Code"},
- "de": {"Google account": "Google-Konto", "client ID": "Client-ID", "client secret": "Client-Geheimnis", "connect the Google account": "Google-Konto verbinden", "forget the Google account": "Google-Konto vergessen", "waiting for the browser…": "warte auf den Browser…", "Google account connected": "Google-Konto verbunden", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Kalender, nur lesen, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, in Tests, Sie selbst als Tester) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App.\nID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet Google und kommt von selbst zurück.", "workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+ "de": {"Google account": "Google-Konto", "client ID": "Client-ID", "client secret": "Client-Geheimnis", "connect the Google account": "Google-Konto verbinden", "forget the Google account": "Google-Konto vergessen", "waiting for the browser…": "warte auf den Browser…", "Google account connected": "Google-Konto verbunden", "Google: %1": "Google: %1", "workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
-        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender",
+        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender", "Google: the event changed elsewhere — shown again as it is now": "Google: der Termin wurde anderswo geändert — hier sein aktueller Stand", "move only this event": "nur diesen Termin verschieben", "edit only this event": "nur diesen Termin bearbeiten", "edit the whole series": "die ganze Serie bearbeiten", "delete only this event": "nur diesen Termin löschen", "part of a series": "Teil einer Serie", "this calendar is read-only": "dieser Kalender ist schreibgeschützt", "Google: connect the account again (Ctrl+,) to edit its events": "Google: Konto erneut verbinden (Strg+,), um Termine zu bearbeiten", "connected read-only — forget, then connect again to edit": "nur lesend verbunden — vergessen, dann erneut verbinden, um zu bearbeiten", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Kalender, lesen und schreiben, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, Sie selbst als Tester, dann App veröffentlichen: im Testmodus verlangt Google alle 7 Tage\neine neue Verbindung) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App. ID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet\nGoogle („Google hat diese App nicht überprüft“: Erweitert › weiter — es ist Ihr eigener Client) und kommt von selbst zurück.",
         "title": "Titel", "all day: ": "ganztägig: ", "on": "an", "off": "aus", "starts": "beginnt", "start time": "Beginn", "ends": "endet", "end time": "Ende", "calendar": "Kalender", "reminder": "Erinnerung", "repeat": "Wiederholung", "location": "Ort", "description": "Beschreibung",
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · entwickelt mit Claude Code"},
- "es": {"Google account": "cuenta de Google", "client ID": "ID de cliente", "client secret": "secreto de cliente", "connect the Google account": "conectar la cuenta de Google", "forget the Google account": "olvidar la cuenta de Google", "waiting for the browser…": "esperando al navegador…", "Google account connected": "cuenta de Google conectada", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Calendar, solo lectura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, en pruebas, usted como probador) › Credenciales › ID de cliente OAuth,\ntipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el navegador abre Google y vuelve solo.", "workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+ "es": {"Google account": "cuenta de Google", "client ID": "ID de cliente", "client secret": "secreto de cliente", "connect the Google account": "conectar la cuenta de Google", "forget the Google account": "olvidar la cuenta de Google", "waiting for the browser…": "esperando al navegador…", "Google account connected": "cuenta de Google conectada", "Google: %1": "Google: %1", "workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
-        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable",
+        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable", "Google: the event changed elsewhere — shown again as it is now": "Google: el evento cambió en otro lugar — se muestra tal como está ahora", "move only this event": "mover solo este evento", "edit only this event": "editar solo este evento", "edit the whole series": "editar toda la serie", "delete only this event": "eliminar solo este evento", "part of a series": "parte de una serie", "this calendar is read-only": "este calendario es de solo lectura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: vuelva a conectar la cuenta (Ctrl+,) para editar sus eventos", "connected read-only — forget, then connect again to edit": "conectada en solo lectura — olvídela y vuelva a conectarla para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, lectura y escritura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, usted como probador, luego Publicar la app: en pruebas, Google pide\nreconectar cada 7 días) › Credenciales › ID de cliente OAuth, tipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el\nnavegador abre Google («Google no ha verificado esta app»: Avanzado › continuar — es su propio cliente) y vuelve solo.",
         "title": "título", "all day: ": "todo el día: ", "on": "sí", "off": "no", "starts": "empieza", "start time": "hora de inicio", "ends": "termina", "end time": "hora de fin", "calendar": "calendario", "reminder": "recordatorio", "repeat": "repetición", "location": "lugar", "description": "descripción",
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desarrollado con Claude Code"},
- "pt": {"Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Calendar, só leitura, com o seu próprio cliente OAuth: console.cloud.google.com › novo projeto › APIs e serviços › ativar a\nAPI Google Calendar › ecrã de consentimento OAuth (externo, em teste, você como testador) › Credenciais › ID de cliente OAuth,\ntipo Aplicação de computador. Copie o ID e o segredo aqui e ligue: o navegador abre o Google e volta sozinho.", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+ "pt": {"Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
-        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "move the whole series": "mover toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável",
+        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "move the whole series": "mover toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável", "Google: the event changed elsewhere — shown again as it is now": "Google: o evento mudou noutro lado — mostrado tal como está agora", "move only this event": "mover só este evento", "edit only this event": "editar só este evento", "edit the whole series": "editar toda a série", "delete only this event": "apagar só este evento", "part of a series": "parte de uma série", "this calendar is read-only": "este calendário é só de leitura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: ligue a conta de novo (Ctrl+,) para editar os eventos", "connected read-only — forget, then connect again to edit": "ligada só de leitura — esqueça e ligue de novo para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, leitura e escrita, com o seu próprio cliente OAuth: console.cloud.google.com › novo projeto › APIs e serviços › ativar a\nAPI Google Calendar › ecrã de consentimento OAuth (externo, você como testador, depois Publicar a app: em teste, o Google pede nova\nligação a cada 7 dias) › Credenciais › ID de cliente OAuth, tipo Aplicação de computador. Copie o ID e o segredo aqui e ligue: o navegador\nabre o Google («A Google não validou esta app»: Avançadas › continuar — é o seu próprio cliente) e volta sozinho.",
         "title": "título", "all day: ": "todo o dia: ", "on": "sim", "off": "não", "starts": "começa", "start time": "hora de início", "ends": "termina", "end time": "hora de fim", "calendar": "calendário", "reminder": "lembrete", "repeat": "repetição", "location": "local", "description": "descrição",
         "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desenvolvido com Claude Code"},
- "ru": {"Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself.": "Google Календарь, только чтение, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, в тестировании, вы как тестировщик) › Учётные данные › идентификатор клиента OAuth,\nтип «Компьютерное приложение». Вставьте ID и секрет сюда и подключите: браузер откроет Google и вернётся сам.", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+ "ru": {"Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
-        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи",
+        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи", "Google: the event changed elsewhere — shown again as it is now": "Google: событие изменено в другом месте — показано в текущем виде", "move only this event": "перенести только это событие", "edit only this event": "изменить только это событие", "edit the whole series": "изменить всю серию", "delete only this event": "удалить только это событие", "part of a series": "часть серии", "this calendar is read-only": "этот календарь только для чтения", "Google: connect the account again (Ctrl+,) to edit its events": "Google: подключите аккаунт заново (Ctrl+,), чтобы изменять события", "connected read-only — forget, then connect again to edit": "подключён только для чтения — забудьте и подключите заново, чтобы изменять", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Календарь, чтение и запись, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, вы как тестировщик, затем «Опубликовать приложение»: в режиме тестирования Google\nпросит подключаться заново каждые 7 дней) › Учётные данные › идентификатор клиента OAuth, тип «Компьютерное приложение». Вставьте ID и\nсекрет сюда и подключите: браузер откроет Google («Google не проверил это приложение»: Дополнительно › продолжить — это ваш собственный\nклиент) и вернётся сам.",
         "title": "название", "all day: ": "весь день: ", "on": "вкл", "off": "выкл", "starts": "начало", "start time": "время начала", "ends": "конец", "end time": "время окончания", "calendar": "календарь", "reminder": "напоминание", "repeat": "повтор", "location": "место", "description": "описание",
         "save": "сохранить", "the end is before the start": "конец раньше начала", "saving…": "сохранение…", "start time (hh:mm)": "время начала (чч:мм)", "end time (hh:mm)": "время окончания (чч:мм)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Календари CalDAV. Infomaniak: https://sync.infomaniak.com, имя вида AB12345,\nпароль приложения при двухфакторной аутентификации. Nextcloud, Radicale… тоже подходят.",
@@ -126,6 +126,10 @@ def day_label(d, today):
     if d == today + timedelta(days=1):
         return _("tomorrow · ") + base
     return base if d.year == today.year else base + f" {d.year}"
+
+
+def is_google(ev):
+    return getattr(ev, "google", None) is not None
 
 
 def fmt_time(dt):
@@ -823,12 +827,12 @@ class Main(QtWidgets.QMainWindow):
         subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
         subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
         form.addRow(_("feeds"), subs)
-        g_hint = QtWidgets.QLabel(_("Google Calendar, read-only, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, in testing, yourself as test user) › Credentials › OAuth client ID,\ntype Desktop app. Copy the ID and the secret here, then connect: the browser opens on Google and comes back by itself."))
+        g_hint = QtWidgets.QLabel(_("Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself."))
         g_hint.setObjectName("dim"); form.addRow(g_hint)
         g = self.cfg.get("google", {})
         g_id = QtWidgets.QLineEdit(g.get("client_id", "")); g_secret = QtWidgets.QLineEdit(g.get("client_secret", "")); g_secret.setEchoMode(QtWidgets.QLineEdit.Password)
         form.addRow(_("client ID"), g_id); form.addRow(_("client secret"), g_secret)
-        g_row = QtWidgets.QHBoxLayout(); g_state = QtWidgets.QLabel(_("Google account connected") if g.get("tokens") else ""); g_state.setObjectName("dim")
+        g_row = QtWidgets.QHBoxLayout(); g_state = QtWidgets.QLabel((_("Google account connected") if gc.can_write(g["tokens"]) else _("connected read-only — forget, then connect again to edit")) if g.get("tokens") else ""); g_state.setObjectName("dim")
         g_connect = QtWidgets.QPushButton(_("forget the Google account") if g.get("tokens") else _("connect the Google account"))
         def google_click():
             cur = self.cfg.get("google", {})
@@ -958,6 +962,10 @@ class Main(QtWidgets.QMainWindow):
         self.occs = occs
         self.grid.marked = {o.date for o in occs}; self.grid.update()
         self.status.setText(_("synced %1", datetime.now().strftime("%H:%M")))
+        if getattr(self, "notice", None):
+            self.status.setText(self.notice); self.notice = None
+        elif self.google_ready() and not gc.can_write(self.cfg["google"]["tokens"]):
+            self.status.setText(_("Google: connect the account again (Ctrl+,) to edit its events"))
         self.render_current()
 
     # ---- pages -------------------------------------------------------------------------
@@ -1056,7 +1064,16 @@ class Main(QtWidgets.QMainWindow):
         touched. A series asks first, since every occurrence moves with it."""
         ev = o.event
         if not ev.writable:
-            self.status.setText(_("this event comes from a read-only feed")); self.render_week(); return
+            self.status.setText(self.read_only_reason(ev)); self.render_week(); return
+        if is_google(ev):
+            if ev.google.get("recurring"):
+                m = QtWidgets.QMenu(self)
+                m.addAction(_("move only this event"), lambda: self._do_move(o, days, minutes))
+                m.addAction(_("move the whole series"), lambda: self._do_move(o, days, minutes, series=True))
+                if m.exec_(QtGui.QCursor.pos()) is None:
+                    self.render_week()
+                return
+            self._do_move(o, days, minutes); return
         if ev.rrule:
             m = QtWidgets.QMenu(self)
             m.addAction(_("move the whole series"), lambda: self._do_move(o, days, minutes))
@@ -1065,8 +1082,12 @@ class Main(QtWidgets.QMainWindow):
             return
         self._do_move(o, days, minutes)
 
-    def _do_move(self, o, days, minutes):
+    def _do_move(self, o, days, minutes, series=False):
         ev = o.event; delta = timedelta(days=days, minutes=0 if ev.all_day else minutes)
+        if is_google(ev):
+            google = self.google_client()
+            self.status.setText(_("saving…"))
+            self.run(lambda: google.shift(ev, delta, series), lambda _: self.sync(), self.write_failed); return
         start = ev.start + delta
         end = (ev.end - timedelta(days=1) if ev.all_day else ev.end) + delta
         keep = [l for l in ev.lines if l.split(":", 1)[0].split(";", 1)[0].upper() in ("EXDATE", "CREATED", "SEQUENCE", "CLASS", "STATUS", "TRANSP", "CATEGORIES")]
@@ -1086,8 +1107,9 @@ class Main(QtWidgets.QMainWindow):
         else:
             when = o.start.strftime("%-d %b").lower() + " – " + (o.end - timedelta(seconds=1)).strftime("%-d %b %Y").lower()
         left.addSpacing(10); left.addWidget(QtWidgets.QLabel(when)); left.addWidget(QtWidgets.QLabel(o.when()))
-        if ev.rrule:
-            r = QtWidgets.QLabel(dict(REPEATS).get(ev.rrule, _("repeats"))); r.setObjectName("dim"); left.addWidget(r)
+        rule = ev.rrule or getattr(ev, "series_rule", "")
+        if rule:
+            r = QtWidgets.QLabel(dict(REPEATS).get(rule, _("repeats"))); r.setObjectName("dim"); left.addWidget(r)
         if ev.reminder is not None:
             r = QtWidgets.QLabel(reminder_label(ev.reminder)); r.setObjectName("dim"); left.addWidget(r)
         # the calendar it belongs to: a quiet line of text, never a colour
@@ -1115,22 +1137,54 @@ class Main(QtWidgets.QMainWindow):
 
     def delete_event(self, o):
         m = QtWidgets.QMenu(self)
-        m.addAction(_("delete") + (_(" the whole series") if o.event.rrule else ""), lambda: self._do_delete(o))
+        if is_google(o.event) and o.event.google.get("recurring"):
+            m.addAction(_("delete only this event"), lambda: self._do_delete(o))
+            m.addAction(_("delete") + _(" the whole series"), lambda: self._do_delete(o, series=True))
+        else:
+            m.addAction(_("delete") + (_(" the whole series") if o.event.rrule or getattr(o.event, "series_rule", "") else ""), lambda: self._do_delete(o))
         m.exec_(QtGui.QCursor.pos())
 
-    def _do_delete(self, o):
+    def _do_delete(self, o, series=False):
         self.status.setText(_("deleting…"))
+        if is_google(o.event):
+            google = self.google_client()
+            self.run(lambda: google.delete(o.event, series), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
         self.run(lambda: self.client.delete(o.event.href), lambda _: (self.show_agenda(), self.sync()))
+
+    def read_only_reason(self, ev):
+        if is_google(ev):
+            if self.google_ready() and not gc.can_write(self.cfg["google"]["tokens"]):
+                return _("Google: connect the account again (Ctrl+,) to edit its events")
+            return _("this calendar is read-only")
+        return _("this event comes from a read-only feed")
+
+    def write_failed(self, message):
+        """A write refused: say why, and show the calendar as it is now (a 412 means it changed)."""
+        message = _(message)
+        self.notice = message       # kept over the "synced" line that follows
+        self.status.setText(message)
+        if self.pages.currentIndex() == 3:
+            self.show_agenda()
+        self.sync()
 
     # ---- edit --------------------------------------------------------------------------
 
-    def edit_event(self, o):
+    def edit_event(self, o, source=None, scope=None):
+        """source: the Event the form edits (a Google series' master); scope: "this" for one
+        occurrence of a Google series, "series" for all of it."""
         if o is not None and not o.event.writable:
-            self.status.setText(_("this event comes from a read-only feed")); return
+            self.status.setText(self.read_only_reason(o.event)); return
         writable = [(n, u) for n, u, w in self.calendars if w]
         if not writable:
             self.status.setText(_("no writable calendar")); return
-        ev = o.event if o else None
+        if o is not None and scope is None and is_google(o.event) and o.event.google.get("recurring"):
+            google = self.google_client()
+            m = QtWidgets.QMenu(self)
+            m.addAction(_("edit only this event"), lambda: self.edit_event(o, o.event, "this"))
+            m.addAction(_("edit the whole series"), lambda: (self.status.setText(_("connecting…")), self.run(lambda: google.master(o.event), lambda master: self.edit_event(o, master, "series"), self.write_failed)))
+            m.exec_(QtGui.QCursor.pos())
+            return
+        ev = source or (o.event if o else None)
         now = datetime.now(LOCAL).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
         state = {
             "uid": ev.uid if ev else None, "href": ev.href if ev else None, "etag": ev.etag if ev else None,
@@ -1138,7 +1192,8 @@ class Main(QtWidgets.QMainWindow):
             "start": (ev.start if isinstance(ev.start, datetime) else datetime.combine(ev.start, datetime.min.time(), LOCAL)) if ev else now,
             "end": (ev.end - (timedelta(days=1) if ev.all_day else timedelta(0)) if isinstance(ev.end, datetime) else datetime.combine(ev.end - timedelta(days=1), datetime.min.time(), LOCAL)) if ev else now + timedelta(hours=1),
             "location": ev.location if ev else "", "description": ev.description if ev else "",
-            "reminder": ev.reminder if ev else self.cfg.get("default_reminder", 10), "rrule": ev.rrule if ev else "",
+            "reminder": ev.reminder if ev else self.cfg.get("default_reminder", 10), "rrule": (ev.rrule or getattr(ev, "series_rule", "")) if ev and scope != "this" else "",
+            "gevent": ev if ev is not None and is_google(ev) else None, "scope": scope,
             "cal": getattr(ev, "cal_url", None) if ev else (self.cfg.get("default_calendar") or writable[0][1]),
         }
         if state["cal"] not in [u for _, u in writable]:
@@ -1170,7 +1225,10 @@ class Main(QtWidgets.QMainWindow):
         cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
         right.addWidget(row(cal_name, _("calendar"), click=self._pick_calendar))
         right.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
-        right.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
+        if st.get("scope") == "this":
+            right.addWidget(row(_("part of a series"), _("repeat")))
+        else:
+            right.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
         right.addWidget(row(st["location"] or _("location"), _("location") if st["location"] else None, click=lambda: self._prompt("location", _("location"))))
         right.addWidget(row((st["description"][:80] + "…") if len(st["description"]) > 80 else (st["description"] or _("description")), _("description") if st["description"] else None, click=lambda: self._prompt("description", _("description"), True)))
         right.addStretch(1)
@@ -1242,12 +1300,18 @@ class Main(QtWidgets.QMainWindow):
             start, end = st["start"], st["end"]
             if end <= start: self.status.setText(_("the end is before the start")); return
         keep = []
-        if st["href"]:
+        if st["href"] and st.get("gevent") is None:
             src = next((o.event for o in self.occs if o.event.href == st["href"]), None)
             if src:
                 keep = [l for l in src.lines if l.split(":", 1)[0].split(";", 1)[0].upper() in ("EXDATE", "CREATED", "SEQUENCE", "CLASS", "STATUS", "TRANSP", "CATEGORIES")]
         kw = dict(summary=st["summary"], start=start, end=end, all_day=st["all_day"], location=st["location"], description=st["description"], rrule=st["rrule"], reminder=st["reminder"], keep_lines=keep)
         self.status.setText(_("saving…"))
+        if st.get("gevent") is not None:
+            google = self.google_client()
+            self.run(lambda: google.update(st["gevent"], **kw), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
+        if not st["href"] and st["cal"].startswith(gc.PREFIX):
+            google = self.google_client()
+            self.run(lambda: google.create(st["cal"], **kw), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
         if st["href"]:
             fn = lambda: self.client.put(st["href"], ce.build_ics(st["uid"], **kw), etag=st["etag"])
         else:

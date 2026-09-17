@@ -42,16 +42,32 @@ Two roads. The simple one: in Google Calendar, a calendar's settings › Integra
 "Secret address in iCal format", pasted in the ⚙ dialog as a feed (`name | address`); Google
 refreshes that address every few hours, and the calendar is read-only.
 
-The direct one, since 1.7.0: your own Google account, through Google's API and OAuth. It takes an
-OAuth client of your own — Google issues none for a program like this — made once in the
-[Google Cloud console](https://console.cloud.google.com): new project › APIs & Services › enable
-the *Google Calendar API* › OAuth consent screen (external, left in testing, yourself as a test
-user) › Credentials › OAuth client ID, type *Desktop app*. Copy the client ID and the client
-secret into the ⚙ dialog and press *connect the Google account*: the browser opens Google's
-consent page and comes back by itself to a page this program serves on 127.0.0.1 for a moment.
-All the calendars of the account then appear, read-only, up to date at every sync; the refresh
-token is kept in the configuration file (mode 0600) and can be forgotten from the same dialog.
-The permission asked is *calendar.readonly*: the program can read, never write.
+The direct one: your own Google account, through Google's Calendar API and OAuth, **read and
+write since 1.9.0**. It takes an OAuth client of your own — Google issues none for a program like
+this — made once in the [Google Cloud console](https://console.cloud.google.com): new project ›
+APIs & Services › enable the *Google Calendar API* › OAuth consent screen (external, yourself as a
+test user) › Credentials › OAuth client ID, type *Desktop app*. Then, on the consent screen,
+**Publish app**: left "in testing", Google makes the connection expire every 7 days. Published but
+unverified is fine for your own use; Google shows "Google hasn't verified this app" once, pass it
+with Advanced › continue. Copy the client ID and the client secret into the ⚙ dialog and press
+*connect the Google account*: the browser opens Google's consent page and comes back by itself to
+a page this program serves on 127.0.0.1 for a moment. The refresh token is kept in the
+configuration file (mode 0600) and can be forgotten from the same dialog. The permission asked is
+*calendar* (read and write).
+
+The account's calendars then work like the CalDAV ones: create, edit, drag to move, delete. The
+calendars you may only read (shared with you, holidays…) stay read-only. For an occurrence of a
+repeating event the program asks, as Google Calendar does, whether to change **only this event**
+or **the whole series**. Every change follows Google's own recipe — read the event, change what
+the form holds, write it back guarded by its etag — so guests, colours and meeting links stay
+as they were, and an event changed meanwhile on the phone is not overwritten: the program says
+so and shows Google's version. Guests are not e-mailed about changes. An account connected with
+1.7 or 1.8 was granted read-only access: forget it and connect again to write.
+
+Why the Calendar API and not Google's CalDAV endpoint: both need the same OAuth client, but
+Google's CalDAV has no calendar list (each calendar is addressed by its ID) and no notion of
+"only this occurrence" beyond raw iCalendar exceptions, while the API lists the calendars with
+your rights on each, expands repeating events on Google's side and guards every write with etags.
 
 Other `.ics` feeds work the same way as Google's secret address.
 
