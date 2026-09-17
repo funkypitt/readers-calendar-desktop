@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.6.0_all.deb
+sudo apt install ./readers-calendar_1.9.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -70,6 +70,17 @@ Google's CalDAV has no calendar list (each calendar is addressed by its ID) and 
 your rights on each, expands repeating events on Google's side and guards every write with etags.
 
 Other `.ics` feeds work the same way as Google's secret address.
+
+## A new computer
+
+The account dialog, or the settings page › *export credentials…* writes the accounts (CalDAV server and login, the feeds, and the Google connection with its OAuth client) into a JSON file. Reader's
+Calendar, Tasks and Notes can all write into the same file, each in its own section. On the new
+computer, *import credentials…* at the same place brings them back — or, before the first
+window, `readers-calendar --import-credentials readers-credentials.json` (and `--export-credentials FILE` the
+other way). The look (colours, text size, font) stays out of it.
+
+The file holds your passwords in clear and is written readable by you only: carry it on a USB key
+or in your own cloud folder, not by e-mail, and delete it once imported.
 
 ## Use
 
