@@ -165,6 +165,8 @@ class Google:
             page = self._get("/users/me/calendarList", pageToken=token) if token else self._get("/users/me/calendarList")
             for c in page.get("items", []):
                 if c.get("selected", True) or c.get("primary"):
+                    if c.get("backgroundColor"):
+                        ce.COLORS[PREFIX + c["id"]] = c["backgroundColor"]
                     out.append((c.get("summaryOverride") or c.get("summary") or c["id"], PREFIX + c["id"], write and c.get("accessRole") in ("owner", "writer")))
             token = page.get("nextPageToken")
             if not token:

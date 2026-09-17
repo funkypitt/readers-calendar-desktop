@@ -5,6 +5,7 @@ expansion, create, update, delete. Plain HTTP (requests) and python-dateutil for
 import os
 import re
 import uuid
+import zlib
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
@@ -13,7 +14,17 @@ from zoneinfo import ZoneInfo
 import requests
 from dateutil.rrule import rrulestr
 
-NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav"}
+NS = {"d": "DAV:", "c": "urn:ietf:params:xml:ns:caldav", "x": "http://apple.com/ns/ical/"}
+
+# A calendar's colour as its server gives it (Google's backgroundColor, CalDAV calendar-color),
+# filled while the calendars are listed; color_of() falls back on a quiet palette.
+COLORS = {}
+PALETTE = ["#7986cb", "#33b679", "#e67c73", "#f6bf26", "#8e24aa", "#039be5", "#f4511e", "#616161", "#0b8043", "#3f51b5"]
+
+
+def color_of(url):
+    c = COLORS.get(url)
+    return c if c else PALETTE[zlib.crc32((url or "").encode()) % len(PALETTE)]
 
 
 def _local_zone():
@@ -298,7 +309,7 @@ class CalDAV:
         return r
 
     def _propfind(self, url, props, depth):
-        body = ('<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop>'
+        body = ('<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav" xmlns:x="http://apple.com/ns/ical/"><d:prop>'
                 + "".join(f"<{p}/>" for p in props) + "</d:prop></d:propfind>")
         return ET.fromstring(self._req("PROPFIND", url, body, depth).content)
 
@@ -322,7 +333,7 @@ class CalDAV:
             pass
         candidates.append(self.base)
         for home in candidates:
-            root = self._propfind(home, ["d:displayname", "d:resourcetype", "c:supported-calendar-component-set", "d:current-user-privilege-set"], 1)
+            root = self._propfind(home, ["d:displayname", "d:resourcetype", "c:supported-calendar-component-set", "d:current-user-privilege-set", "x:calendar-color"], 1)
             out = []
             for resp in root.findall("d:response", NS):
                 href = resp.find("d:href", NS)
@@ -337,6 +348,9 @@ class CalDAV:
                 privs = resp.find(".//d:current-user-privilege-set", NS)
                 writable = privs is None or privs.find(".//d:write", NS) is not None or privs.find(".//d:all", NS) is not None or privs.find(".//d:write-content", NS) is not None
                 url = urljoin(self.base, href.text.strip())
+                color = resp.find(".//x:calendar-color", NS)
+                if color is not None and color.text and color.text.strip().startswith("#") and len(color.text.strip()) >= 7:
+                    COLORS[url] = color.text.strip()[:7]      # #RRGGBBAA → #RRGGBB
                 out.append((name or urlparse(url).path.rstrip("/").split("/")[-1], url, writable))
             if out:
                 return out

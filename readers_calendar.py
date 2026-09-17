@@ -8,6 +8,7 @@ import calendar
 import json
 import os
 import sys
+import unicodedata
 from datetime import date, datetime, timedelta
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -35,7 +36,7 @@ _TR = {
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
-        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "move the whole series": "déplacer toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable", "Google: the event changed elsewhere — shown again as it is now": "Google : l'événement a changé ailleurs — le voici tel qu'il est maintenant", "move only this event": "déplacer seulement cet événement", "edit only this event": "modifier seulement cet événement", "edit the whole series": "modifier toute la série", "delete only this event": "supprimer seulement cet événement", "part of a series": "fait partie d'une série", "this calendar is read-only": "cet agenda est en lecture seule", "Google: connect the account again (Ctrl+,) to edit its events": "Google : reconnectez le compte (Ctrl+,) pour modifier ses événements", "connected read-only — forget, then connect again to edit": "connecté en lecture seule — oubliez, puis reconnectez pour modifier", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Agenda, lecture et écriture, avec votre propre client OAuth : console.cloud.google.com › nouveau projet › API et services › activer\nl'API Google Calendar › écran de consentement OAuth (externe, vous-même comme testeur, puis Publier l'application : en mode Test, Google\ndemande de reconnecter tous les 7 jours) › Identifiants › ID client OAuth, type Application de bureau. Copiez l'ID et le secret ici, puis\nconnectez : le navigateur s'ouvre sur Google (« Google n'a pas validé cette application » : Paramètres avancés › continuer — c'est votre\npropre client) et revient tout seul.",
+        "repeats": "se répète", "repeats (custom rule)": "se répète (règle personnalisée)", " · read-only": " · lecture seule", "← back": "← retour", "edit": "modifier", "delete": "supprimer", " the whole series": " toute la série", "move the whole series": "déplacer toute la série", "deleting…": "suppression…", "this event comes from a read-only feed": "cet événement vient d'un flux en lecture seule", "no writable calendar": "aucun agenda modifiable", "%1 feeds": "%1 flux", "accounts": "comptes", "at set times": "à heures fixes", "black on white": "noir sur blanc", "white on black": "blanc sur noir", "colours": "couleurs", "default calendar": "agenda par défaut", "default reminder": "rappel par défaut", "ends another day": "se termine un autre jour", "first day of the week": "premier jour de la semaine", "look": "apparence", "monday": "lundi", "sunday": "dimanche", "month": "mois", "no event found": "aucun événement trouvé", "past": "passés", "upcoming": "à venir", "read only": "lecture seule", "search": "chercher", "search events: title, place, notes": "chercher un événement : titre, lieu, notes", "searching further…": "recherche plus loin…", "settings": "réglages", "sync now": "synchroniser", "text size": "taille du texte", "time": "heure", "← cancel": "← annuler", "Google: the event changed elsewhere — shown again as it is now": "Google : l'événement a changé ailleurs — le voici tel qu'il est maintenant", "move only this event": "déplacer seulement cet événement", "edit only this event": "modifier seulement cet événement", "edit the whole series": "modifier toute la série", "delete only this event": "supprimer seulement cet événement", "part of a series": "fait partie d'une série", "this calendar is read-only": "cet agenda est en lecture seule", "Google: connect the account again (Ctrl+,) to edit its events": "Google : reconnectez le compte (Ctrl+,) pour modifier ses événements", "connected read-only — forget, then connect again to edit": "connecté en lecture seule — oubliez, puis reconnectez pour modifier", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Agenda, lecture et écriture, avec votre propre client OAuth : console.cloud.google.com › nouveau projet › API et services › activer\nl'API Google Calendar › écran de consentement OAuth (externe, vous-même comme testeur, puis Publier l'application : en mode Test, Google\ndemande de reconnecter tous les 7 jours) › Identifiants › ID client OAuth, type Application de bureau. Copiez l'ID et le secret ici, puis\nconnectez : le navigateur s'ouvre sur Google (« Google n'a pas validé cette application » : Paramètres avancés › continuer — c'est votre\npropre client) et revient tout seul.",
         "title": "titre", "all day: ": "toute la journée : ", "on": "oui", "off": "non", "starts": "début", "start time": "heure de début", "ends": "fin", "end time": "heure de fin", "calendar": "agenda", "reminder": "rappel", "repeat": "répétition", "location": "lieu", "description": "description",
         "save": "enregistrer", "the end is before the start": "la fin est avant le début", "saving…": "enregistrement…", "start time (hh:mm)": "heure de début (hh:mm)", "end time (hh:mm)": "heure de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
@@ -45,7 +46,7 @@ _TR = {
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
-        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender", "Google: the event changed elsewhere — shown again as it is now": "Google: der Termin wurde anderswo geändert — hier sein aktueller Stand", "move only this event": "nur diesen Termin verschieben", "edit only this event": "nur diesen Termin bearbeiten", "edit the whole series": "die ganze Serie bearbeiten", "delete only this event": "nur diesen Termin löschen", "part of a series": "Teil einer Serie", "this calendar is read-only": "dieser Kalender ist schreibgeschützt", "Google: connect the account again (Ctrl+,) to edit its events": "Google: Konto erneut verbinden (Strg+,), um Termine zu bearbeiten", "connected read-only — forget, then connect again to edit": "nur lesend verbunden — vergessen, dann erneut verbinden, um zu bearbeiten", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Kalender, lesen und schreiben, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, Sie selbst als Tester, dann App veröffentlichen: im Testmodus verlangt Google alle 7 Tage\neine neue Verbindung) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App. ID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet\nGoogle („Google hat diese App nicht überprüft“: Erweitert › weiter — es ist Ihr eigener Client) und kommt von selbst zurück.",
+        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender", "%1 feeds": "%1 Feeds", "accounts": "Konten", "at set times": "mit Uhrzeit", "black on white": "Schwarz auf Weiß", "white on black": "Weiß auf Schwarz", "colours": "Farben", "default calendar": "Standardkalender", "default reminder": "Standarderinnerung", "ends another day": "endet an einem anderen Tag", "first day of the week": "erster Tag der Woche", "look": "Aussehen", "monday": "Montag", "sunday": "Sonntag", "month": "Monat", "no event found": "kein Termin gefunden", "past": "vergangen", "upcoming": "bevorstehend", "read only": "nur lesen", "search": "suchen", "search events: title, place, notes": "Termine suchen: Titel, Ort, Notizen", "searching further…": "suche weiter…", "settings": "Einstellungen", "sync now": "jetzt synchronisieren", "text size": "Textgröße", "time": "Uhrzeit", "← cancel": "← abbrechen", "Google: the event changed elsewhere — shown again as it is now": "Google: der Termin wurde anderswo geändert — hier sein aktueller Stand", "move only this event": "nur diesen Termin verschieben", "edit only this event": "nur diesen Termin bearbeiten", "edit the whole series": "die ganze Serie bearbeiten", "delete only this event": "nur diesen Termin löschen", "part of a series": "Teil einer Serie", "this calendar is read-only": "dieser Kalender ist schreibgeschützt", "Google: connect the account again (Ctrl+,) to edit its events": "Google: Konto erneut verbinden (Strg+,), um Termine zu bearbeiten", "connected read-only — forget, then connect again to edit": "nur lesend verbunden — vergessen, dann erneut verbinden, um zu bearbeiten", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Kalender, lesen und schreiben, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, Sie selbst als Tester, dann App veröffentlichen: im Testmodus verlangt Google alle 7 Tage\neine neue Verbindung) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App. ID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet\nGoogle („Google hat diese App nicht überprüft“: Erweitert › weiter — es ist Ihr eigener Client) und kommt von selbst zurück.",
         "title": "Titel", "all day: ": "ganztägig: ", "on": "an", "off": "aus", "starts": "beginnt", "start time": "Beginn", "ends": "endet", "end time": "Ende", "calendar": "Kalender", "reminder": "Erinnerung", "repeat": "Wiederholung", "location": "Ort", "description": "Beschreibung",
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
@@ -55,7 +56,7 @@ _TR = {
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
-        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable", "Google: the event changed elsewhere — shown again as it is now": "Google: el evento cambió en otro lugar — se muestra tal como está ahora", "move only this event": "mover solo este evento", "edit only this event": "editar solo este evento", "edit the whole series": "editar toda la serie", "delete only this event": "eliminar solo este evento", "part of a series": "parte de una serie", "this calendar is read-only": "este calendario es de solo lectura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: vuelva a conectar la cuenta (Ctrl+,) para editar sus eventos", "connected read-only — forget, then connect again to edit": "conectada en solo lectura — olvídela y vuelva a conectarla para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, lectura y escritura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, usted como probador, luego Publicar la app: en pruebas, Google pide\nreconectar cada 7 días) › Credenciales › ID de cliente OAuth, tipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el\nnavegador abre Google («Google no ha verificado esta app»: Avanzado › continuar — es su propio cliente) y vuelve solo.",
+        "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable", "%1 feeds": "%1 feeds", "accounts": "cuentas", "at set times": "con hora", "black on white": "negro sobre blanco", "white on black": "blanco sobre negro", "colours": "colores", "default calendar": "calendario predeterminado", "default reminder": "recordatorio predeterminado", "ends another day": "termina otro día", "first day of the week": "primer día de la semana", "look": "aspecto", "monday": "lunes", "sunday": "domingo", "month": "mes", "no event found": "ningún evento encontrado", "past": "pasados", "upcoming": "próximos", "read only": "solo lectura", "search": "buscar", "search events: title, place, notes": "buscar eventos: título, lugar, notas", "searching further…": "buscando más lejos…", "settings": "ajustes", "sync now": "sincronizar ahora", "text size": "tamaño del texto", "time": "hora", "← cancel": "← cancelar", "Google: the event changed elsewhere — shown again as it is now": "Google: el evento cambió en otro lugar — se muestra tal como está ahora", "move only this event": "mover solo este evento", "edit only this event": "editar solo este evento", "edit the whole series": "editar toda la serie", "delete only this event": "eliminar solo este evento", "part of a series": "parte de una serie", "this calendar is read-only": "este calendario es de solo lectura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: vuelva a conectar la cuenta (Ctrl+,) para editar sus eventos", "connected read-only — forget, then connect again to edit": "conectada en solo lectura — olvídela y vuelva a conectarla para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, lectura y escritura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, usted como probador, luego Publicar la app: en pruebas, Google pide\nreconectar cada 7 días) › Credenciales › ID de cliente OAuth, tipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el\nnavegador abre Google («Google no ha verificado esta app»: Avanzado › continuar — es su propio cliente) y vuelve solo.",
         "title": "título", "all day: ": "todo el día: ", "on": "sí", "off": "no", "starts": "empieza", "start time": "hora de inicio", "ends": "termina", "end time": "hora de fin", "calendar": "calendario", "reminder": "recordatorio", "repeat": "repetición", "location": "lugar", "description": "descripción",
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
@@ -65,7 +66,7 @@ _TR = {
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
-        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "move the whole series": "mover toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável", "Google: the event changed elsewhere — shown again as it is now": "Google: o evento mudou noutro lado — mostrado tal como está agora", "move only this event": "mover só este evento", "edit only this event": "editar só este evento", "edit the whole series": "editar toda a série", "delete only this event": "apagar só este evento", "part of a series": "parte de uma série", "this calendar is read-only": "este calendário é só de leitura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: ligue a conta de novo (Ctrl+,) para editar os eventos", "connected read-only — forget, then connect again to edit": "ligada só de leitura — esqueça e ligue de novo para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, leitura e escrita, com o seu próprio cliente OAuth: console.cloud.google.com › novo projeto › APIs e serviços › ativar a\nAPI Google Calendar › ecrã de consentimento OAuth (externo, você como testador, depois Publicar a app: em teste, o Google pede nova\nligação a cada 7 dias) › Credenciais › ID de cliente OAuth, tipo Aplicação de computador. Copie o ID e o segredo aqui e ligue: o navegador\nabre o Google («A Google não validou esta app»: Avançadas › continuar — é o seu próprio cliente) e volta sozinho.",
+        "repeats": "repete-se", "repeats (custom rule)": "repete-se (regra personalizada)", " · read-only": " · só leitura", "← back": "← voltar", "edit": "editar", "delete": "apagar", " the whole series": " toda a série", "move the whole series": "mover toda a série", "deleting…": "a apagar…", "this event comes from a read-only feed": "este evento vem de um feed só de leitura", "no writable calendar": "nenhum calendário editável", "%1 feeds": "%1 feeds", "accounts": "contas", "at set times": "com hora", "black on white": "preto sobre branco", "white on black": "branco sobre preto", "colours": "cores", "default calendar": "calendário predefinido", "default reminder": "lembrete predefinido", "ends another day": "termina noutro dia", "first day of the week": "primeiro dia da semana", "look": "aspeto", "monday": "segunda-feira", "sunday": "domingo", "month": "mês", "no event found": "nenhum evento encontrado", "past": "passados", "upcoming": "próximos", "read only": "só leitura", "search": "procurar", "search events: title, place, notes": "procurar eventos: título, local, notas", "searching further…": "a procurar mais longe…", "settings": "definições", "sync now": "sincronizar agora", "text size": "tamanho do texto", "time": "hora", "← cancel": "← cancelar", "Google: the event changed elsewhere — shown again as it is now": "Google: o evento mudou noutro lado — mostrado tal como está agora", "move only this event": "mover só este evento", "edit only this event": "editar só este evento", "edit the whole series": "editar toda a série", "delete only this event": "apagar só este evento", "part of a series": "parte de uma série", "this calendar is read-only": "este calendário é só de leitura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: ligue a conta de novo (Ctrl+,) para editar os eventos", "connected read-only — forget, then connect again to edit": "ligada só de leitura — esqueça e ligue de novo para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, leitura e escrita, com o seu próprio cliente OAuth: console.cloud.google.com › novo projeto › APIs e serviços › ativar a\nAPI Google Calendar › ecrã de consentimento OAuth (externo, você como testador, depois Publicar a app: em teste, o Google pede nova\nligação a cada 7 dias) › Credenciais › ID de cliente OAuth, tipo Aplicação de computador. Copie o ID e o segredo aqui e ligue: o navegador\nabre o Google («A Google não validou esta app»: Avançadas › continuar — é o seu próprio cliente) e volta sozinho.",
         "title": "título", "all day: ": "todo o dia: ", "on": "sim", "off": "não", "starts": "começa", "start time": "hora de início", "ends": "termina", "end time": "hora de fim", "calendar": "calendário", "reminder": "lembrete", "repeat": "repetição", "location": "local", "description": "descrição",
         "save": "guardar", "the end is before the start": "o fim é anterior ao início", "saving…": "a guardar…", "start time (hh:mm)": "hora de início (hh:mm)", "end time (hh:mm)": "hora de fim (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
@@ -75,7 +76,7 @@ _TR = {
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
-        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи", "Google: the event changed elsewhere — shown again as it is now": "Google: событие изменено в другом месте — показано в текущем виде", "move only this event": "перенести только это событие", "edit only this event": "изменить только это событие", "edit the whole series": "изменить всю серию", "delete only this event": "удалить только это событие", "part of a series": "часть серии", "this calendar is read-only": "этот календарь только для чтения", "Google: connect the account again (Ctrl+,) to edit its events": "Google: подключите аккаунт заново (Ctrl+,), чтобы изменять события", "connected read-only — forget, then connect again to edit": "подключён только для чтения — забудьте и подключите заново, чтобы изменять", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Календарь, чтение и запись, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, вы как тестировщик, затем «Опубликовать приложение»: в режиме тестирования Google\nпросит подключаться заново каждые 7 дней) › Учётные данные › идентификатор клиента OAuth, тип «Компьютерное приложение». Вставьте ID и\nсекрет сюда и подключите: браузер откроет Google («Google не проверил это приложение»: Дополнительно › продолжить — это ваш собственный\nклиент) и вернётся сам.",
+        "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи", "%1 feeds": "лент: %1", "accounts": "аккаунты", "at set times": "по времени", "black on white": "чёрным по белому", "white on black": "белым по чёрному", "colours": "цвета", "default calendar": "календарь по умолчанию", "default reminder": "напоминание по умолчанию", "ends another day": "заканчивается в другой день", "first day of the week": "первый день недели", "look": "вид", "monday": "понедельник", "sunday": "воскресенье", "month": "месяц", "no event found": "событий не найдено", "past": "прошедшие", "upcoming": "предстоящие", "read only": "только чтение", "search": "поиск", "search events: title, place, notes": "поиск событий: название, место, заметки", "searching further…": "ищу дальше…", "settings": "настройки", "sync now": "синхронизировать", "text size": "размер текста", "time": "время", "← cancel": "← отмена", "Google: the event changed elsewhere — shown again as it is now": "Google: событие изменено в другом месте — показано в текущем виде", "move only this event": "перенести только это событие", "edit only this event": "изменить только это событие", "edit the whole series": "изменить всю серию", "delete only this event": "удалить только это событие", "part of a series": "часть серии", "this calendar is read-only": "этот календарь только для чтения", "Google: connect the account again (Ctrl+,) to edit its events": "Google: подключите аккаунт заново (Ctrl+,), чтобы изменять события", "connected read-only — forget, then connect again to edit": "подключён только для чтения — забудьте и подключите заново, чтобы изменять", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Календарь, чтение и запись, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, вы как тестировщик, затем «Опубликовать приложение»: в режиме тестирования Google\nпросит подключаться заново каждые 7 дней) › Учётные данные › идентификатор клиента OAuth, тип «Компьютерное приложение». Вставьте ID и\nсекрет сюда и подключите: браузер откроет Google («Google не проверил это приложение»: Дополнительно › продолжить — это ваш собственный\nклиент) и вернётся сам.",
         "title": "название", "all day: ": "весь день: ", "on": "вкл", "off": "выкл", "starts": "начало", "start time": "время начала", "ends": "конец", "end time": "время окончания", "calendar": "календарь", "reminder": "напоминание", "repeat": "повтор", "location": "место", "description": "описание",
         "save": "сохранить", "the end is before the start": "конец раньше начала", "saving…": "сохранение…", "start time (hh:mm)": "время начала (чч:мм)", "end time (hh:mm)": "время окончания (чч:мм)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Календари CalDAV. Infomaniak: https://sync.infomaniak.com, имя вида AB12345,\nпароль приложения при двухфакторной аутентификации. Nextcloud, Radicale… тоже подходят.",
@@ -119,6 +120,16 @@ def save_config(cfg):
     os.replace(tmp, CONFIG_FILE)
 
 
+def add_months(d, n):
+    y, m = divmod(d.month - 1 + n, 12)
+    return date(d.year + y, m + 1, 1)
+
+
+def urlhost(url):
+    from urllib.parse import urlparse
+    return urlparse(url).netloc or url
+
+
 def day_label(d, today):
     base = d.strftime("%A %-d %B").lower()
     if d == today:
@@ -126,6 +137,110 @@ def day_label(d, today):
     if d == today + timedelta(days=1):
         return _("tomorrow · ") + base
     return base if d.year == today.year else base + f" {d.year}"
+
+
+class Dot(QtWidgets.QWidget):
+    """The calendar's colour, small: filled when the calendar is shown, a ring when hidden."""
+    def __init__(self, color, filled=True, size=10):
+        super().__init__(); self.color, self.filled = QtGui.QColor(color), filled; self.setFixedSize(size + 2, size + 2)
+
+    def paintEvent(self, e):
+        p = QtGui.QPainter(self); p.setRenderHint(QtGui.QPainter.Antialiasing)
+        r = QtCore.QRectF(1, 1, self.width() - 2, self.height() - 2)
+        if self.filled:
+            p.setPen(QtCore.Qt.NoPen); p.setBrush(self.color)
+        else:
+            p.setPen(QtGui.QPen(self.color, 1.5)); p.setBrush(QtCore.Qt.NoBrush); r.adjust(1, 1, -1, -1)
+        p.drawEllipse(r)
+
+
+def paint_dot(p, center, event, block_color):
+    """A discreet dot of the calendar's colour in a corner of an event block, ringed with the
+    page colour so it reads on a black block as on a white one."""
+    p.save(); p.setRenderHint(QtGui.QPainter.Antialiasing)
+    ring = QtGui.QColor(block_color); ring = QtGui.QColor(255 - ring.red(), 255 - ring.green(), 255 - ring.blue())
+    p.setPen(QtGui.QPen(ring, 1.2)); p.setBrush(QtGui.QColor(ce.color_of(getattr(event, "cal_url", ""))))
+    p.drawEllipse(center, 3.6, 3.6)
+    p.restore()
+
+
+FAMILIES = {"sans": ["Roboto", "Inter", "Noto Sans", "Open Sans", "Lato", "Fira Sans", "DejaVu Sans"],
+            "serif": ["Literata", "Noto Serif", "Source Serif 4", "EB Garamond", "DejaVu Serif"],
+            "mono": ["Roboto Mono", "Noto Sans Mono", "Fira Mono", "DejaVu Sans Mono"]}
+
+
+def pick_family(choice):
+    """The first installed face of the choice: Roboto Light as on the phone when it is there."""
+    db = QtGui.QFontDatabase(); have = set(db.families()); names = [f for f in FAMILIES.get(choice, FAMILIES["sans"]) if f in have]
+    if choice not in ("serif", "mono"):
+        # the phone's text is a Light face: prefer a family that has one
+        light = [f for f in names if any(st in ("Light", "Light Regular") for st in db.styles(f))]
+        names = light + names
+    return names[0] if names else {"serif": "serif", "mono": "monospace"}.get(choice, "sans-serif")
+
+
+def fold(text):
+    """Lower case without accents, for search: "reunion" finds "Réunion"."""
+    return "".join(c for c in unicodedata.normalize("NFKD", text or "") if not unicodedata.combining(c)).lower()
+
+
+class Magnifier(QtWidgets.QWidget):
+    """A loupe drawn in the text colour: a ring and its handle."""
+    def __init__(self, size=18):
+        super().__init__(); self.setFixedSize(size, size)
+
+    def paintEvent(self, e):
+        p = QtGui.QPainter(self); p.setRenderHint(QtGui.QPainter.Antialiasing)
+        c = self.palette().color(QtGui.QPalette.WindowText); s = self.width()
+        p.setPen(QtGui.QPen(c, max(1.6, s / 10), cap=QtCore.Qt.RoundCap)); p.setBrush(QtCore.Qt.NoBrush)
+        r = s * 0.62; p.drawEllipse(QtCore.QRectF(1.5, 1.5, r, r))
+        p.drawLine(QtCore.QPointF(1.5 + r * 0.86, 1.5 + r * 0.86), QtCore.QPointF(s - 2, s - 2))
+
+
+def void(fn):
+    """Call fn for its effect: an event handler returning a value makes PyQt complain."""
+    fn()
+
+
+def page_header(title_widgets, right_widgets=()):
+    """The top of a page, as on the phone: quiet words on the left, actions on the right, a
+    hairline under them."""
+    w = QtWidgets.QWidget(); v = QtWidgets.QVBoxLayout(w); v.setContentsMargins(0, 0, 0, 14); v.setSpacing(12)
+    h = QtWidgets.QHBoxLayout(); h.setSpacing(26)
+    for x in title_widgets: h.addWidget(x)
+    h.addStretch(1)
+    for x in right_widgets: h.addWidget(x)
+    v.addLayout(h)
+    sep = QtWidgets.QFrame(); sep.setObjectName("sep"); sep.setFixedHeight(1); v.addWidget(sep)
+    return w
+
+
+def link(text, fn, obj=None, tip=None):
+    l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e: void(fn)
+    if obj: l.setObjectName(obj)
+    if tip: l.setToolTip(tip)
+    return l
+
+
+def column(max_width=720):
+    """A reading column: content no wider than a page of text, left-aligned in the space."""
+    host = QtWidgets.QWidget(); host.setMaximumWidth(max_width)
+    lay = QtWidgets.QVBoxLayout(host); lay.setContentsMargins(0, 0, 0, 0); lay.setSpacing(0)
+    return host, lay
+
+
+def rule_line(top=10, bottom=10):
+    box = QtWidgets.QWidget(); v = QtWidgets.QVBoxLayout(box); v.setContentsMargins(0, top, 0, bottom)
+    sep = QtWidgets.QFrame(); sep.setObjectName("sep"); sep.setFixedHeight(1); v.addWidget(sep)
+    return box
+
+
+def dotted_row(color, content):
+    """A row with its calendar's dot in the margin, on the first line."""
+    line = QtWidgets.QWidget(); hl = QtWidgets.QHBoxLayout(line); hl.setContentsMargins(0, 0, 0, 0); hl.setSpacing(12)
+    dot = Dot(color, size=9); holder = QtWidgets.QVBoxLayout(); holder.setContentsMargins(0, 16, 0, 0); holder.addWidget(dot); holder.addStretch(1)
+    hl.addLayout(holder); hl.addWidget(content, 1)
+    return line
 
 
 def is_google(ev):
@@ -279,6 +394,129 @@ def weekend_strip(x0, total_w):
     return x0 + total_w - STRIP_W, STRIP_W
 
 
+class MonthBoard(QtWidgets.QWidget):
+    """The month as the phone draws it: six weeks, each day a cell with its number and the lines
+    of its events (a dot of the calendar's colour, the time when there is room, the title); an
+    all-day event is a solid bar. Click a line: the event; click a day: that day's grid; double
+    click: a new event that day; drag a line to another day to move the event."""
+    day_clicked = QtCore.pyqtSignal(object)
+    new_on_day = QtCore.pyqtSignal(object)
+    event_clicked = QtCore.pyqtSignal(object)
+    event_moved = QtCore.pyqtSignal(object, int, int)
+    HEAD = 30
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.month = date.today().replace(day=1); self.occs = []; self.week_monday = True
+        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
+        self._lines = []; self._cells = []; self._press = None; self._target = None
+        self.setMinimumHeight(420)
+
+    def set_colors(self, fg, bg):
+        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
+
+    def set_data(self, month, occs, week_monday=True):
+        self.month, self.occs, self.week_monday = month.replace(day=1), occs, week_monday; self.update()
+
+    def first_day(self):
+        first = 0 if self.week_monday else 6
+        return self.month - timedelta(days=(self.month.weekday() - first) % 7)
+
+    @staticmethod
+    def on_day(o, d):
+        last = (o.end - timedelta(seconds=1)).date() if o.end > o.start else o.start.date()
+        return o.start.date() <= d <= last
+
+    def paintEvent(self, e):
+        p = QtGui.QPainter(self); p.setRenderHint(QtGui.QPainter.Antialiasing)
+        w, h = self.width(), self.height(); head = self.HEAD
+        cw = w / 7; ch = (h - head) / 6
+        dim = QtGui.QColor(self.fg); dim.setAlphaF(0.55)
+        rule = QtGui.QColor(self.fg); rule.setAlphaF(0.18)
+        base = QtGui.QFont(self.font())
+        small = QtGui.QFont(base); small.setPointSizeF(base.pointSizeF() * 0.82)
+        fm, fs = QtGui.QFontMetrics(base), QtGui.QFontMetrics(small)
+        start = self.first_day(); today = date.today()
+        self._lines = []; self._cells = []
+        p.setFont(small); p.setPen(dim)
+        for i in range(7):
+            p.drawText(QtCore.QRectF(i * cw + 8, 0, cw - 16, head), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, (start + timedelta(days=i)).strftime("%a").lower())
+        p.setPen(QtGui.QPen(rule, 1))
+        for r in range(7):
+            y = head + r * ch; p.drawLine(QtCore.QPointF(0, y), QtCore.QPointF(w, y))
+        for c in range(1, 7):
+            p.drawLine(QtCore.QPointF(c * cw, head), QtCore.QPointF(c * cw, h))
+        lh = fs.height() + 3
+        for r in range(6):
+            for c in range(7):
+                d = start + timedelta(days=r * 7 + c)
+                cell = QtCore.QRectF(c * cw, head + r * ch, cw, ch)
+                self._cells.append((cell, d))
+                num = QtCore.QRectF(cell.left() + 6, cell.top() + 5, fm.horizontalAdvance("00") + 10, fm.height() + 2)
+                p.setFont(base)
+                if d == today:
+                    p.fillRect(num, self.fg); p.setPen(self.bg)
+                else:
+                    p.setPen(self.fg if d.month == self.month.month else dim)
+                p.drawText(num, QtCore.Qt.AlignCenter, str(d.day))
+                if self._target is not None and self._target == d:
+                    p.setPen(QtGui.QPen(self.fg, 1.5)); p.setBrush(QtCore.Qt.NoBrush); p.drawRect(cell.adjusted(1.5, 1.5, -1.5, -1.5))
+                items = sorted((o for o in self.occs if self.on_day(o, d)), key=lambda o: (not o.event.all_day, o.start))
+                top = num.bottom() + 4; room = int((cell.bottom() - top - 2) // lh)
+                shown = items if len(items) <= room else items[:max(0, room - 1)]
+                p.setFont(small)
+                wide = cw >= 150
+                for k, o in enumerate(shown):
+                    line = QtCore.QRectF(cell.left() + 4, top + k * lh, cw - 8, lh - 1)
+                    lifted = self._press is not None and self._press[0] is o and self._target is not None
+                    if o.event.all_day:
+                        p.fillRect(line, dim if lifted else self.fg); p.setPen(self.bg)
+                        paint_dot(p, QtCore.QPointF(line.left() + 7, line.center().y()), o.event, self.fg)
+                        text_rect = line.adjusted(15, 0, -3, 0)
+                    else:
+                        p.save(); p.setRenderHint(QtGui.QPainter.Antialiasing); p.setPen(QtCore.Qt.NoPen)
+                        p.setBrush(QtGui.QColor(ce.color_of(getattr(o.event, "cal_url", "")))); p.drawEllipse(QtCore.QPointF(line.left() + 5, line.center().y()), 3.2, 3.2); p.restore()
+                        p.setPen(dim if lifted else self.fg)
+                        text_rect = line.adjusted(13, 0, 0, 0)
+                    p.setFont(small)
+                    label = (fmt_time(o.start) + "  " if wide and not o.event.all_day and o.start.date() == d else "") + o.event.summary
+                    p.drawText(text_rect, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, fs.elidedText(label, QtCore.Qt.ElideRight, int(text_rect.width())))
+                    self._lines.append((line, o, d))
+                if len(shown) < len(items):
+                    p.setPen(dim)
+                    p.drawText(QtCore.QRectF(cell.left() + 17, top + len(shown) * lh, cw - 20, lh), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, f"+{len(items) - len(shown)}")
+
+    def _cell_at(self, pos):
+        return next((d for rect, d in self._cells if rect.contains(QtCore.QPointF(pos))), None)
+
+    def mousePressEvent(self, e):
+        hit = next(((o, d) for rect, o, d in reversed(self._lines) if rect.contains(QtCore.QPointF(e.pos()))), None)
+        self._press = (hit[0], hit[1], e.pos()) if hit else (None, self._cell_at(e.pos()), e.pos())
+
+    def mouseMoveEvent(self, e):
+        if self._press and self._press[0] is not None and (e.pos() - self._press[2]).manhattanLength() > 6:
+            self._target = self._cell_at(e.pos()); self.setCursor(QtCore.Qt.ClosedHandCursor); self.update()
+
+    def mouseReleaseEvent(self, e):
+        press, target = self._press, self._target
+        self._press = None; self._target = None; self.unsetCursor(); self.update()
+        if not press:
+            return
+        o, d, _ = press
+        if o is not None and target is not None:
+            if target != d:
+                self.event_moved.emit(o, (target - d).days, 0)
+        elif o is not None:
+            self.event_clicked.emit(o)
+        elif d is not None:
+            self.day_clicked.emit(d)
+
+    def mouseDoubleClickEvent(self, e):
+        d = self._cell_at(e.pos())
+        if d is not None and not any(rect.contains(QtCore.QPointF(e.pos())) for rect, _, _ in self._lines):
+            self.new_on_day.emit(d)
+
+
 class WeekHead(QtWidgets.QWidget):
     """Day headers and the all-day strip: stays put while the time grid scrolls."""
     event_clicked = QtCore.pyqtSignal(object)
@@ -343,7 +581,11 @@ class WeekHead(QtWidgets.QWidget):
                 if o.start.date() <= d < o.end.date():
                     rect = QtCore.QRectF(x, y, colw, 20).adjusted(2, 0, -2, 0)
                     p.fillRect(rect, self.fg); p.setPen(self.bg); p.setFont(small)
-                    p.drawText(rect.adjusted(4, 0, -4, 0), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, p.fontMetrics().elidedText(o.event.summary, QtCore.Qt.ElideRight, int(rect.width()) - 8))
+                    dot = rect.width() >= 30
+                    p.drawText(rect.adjusted(4, 0, -16 if dot else -4, 0), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, p.fontMetrics().elidedText(o.event.summary, QtCore.Qt.ElideRight, int(rect.width()) - (20 if dot else 8)))
+                    if dot:
+                        paint_dot(p, QtCore.QPointF(rect.right() - 8, rect.center().y()), o.event, self.fg)
+                        p.setFont(small)
                     self._boxes.append((rect, o)); y += 22
 
     day_clicked = QtCore.pyqtSignal(object)
@@ -451,10 +693,13 @@ class WeekGrid(QtWidgets.QWidget):
         # solid blocks: the white between them is the free time
         rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
         p.fillRect(rect, self.fg)
+        dot = rect.width() >= 22 and rect.height() >= 14
+        if dot:
+            paint_dot(p, QtCore.QPointF(rect.right() - 7, rect.top() + 7), o.event, self.fg)
         if frame:
             p.setPen(QtGui.QPen(self.bg, 1)); p.setBrush(QtCore.Qt.NoBrush); p.drawRect(rect.adjusted(1, 1, -1, -1))
         show_time = rect.height() >= fm_small.height() * 2 + 8
-        inner = rect.adjusted(4, 2, -4, -(fm_small.height() + 3) if show_time else -2)
+        inner = rect.adjusted(4, 2, -14 if dot else -4, -(fm_small.height() + 3) if show_time else -2)
         whole = int(inner.height() // fm_small.lineSpacing()) * fm_small.lineSpacing()
         inner.setHeight(max(whole, fm_small.lineSpacing()))
         p.save(); p.setClipRect(rect.adjusted(2, 1, -2, -1))
@@ -523,19 +768,21 @@ class WeekGrid(QtWidgets.QWidget):
 # Small helpers: text rows, prompts
 # ------------------------------------------------------------------------------------------
 
-def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=None):
+def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=None, role=None):
+    """A line of text and, under it, a dim smaller line: the Reader's row. role "tile" is the
+    Android row size, "big" a page title; without it, the title size of the menus."""
     w = QtWidgets.QWidget()
-    lay = QtWidgets.QVBoxLayout(w); lay.setContentsMargins(0, 6, 0, 6); lay.setSpacing(0)
+    lay = QtWidgets.QVBoxLayout(w); lay.setContentsMargins(0, 7, 0, 7); lay.setSpacing(1)
     t = QtWidgets.QLabel(text); t.setWordWrap(True)
-    if size:
-        f = t.font(); f.setPointSize(size); t.setFont(f)
+    if role or size:
+        t.setProperty("role", role or "tile")
     if obj:
         t.setObjectName(obj)
     lay.addWidget(t)
     if secondary:
-        s = QtWidgets.QLabel(secondary); s.setObjectName("dim"); s.setWordWrap(True); lay.addWidget(s)
+        s = QtWidgets.QLabel(secondary); s.setObjectName("dim"); s.setProperty("role", "small"); s.setWordWrap(True); lay.addWidget(s)
     if click:
-        w.setCursor(QtCore.Qt.PointingHandCursor); w.mousePressEvent = lambda e: click()
+        w.setCursor(QtCore.Qt.PointingHandCursor); w.mousePressEvent = lambda e: void(click)
     return w
 
 
@@ -633,6 +880,8 @@ class DatePick(QtWidgets.QDialog):
         lay = QtWidgets.QVBoxLayout(self)
         nav = QtWidgets.QHBoxLayout()
         prev = QtWidgets.QLabel("‹"); nxt = QtWidgets.QLabel("›"); self.title = QtWidgets.QLabel(); self.title.setObjectName("dim")
+        prev.setObjectName("arrow"); nxt.setObjectName("arrow")
+        QtWidgets.QShortcut(QtGui.QKeySequence("Left"), self, lambda: self._move(-1)); QtWidgets.QShortcut(QtGui.QKeySequence("Right"), self, lambda: self._move(1))
         for l in (prev, nxt):
             l.setCursor(QtCore.Qt.PointingHandCursor)
         nav.addWidget(prev); nav.addWidget(self.title, 1, QtCore.Qt.AlignCenter); nav.addWidget(nxt)
@@ -698,6 +947,7 @@ class Main(QtWidgets.QMainWindow):
         ll = QtWidgets.QVBoxLayout(left); ll.setContentsMargins(20, 18, 20, 12); ll.setSpacing(6)
         mnav = QtWidgets.QHBoxLayout()
         self.m_prev = QtWidgets.QLabel("‹"); self.m_next = QtWidgets.QLabel("›"); self.m_title = QtWidgets.QLabel(); self.m_title.setObjectName("dim")
+        self.m_prev.setObjectName("arrow"); self.m_next.setObjectName("arrow")
         for l in (self.m_prev, self.m_next, self.m_title): l.setCursor(QtCore.Qt.PointingHandCursor)
         mnav.addWidget(self.m_prev); mnav.addWidget(self.m_title, 1, QtCore.Qt.AlignCenter); mnav.addWidget(self.m_next)
         ll.addLayout(mnav)
@@ -707,12 +957,21 @@ class Main(QtWidgets.QMainWindow):
         self.nav_day = row(_("day"), click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
         self.nav_week = row(_("week"), click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
         self.nav_workdays = row(_("workdays"), click=lambda: self.show_week(date.today(), workdays=True)); ll.addWidget(self.nav_workdays)
+        self.nav_month = row(_("month"), click=lambda: self.show_month(date.today())); ll.addWidget(self.nav_month)
+        self.nav_search = QtWidgets.QWidget(); sh = QtWidgets.QHBoxLayout(self.nav_search); sh.setContentsMargins(0, 0, 0, 0); sh.setSpacing(10)
+        sh.addWidget(Magnifier(16), 0, QtCore.Qt.AlignVCenter); sh.addWidget(row(_("search"), click=self.show_search), 1)
+        self.nav_search.setCursor(QtCore.Qt.PointingHandCursor); self.nav_search.mousePressEvent = lambda e: self.show_search(); ll.addWidget(self.nav_search)
         self.nav_new = row(_("+ new event"), click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
-        ll.addStretch(1)
-        self.cal_box = QtWidgets.QVBoxLayout(); ll.addLayout(self.cal_box)
-        self.status = QtWidgets.QLabel(""); self.status.setObjectName("dim"); self.status.setWordWrap(True)
+        ll.addSpacing(8)
+        # the calendars: as many as the account has, scrolling when the column is full
+        cal_host = QtWidgets.QWidget(); self.cal_box = QtWidgets.QVBoxLayout(cal_host); self.cal_box.setContentsMargins(0, 0, 0, 0); self.cal_box.setSpacing(2)
+        self.cal_box.addStretch(1)
+        self.cal_scroll = QtWidgets.QScrollArea(); self.cal_scroll.setWidgetResizable(True); self.cal_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.cal_scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff); self.cal_scroll.setWidget(cal_host)
+        ll.addWidget(self.cal_scroll, 1)
+        self.status = QtWidgets.QLabel(""); self.status.setObjectName("dim"); self.status.setProperty("role", "small"); self.status.setWordWrap(True)
         bottom = QtWidgets.QHBoxLayout(); bottom.addWidget(self.status, 1)
-        gear = QtWidgets.QLabel("⚙"); gear.setObjectName("dim"); gear.setCursor(QtCore.Qt.PointingHandCursor); gear.mousePressEvent = lambda e: self.setup(); bottom.addWidget(gear, 0)
+        gear = QtWidgets.QLabel("⚙"); gear.setObjectName("dim"); gear.setCursor(QtCore.Qt.PointingHandCursor); gear.setToolTip(_("settings")); gear.mousePressEvent = lambda e: self.show_settings(); bottom.addWidget(gear, 0)
         ll.addLayout(bottom)
         outer.addWidget(left)
         sep = QtWidgets.QFrame(); sep.setObjectName("sep"); sep.setFixedWidth(1); outer.addWidget(sep)
@@ -723,7 +982,9 @@ class Main(QtWidgets.QMainWindow):
         self.page_week = QtWidgets.QWidget(); wl = QtWidgets.QVBoxLayout(self.page_week); wl.setContentsMargins(24, 18, 24, 12)
         wnav = QtWidgets.QHBoxLayout()
         self.w_prev = QtWidgets.QLabel("‹"); self.w_next = QtWidgets.QLabel("›"); self.w_title = QtWidgets.QLabel(); self.w_title.setObjectName("dim"); self.w_today = QtWidgets.QLabel(_("today"))
+        self.w_prev.setObjectName("arrow"); self.w_next.setObjectName("arrow"); self.w_prev.setToolTip("←"); self.w_next.setToolTip("→")
         for l in (self.w_prev, self.w_next, self.w_today): l.setCursor(QtCore.Qt.PointingHandCursor)
+        wnav.setSpacing(18)
         wnav.addWidget(self.w_prev); wnav.addWidget(self.w_title, 1, QtCore.Qt.AlignLeft); wnav.addWidget(self.w_today); wnav.addWidget(self.w_next)
         wl.addLayout(wnav)
         self.week_head = WeekHead(); self.week_head.event_clicked.connect(self.show_event); self.week_head.day_clicked.connect(self.show_day_grid); wl.addWidget(self.week_head)
@@ -734,6 +995,27 @@ class Main(QtWidgets.QMainWindow):
         self.pages.addWidget(self.page_week)
         self.page_event = self._page_scroll(); self.pages.addWidget(self.page_event[0])
         self.page_edit = self._page_scroll(); self.pages.addWidget(self.page_edit[0])
+        self.page_settings = self._page_scroll(); self.pages.addWidget(self.page_settings[0])      # 4
+        # 5: search — the field stays, the results below it are redrawn
+        self.page_search = QtWidgets.QWidget(); sl = QtWidgets.QVBoxLayout(self.page_search); sl.setContentsMargins(28, 18, 28, 0); sl.setSpacing(4)
+        self.search_edit = QtWidgets.QLineEdit(); self.search_edit.setObjectName("search"); self.search_edit.setPlaceholderText(_("search events: title, place, notes"))
+        self.search_edit.textChanged.connect(lambda _t: self.search_timer.start())
+        sline = QtWidgets.QHBoxLayout(); sline.setSpacing(14); sline.addWidget(Magnifier(22), 0, QtCore.Qt.AlignVCenter); sline.addWidget(self.search_edit, 1); sl.addLayout(sline)
+        self.search_results = self._page_scroll(); self.search_results[1].setContentsMargins(0, 6, 0, 18); sl.addWidget(self.search_results[0], 1)
+        self.pages.addWidget(self.page_search)
+        self.search_timer = QtCore.QTimer(self, singleShot=True, interval=200, timeout=self.render_search)
+        self._wide = None; self._wide_loading = False; self._back = None
+        # 6: month board
+        self.page_month = QtWidgets.QWidget(); ml = QtWidgets.QVBoxLayout(self.page_month); ml.setContentsMargins(24, 18, 24, 16); ml.setSpacing(8)
+        mh = QtWidgets.QHBoxLayout(); mh.setSpacing(18)
+        self.mo_title = QtWidgets.QLabel(); self.mo_title.setObjectName("dim")
+        mh.addWidget(link("‹", lambda: self.step(-1), "arrow", "←")); mh.addWidget(self.mo_title, 1)
+        mh.addWidget(link(_("today"), lambda: self.show_month(date.today()))); mh.addWidget(link("›", lambda: self.step(1), "arrow", "→"))
+        ml.addLayout(mh)
+        self.board = MonthBoard(); ml.addWidget(self.board, 1)
+        self.board.event_clicked.connect(self.show_event); self.board.day_clicked.connect(self.show_day_grid)
+        self.board.new_on_day.connect(lambda d: self.new_at(d, 9)); self.board.event_moved.connect(self.move_event)
+        self.pages.addWidget(self.page_month)
 
         self.m_prev.mousePressEvent = lambda e: self.move_month(-1)
         self.m_next.mousePressEvent = lambda e: self.move_month(1)
@@ -745,13 +1027,14 @@ class Main(QtWidgets.QMainWindow):
 
         for seq, fn in (("Ctrl+T", self.toggle_theme), ("F5", self.sync), ("Ctrl+R", self.sync), ("Ctrl+N", lambda: self.edit_event(None)),
                         ("Ctrl+=", lambda: self.zoom(1)), ("Ctrl++", lambda: self.zoom(1)), ("Ctrl+-", lambda: self.zoom(-1)),
-                        ("Ctrl+,", self.setup), ("Ctrl+Q", self.close), ("Escape", self.show_agenda), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+Shift+W", lambda: self.show_week(date.today(), workdays=True)), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today()))):
+                        ("Ctrl+,", self.show_settings), ("Ctrl+F", self.show_search), ("Ctrl+M", lambda: self.show_month(date.today())), ("Ctrl+S", lambda: self.pages.currentIndex() == 3 and self.save_event()), ("Ctrl+Return", lambda: self.pages.currentIndex() == 3 and self.save_event()), ("Ctrl+Q", self.close), ("Escape", self.escape), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+Shift+W", lambda: self.show_week(date.today(), workdays=True)), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today())),
+                        ("Left", lambda: self.step(-1)), ("Right", lambda: self.step(1))):
             QtWidgets.QShortcut(QtGui.QKeySequence(seq), self, fn)
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
         self.refresh_month_title()
         # the view the window opens on: the week unless configured otherwise
-        {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
+        {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "month": lambda: self.show_month(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
         if self.cfg.get("url") or self.cfg.get("subscriptions") or self.google_ready():
             self.connect_client()
         else:
@@ -767,12 +1050,12 @@ class Main(QtWidgets.QMainWindow):
     def _clear(lay):
         while lay.count() > 1:
             item = lay.takeAt(0)
-            if item.widget(): item.widget().deleteLater()
+            if item.widget(): item.widget().hide(); item.widget().deleteLater()
             elif item.layout():
                 sub = item.layout()
                 while sub.count():
                     x = sub.takeAt(0)
-                    if x.widget(): x.widget().deleteLater()
+                    if x.widget(): x.widget().hide(); x.widget().deleteLater()
 
     # ---- look ------------------------------------------------------------------------
 
@@ -781,10 +1064,23 @@ class Main(QtWidgets.QMainWindow):
         dim = "rgba(255,255,255,0.55)" if self.dark else "rgba(0,0,0,0.55)"
         rule = "rgba(255,255,255,0.25)" if self.dark else "rgba(0,0,0,0.25)"
         s = self.font_size
+        # the Android scale: a row (tile), menus and titles at 0.8, secondary lines at 0.62
+        tile = s + 5; title = round(tile * 0.8); small = max(9, round(tile * 0.62)); big = round(tile * 1.45)
+        choice = self.cfg.get("font", "sans"); fam = pick_family(choice); weight = 300 if choice == "sans" else 400
+        self.family, self.weight = fam, weight
         self.setStyleSheet(f"""
-            QMainWindow, QWidget {{ background: {bg}; color: {fg}; font-size: {s}pt; font-weight: 300; }}
+            QMainWindow, QWidget {{ background: {bg}; color: {fg}; font-family: "{fam}"; font-size: {title}pt; font-weight: {weight}; }}
             QLabel#dim {{ color: {dim}; }}
-            QLabel#big {{ font-size: {s + 9}pt; }}
+            QLabel[role="tile"] {{ font-size: {tile}pt; }}
+            QLabel[role="small"] {{ font-size: {small}pt; }}
+            QLabel#big, QLabel[role="big"] {{ font-size: {big}pt; }}
+            QLabel#arrow {{ font-size: {tile + 10}pt; padding: 0 12px 4px 12px; }}
+            QLabel#heading {{ color: {dim}; font-size: {small}pt; letter-spacing: 1px; padding-top: 16px; }}
+            QLineEdit#search {{ border: none; border-bottom: 1px solid {rule}; font-size: {tile}pt; padding: 8px 0; }}
+            QLineEdit#titleedit {{ border: none; border-bottom: 1px solid {rule}; font-size: {big}pt; padding: 6px 0 10px 0; }}
+            QLineEdit#field, QPlainTextEdit#field {{ border: none; border-bottom: 1px solid {rule}; padding: 6px 0; font-size: {title}pt; }}
+            QLabel#primary {{ background: {fg}; color: {bg}; padding: 6px 18px; }}
+            QLabel[role="body"] {{ font-size: {title}pt; }}
             QFrame#sep {{ background: {rule}; }}
             QScrollArea, QScrollArea > QWidget > QWidget {{ background: {bg}; }}
             QScrollBar:vertical {{ background: {bg}; width: 6px; }} QScrollBar::handle:vertical {{ background: {rule}; min-height: 24px; }} QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
@@ -793,8 +1089,9 @@ class Main(QtWidgets.QMainWindow):
             QPushButton {{ background: {bg}; color: {fg}; border: 1px solid {fg}; padding: 6px 18px; }} QPushButton:default {{ background: {fg}; color: {bg}; }}
             QDialog {{ background: {bg}; }} QToolTip {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }}
         """)
-        self.grid.set_colors(fg, bg); self.week.set_colors(fg, bg); self.week_head.set_colors(fg, bg)
-        f = QtGui.QFont(); f.setPointSize(s); f.setWeight(QtGui.QFont.Light); self.grid.setFont(f); self.week.setFont(f); self.week_head.setFont(f)
+        self.grid.set_colors(fg, bg); self.week.set_colors(fg, bg); self.week_head.set_colors(fg, bg); self.board.set_colors(fg, bg)
+        f = QtGui.QFont(fam); f.setPointSize(s); f.setWeight(QtGui.QFont.Light if weight == 300 else QtGui.QFont.Normal); self.grid.setFont(f); self.week.setFont(f); self.week_head.setFont(f); self.board.setFont(f)
+        QtWidgets.QApplication.instance().setFont(f)
         self.render_current()
 
     def toggle_theme(self):
@@ -851,11 +1148,6 @@ class Main(QtWidgets.QMainWindow):
             self.run(lambda: gc.connect(cid, sec), done, failed)
         g_connect.clicked.connect(google_click); g_row.addWidget(g_connect); g_row.addWidget(g_state); g_row.addStretch(1)
         form.addRow(_("Google account"), g_row)
-        view = QtWidgets.QComboBox()
-        for key, label in (("week", _("week")), ("workdays", _("workdays")), ("day", _("day")), ("agenda", _("agenda"))):
-            view.addItem(label, key)
-        view.setCurrentIndex(max(0, view.findData(self.cfg.get("default_view", "week"))))
-        form.addRow(_("opens on"), view)
         btns = QtWidgets.QHBoxLayout(); btns.addStretch(1)
         c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(dlg.reject); btns.addWidget(c)
         ok = QtWidgets.QPushButton(_("connect")); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
@@ -875,7 +1167,7 @@ class Main(QtWidgets.QMainWindow):
             if u:
                 parsed.append({"name": name.strip() or "feed", "url": u})
         gcfg = dict(self.cfg.get("google", {})); gcfg["client_id"] = g_id.text().strip(); gcfg["client_secret"] = g_secret.text().strip()
-        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed, "default_view": view.currentData(), "google": gcfg}); save_config(self.cfg)
+        self.cfg.update({"url": url.text().strip(), "username": user.text().strip(), "password": pw.text(), "subscriptions": parsed, "google": gcfg}); save_config(self.cfg)
         self.connect_client()
 
     def google_ready(self):
@@ -910,15 +1202,22 @@ class Main(QtWidgets.QMainWindow):
             self.run(google.calendars, lambda gcals: self.got_calendars(self.calendars + gcals)); return
         self._clear_calbox()
         hidden = set(self.cfg.get("hidden_calendars", []))
-        for name, url, writable in self.calendars:
-            lab = QtWidgets.QLabel(("" if url in hidden else "■ ") + name + ("" if writable else _("  (read only)")))
-            lab.setObjectName("dim" if url in hidden else ""); lab.setCursor(QtCore.Qt.PointingHandCursor)
-            lab.mousePressEvent = lambda e, u=url: self.toggle_calendar(u)
-            self.cal_box.addWidget(lab)
+        for i, (name, url, writable) in enumerate(self.calendars):
+            shown = url not in hidden
+            line = QtWidgets.QWidget(); lay = QtWidgets.QHBoxLayout(line); lay.setContentsMargins(0, 3, 0, 3); lay.setSpacing(10)
+            lay.addWidget(Dot(ce.color_of(url), filled=shown), 0, QtCore.Qt.AlignTop); lay.itemAt(0).widget().setContentsMargins(0, 0, 0, 0)
+            text = QtWidgets.QVBoxLayout(); text.setSpacing(0)
+            lab = QtWidgets.QLabel(name); lab.setObjectName("" if shown else "dim"); lab.setWordWrap(True); text.addWidget(lab)
+            if not writable:
+                ro = QtWidgets.QLabel(_("read only")); ro.setObjectName("dim"); ro.setProperty("role", "small"); text.addWidget(ro)
+            lay.addLayout(text, 1)
+            line.setCursor(QtCore.Qt.PointingHandCursor); line.setToolTip(name)
+            line.mousePressEvent = lambda e, u=url: self.toggle_calendar(u)
+            self.cal_box.insertWidget(i, line)
         self.sync()
 
     def _clear_calbox(self):
-        while self.cal_box.count():
+        while self.cal_box.count() > 1:     # the stretch stays last
             item = self.cal_box.takeAt(0)
             if item.widget(): item.widget().deleteLater()
 
@@ -938,8 +1237,13 @@ class Main(QtWidgets.QMainWindow):
         if not self.calendars:
             return
         self.status.setText(_("syncing…"))
-        hidden = set(self.cfg.get("hidden_calendars", []))
         ws, we = self.window()
+        self.run(self.fetcher(ws, we), self.got_events)
+
+    def fetcher(self, ws, we):
+        """A function (run off the UI thread) returning every occurrence between ws and we in the
+        calendars shown."""
+        hidden = set(self.cfg.get("hidden_calendars", []))
         cals = [(n, u) for n, u, _ in self.calendars if u not in hidden]
         feeds = self.feed_urls(); client = self.client; google = self.google_client()
 
@@ -955,11 +1259,12 @@ class Main(QtWidgets.QMainWindow):
                         out.append(Occ(ev, name, s, e))
             out.sort(key=lambda o: (o.start, not o.event.all_day))
             return out
-        self.run(fetch, self.got_events)
+        return fetch
 
     def got_events(self, occs):
         if self.google_ready(): save_config(self.cfg)   # the access token may have been renewed
         self.occs = occs
+        self._wide = None          # the search's wider range is read again when next needed
         self.grid.marked = {o.date for o in occs}; self.grid.update()
         self.status.setText(_("synced %1", datetime.now().strftime("%H:%M")))
         if getattr(self, "notice", None):
@@ -975,6 +1280,9 @@ class Main(QtWidgets.QMainWindow):
         if idx == 0: self.render_agenda()
         elif idx == 1: self.render_week()
         elif idx == 2 and getattr(self, "_event", None): self.show_event(self._event, refresh=True)
+        elif idx == 4: self.render_settings()
+        elif idx == 5: self.render_search()
+        elif idx == 6: self.render_month()
 
     def refresh_month_title(self):
         self.m_title.setText(self.grid.month.strftime("%B %Y").lower())
@@ -989,6 +1297,7 @@ class Main(QtWidgets.QMainWindow):
         self.grid.set_month(date.today()); self.refresh_month_title(); self.show_agenda()
 
     def show_agenda(self, from_date=None):
+        self._back = None
         self.pages.setCurrentIndex(0); self._agenda_from = from_date or date.today(); self.render_agenda()
 
     def show_day(self, d):
@@ -1007,12 +1316,137 @@ class Main(QtWidgets.QMainWindow):
             d = o.date if o.date >= start else start
             if d != cur:
                 cur = d
-                h = QtWidgets.QLabel(day_label(d, today)); h.setObjectName("" if d == today else "dim")
-                h.setContentsMargins(0, 14, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_day_grid(dd)
+                h = QtWidgets.QLabel(day_label(d, today)); h.setObjectName("" if d == today else "dim"); h.setProperty("role", "small")
+                h.setContentsMargins(0, 18, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_day_grid(dd)
                 lay.insertWidget(i, h); i += 1
             sec = o.when() + (" · " + o.event.location if o.event.location else "")
             lay.insertWidget(i, row(o.event.summary, sec, size=self.font_size + 4, click=lambda oo=o: self.show_event(oo))); i += 1
         more = row(_("show more days"), obj="dim", click=self.more_days); lay.insertWidget(i, more)
+
+    def escape(self):
+        if self.pages.currentIndex() == 5 and self.search_edit.text():
+            self.search_edit.clear(); return
+        (self._back or self.show_agenda)()
+
+    # ---- search ------------------------------------------------------------------------
+
+    def show_search(self):
+        self._back = None
+        self.pages.setCurrentIndex(5); self.search_edit.setFocus(); self.search_edit.selectAll()
+        self.render_search()
+
+    def _open_from_search(self, o):
+        self.show_event(o); self._back = self.back_to_search; self.show_event(o)   # redrawn with "← back" to the results
+
+    def back_to_search(self):
+        self.pages.setCurrentIndex(5); self._back = None; self.render_search()
+
+    def _ensure_wide(self):
+        """One year back and two ahead, read once, so that a search finds more than the weeks shown."""
+        if self._wide is not None or self._wide_loading or not self.calendars:
+            return
+        self._wide_loading = True
+        today = datetime.combine(date.today(), datetime.min.time(), LOCAL)
+        def done(occs):
+            self._wide_loading = False; self._wide = occs
+            if self.pages.currentIndex() == 5: self.render_search()
+        def failed(msg):
+            self._wide_loading = False; self.status.setText(msg)
+        self.run(self.fetcher(today - timedelta(days=365), today + timedelta(days=730)), done, failed)
+
+    def render_search(self):
+        if self.pages.currentIndex() != 5:
+            return
+        self._ensure_wide()
+        scroll, lay = self.search_results
+        self._clear(lay)
+        words = fold(self.search_edit.text()).split()
+        if not words:
+            if self._wide_loading:
+                lay.insertWidget(0, row(_("searching further…"), obj="dim"))
+            return
+        source = self._wide if self._wide is not None else self.occs
+        found, seen = [], {}
+        now = datetime.now(LOCAL)
+        for o in source:
+            ev = o.event
+            if not all(w in fold(" ".join((ev.summary, ev.location, ev.description, o.cal_name))) for w in words):
+                continue
+            # a repeating event once: its next occurrence, or its last one if all are past
+            key = (getattr(ev, "cal_url", ""), (ev.google.get("recurring") or ev.uid) if is_google(ev) else (ev.uid or ev.href))
+            prev = seen.get(key)
+            if prev is None or (prev.end < now and o.end >= now) or (prev.end < now and o.end < now and o.start > prev.start):
+                seen[key] = o
+        found = sorted(seen.values(), key=lambda o: o.start)
+        upcoming = [o for o in found if o.end >= now]; past = [o for o in found if o.end < now][::-1]
+        i = 0
+        if not found:
+            lay.insertWidget(i, row(_("searching further…") if self._wide_loading else _("no event found"), obj="dim")); i += 1
+        today = date.today()
+        for heading, items in ((_("upcoming"), upcoming), (_("past"), past)):
+            if not items:
+                continue
+            h = QtWidgets.QLabel(heading); h.setObjectName("heading"); lay.insertWidget(i, h); i += 1
+            for o in items[:150]:
+                ev = o.event
+                repeats = ev.rrule or getattr(ev, "series_rule", "")
+                sec = " · ".join(x for x in (day_label(o.date, today), o.when(), o.cal_name, _("repeats") if repeats else "", ev.location) if x)
+                lay.insertWidget(i, dotted_row(ce.color_of(getattr(ev, "cal_url", "")), row(ev.summary, sec, role="tile", click=lambda oo=o: self._open_from_search(oo)))); i += 1
+
+    # ---- settings ----------------------------------------------------------------------
+
+    def show_settings(self):
+        self._back = None
+        self.pages.setCurrentIndex(4); self.render_settings()
+
+    def _cfg(self, key, value):
+        self.cfg[key] = value; save_config(self.cfg); self.render_settings()
+
+    def render_settings(self):
+        scroll, lay = self.page_settings
+        self._clear(lay)
+        host = QtWidgets.QWidget(); host.setMaximumWidth(1000); outer = QtWidgets.QVBoxLayout(host); outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page_header([link(_("← back"), self.show_agenda), QtWidgets.QLabel(_("settings"))]))
+        two = QtWidgets.QHBoxLayout(); two.setContentsMargins(0, 0, 0, 0); two.setSpacing(64); outer.addLayout(two)
+        left = QtWidgets.QVBoxLayout(); left.setSpacing(0); right = QtWidgets.QVBoxLayout(); right.setSpacing(0)
+        def heading(text, box):
+            h = QtWidgets.QLabel(text); h.setObjectName("heading"); box.addWidget(h)
+        heading(_("look"), left)
+        left.addWidget(row(_("white on black") if self.dark else _("black on white"), _("colours"), role="tile", click=lambda: (self.toggle_theme(), self.render_settings())))
+        size_line = QtWidgets.QHBoxLayout(); size_line.setSpacing(4)
+        size_line.addWidget(row(f"{self.font_size} pt", _("text size"), role="tile"))
+        size_line.addSpacing(18)
+        size_line.addWidget(link("−", lambda: (self.zoom(-1), self.render_settings()), "arrow", "Ctrl+-"), 0, QtCore.Qt.AlignVCenter)
+        size_line.addWidget(link("+", lambda: (self.zoom(1), self.render_settings()), "arrow", "Ctrl+="), 0, QtCore.Qt.AlignVCenter)
+        size_line.addStretch(1); left.addLayout(size_line)
+        fonts = [("sans", "sans-serif"), ("serif", "serif"), ("mono", "mono")]
+        cur = self.cfg.get("font", "sans") if self.cfg.get("font") in dict(fonts) else "sans"
+        nxt = fonts[([f for f, _x in fonts].index(cur) + 1) % 3][0]
+        left.addWidget(row(dict(fonts)[cur], pick_family(cur), role="tile", click=lambda: (self.cfg.__setitem__("font", nxt), save_config(self.cfg), self.apply_style(), self.render_settings())))
+        heading(_("calendar"), left)
+        views = [("week", _("week")), ("workdays", _("workdays")), ("month", _("month")), ("day", _("day")), ("agenda", _("agenda"))]
+        v = self.cfg.get("default_view", "week"); vi = next((i for i, x in enumerate(views) if x[0] == v), 0)
+        left.addWidget(row(views[vi][1], _("opens on"), role="tile", click=lambda: self._cfg("default_view", views[(vi + 1) % len(views)][0])))
+        monday = self.cfg.get("week_monday", True)
+        left.addWidget(row(_("monday") if monday else _("sunday"), _("first day of the week"), role="tile", click=lambda: (self._cfg("week_monday", not monday), setattr(self.grid, "week_monday", not monday), self.grid.update())))
+        left.addWidget(row(reminder_label(self.cfg.get("default_reminder", 10)), _("default reminder"), role="tile",
+                           click=lambda: (lambda m: m is not None and self._cfg("default_reminder", None if m == "none" else m))(self._menu_pick([(reminder_label(m), ("none" if m is None else m)) for m in REMINDERS]))))
+        writable = [(n, u) for n, u, w in self.calendars if w]
+        if writable:
+            dc = self.cfg.get("default_calendar"); du = dc if any(u == dc for _x, u in writable) else writable[0][1]
+            left.addWidget(dotted_row(ce.color_of(du), row(next(n for n, u in writable if u == du), _("default calendar"), role="tile", click=lambda: (lambda u: u is not None and self._cfg("default_calendar", u))(self._menu_pick(writable)))))
+        left.addStretch(1)
+        heading(_("accounts"), right)
+        right.addWidget(row(urlhost(self.cfg["url"]) if self.cfg.get("url") else "—", "CalDAV", role="tile", click=self.setup))
+        g = self.cfg.get("google", {})
+        right.addWidget(row(_("Google account connected") if g.get("tokens") else "—", "Google", role="tile", click=self.setup))
+        right.addWidget(row(_("%1 feeds", len(self.cfg.get("subscriptions", []))), _("feeds"), role="tile", click=self.setup))
+        right.addWidget(row(_("sync now"), self.status.text() or None, role="tile", click=self.sync))
+        credits = QtWidgets.QLabel(f"reader's calendar {VERSION}\n" + _("Pierre Gallaz · developed with Claude Code")); credits.setObjectName("dim"); credits.setProperty("role", "small")
+        credits.setContentsMargins(0, 28, 0, 0); right.addWidget(credits)
+        right.addStretch(1)
+        two.addLayout(left, 1); two.addLayout(right, 1)
+        lay.insertWidget(0, host)
 
     def more_days(self):
         self.window_days += 60; self.sync()
@@ -1032,12 +1466,36 @@ class Main(QtWidgets.QMainWindow):
         self.w_title.setText(day_label(d, date.today()))
         self._open_grid()
 
+    def show_month(self, d):
+        self._back = None
+        self.board.month = d.replace(day=1); self.pages.setCurrentIndex(6); self.render_month()
+        self.grid.set_month(d); self.refresh_month_title()
+
+    def render_month(self):
+        self.board.set_data(self.board.month, self.occs, self.cfg.get("week_monday", True))
+        self.mo_title.setText(self.board.month.strftime("%B %Y").lower())
+        first = self.board.first_day()
+        self.ensure_window(first + timedelta(days=42))
+
+    def ensure_window(self, last_day):
+        """The synced range (45 days back, window_days ahead) stretched to a month shown further on."""
+        need = (last_day - date.today()).days + 1
+        if need > self.window_days:
+            self.window_days = need + 14; self.sync()
+
+    def step(self, delta):
+        """← / →: the previous or next week or day in the grids, the previous or next month elsewhere."""
+        if self.pages.currentIndex() == 1: self.step_grid(delta)
+        elif self.pages.currentIndex() == 6: self.show_month(add_months(self.board.month, delta))
+        elif self.pages.currentIndex() == 0: self.move_month(delta)
+
     def step_grid(self, delta):
         n = self.week.ndays
         if n > 1: self.show_week(self.week.start + timedelta(days=n * delta), workdays=self.week.workdays)
         else: self.show_day_grid(self.week.start + timedelta(days=delta))
 
     def _open_grid(self):
+        self._back = None
         self.pages.setCurrentIndex(1); self.render_week()
         # open an hour before the first thing shown (or now, if today is shown); 08:00 when empty
         days = [self.week.start + timedelta(days=i) for i in range(self.week.ndays)]
@@ -1064,21 +1522,21 @@ class Main(QtWidgets.QMainWindow):
         touched. A series asks first, since every occurrence moves with it."""
         ev = o.event
         if not ev.writable:
-            self.status.setText(self.read_only_reason(ev)); self.render_week(); return
+            self.status.setText(self.read_only_reason(ev)); self.render_current(); return
         if is_google(ev):
             if ev.google.get("recurring"):
                 m = QtWidgets.QMenu(self)
                 m.addAction(_("move only this event"), lambda: self._do_move(o, days, minutes))
                 m.addAction(_("move the whole series"), lambda: self._do_move(o, days, minutes, series=True))
                 if m.exec_(QtGui.QCursor.pos()) is None:
-                    self.render_week()
+                    self.render_current()
                 return
             self._do_move(o, days, minutes); return
         if ev.rrule:
             m = QtWidgets.QMenu(self)
             m.addAction(_("move the whole series"), lambda: self._do_move(o, days, minutes))
             if m.exec_(QtGui.QCursor.pos()) is None:
-                self.render_week()   # no choice: the block goes back
+                self.render_current()   # no choice: the block goes back
             return
         self._do_move(o, days, minutes)
 
@@ -1093,46 +1551,39 @@ class Main(QtWidgets.QMainWindow):
         keep = [l for l in ev.lines if l.split(":", 1)[0].split(";", 1)[0].upper() in ("EXDATE", "CREATED", "SEQUENCE", "CLASS", "STATUS", "TRANSP", "CATEGORIES")]
         kw = dict(summary=ev.summary, start=start, end=end, all_day=ev.all_day, location=ev.location, description=ev.description, rrule=ev.rrule, reminder=ev.reminder, keep_lines=keep)
         self.status.setText(_("saving…"))
-        self.run(lambda: self.client.put(ev.href, ce.build_ics(ev.uid, **kw), etag=ev.etag), lambda _: self.sync(), lambda err: (self.status.setText(str(err)), self.render_week()))
+        self.run(lambda: self.client.put(ev.href, ce.build_ics(ev.uid, **kw), etag=ev.etag), lambda _: self.sync(), lambda err: (self.status.setText(str(err)), self.render_current()))
 
     def show_event(self, o, refresh=False):
         self._event = o
         scroll, lay = self.page_event
         self._clear(lay)
         ev = o.event
-        two = QtWidgets.QHBoxLayout(); left = QtWidgets.QVBoxLayout(); right = QtWidgets.QVBoxLayout()
-        title = QtWidgets.QLabel(ev.summary); title.setObjectName("big"); title.setWordWrap(True); left.addWidget(title)
-        if o.start.date() == (o.end - timedelta(seconds=1)).date():
+        right = [link(_("edit"), lambda: self.edit_event(o)), link(_("delete"), lambda: self.delete_event(o))] if ev.writable else []
+        host, col = column(720)
+        col.addWidget(page_header([link(_("← back"), self._back or self.show_agenda)], right))
+        title = QtWidgets.QLabel(ev.summary); title.setObjectName("big"); title.setWordWrap(True); title.setContentsMargins(0, 10, 0, 6); col.addWidget(title)
+        last = o.end - timedelta(seconds=1)
+        if o.start.date() == last.date():
             when = o.start.strftime("%A %-d %B %Y").lower()
         else:
-            when = o.start.strftime("%-d %b").lower() + " – " + (o.end - timedelta(seconds=1)).strftime("%-d %b %Y").lower()
-        left.addSpacing(10); left.addWidget(QtWidgets.QLabel(when)); left.addWidget(QtWidgets.QLabel(o.when()))
+            when = o.start.strftime("%-d %B").lower() + " – " + last.strftime("%-d %B %Y").lower()
+        d = QtWidgets.QLabel(when); d.setProperty("role", "tile"); col.addWidget(d)
+        t = QtWidgets.QLabel(o.when()); t.setObjectName("dim"); t.setProperty("role", "tile"); col.addWidget(t)
+        col.addWidget(rule_line(18, 8))
+        cal = o.cal_name + ("" if ev.writable else _(" · read-only"))
+        col.addWidget(dotted_row(ce.color_of(getattr(ev, "cal_url", "")), row(cal, _("calendar"))))
         rule = ev.rrule or getattr(ev, "series_rule", "")
         if rule:
-            r = QtWidgets.QLabel(dict(REPEATS).get(rule, _("repeats"))); r.setObjectName("dim"); left.addWidget(r)
+            col.addWidget(row(dict(REPEATS).get(rule, _("repeats")), _("repeat")))
         if ev.reminder is not None:
-            r = QtWidgets.QLabel(reminder_label(ev.reminder)); r.setObjectName("dim"); left.addWidget(r)
-        # the calendar it belongs to: a quiet line of text, never a colour
-        c = QtWidgets.QLabel(o.cal_name); c.setObjectName("dim"); c.setContentsMargins(0, 12, 0, 0); left.addWidget(c)
-        left.addStretch(1)
+            col.addWidget(row(reminder_label(ev.reminder), _("reminder")))
         if ev.location:
-            l = QtWidgets.QLabel(ev.location); l.setWordWrap(True); right.addWidget(l)
-            sep = QtWidgets.QFrame(); sep.setObjectName("sep"); sep.setFixedHeight(1); right.addWidget(sep)
+            col.addWidget(row(ev.location, _("location")))
         if ev.description:
-            d = QtWidgets.QLabel(ev.description); d.setWordWrap(True); right.addWidget(d)
-        if not ev.location and not ev.description:
-            d = QtWidgets.QLabel("—"); d.setObjectName("dim"); right.addWidget(d)
-        right.addStretch(1)
-        two.addLayout(left, 45); two.addSpacing(24); two.addLayout(right, 55)
-        lay.insertLayout(0, two)
-        actions = QtWidgets.QHBoxLayout(); actions.setSpacing(28); actions.setContentsMargins(0, 18, 0, 0)
-        pairs = [(_("← back"), self.show_agenda)] + ([(_("edit"), lambda: self.edit_event(o)), (_("delete"), lambda: self.delete_event(o))] if ev.writable else [])
-        if not ev.writable:
-            c.setText(o.cal_name + _(" · read-only"))
-        for text, fn in pairs:
-            l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e, f=fn: f(); actions.addWidget(l)
-        actions.addStretch(1)
-        lay.insertLayout(1, actions)
+            col.addWidget(rule_line(8, 8))
+            body = QtWidgets.QLabel(ev.description); body.setWordWrap(True); body.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
+            body.setOpenExternalLinks(True); body.setProperty("role", "body"); col.addWidget(body)
+        lay.insertWidget(0, host)
         self.pages.setCurrentIndex(2)
 
     def delete_event(self, o):
@@ -1201,44 +1652,61 @@ class Main(QtWidgets.QMainWindow):
         self._edit_state = state
         self.render_edit()
         self.pages.setCurrentIndex(3)
-        if not ev:
-            QtCore.QTimer.singleShot(0, lambda: self._prompt("summary", _("title")))
+
 
     def render_edit(self):
+        """The form, on one reading column: what the event is and when first, then the quieter
+        details. Title, place and notes are typed in place; dates, times and choices are picked."""
         st = self._edit_state
         scroll, lay = self.page_edit
         self._clear(lay)
-        i = 0
-        def add(w):
-            nonlocal i
-            lay.insertWidget(i, w); i += 1
-        add(row(st["summary"] or _("title"), size=self.font_size + 6, click=lambda: self._prompt("summary", _("title"))))
-        two = QtWidgets.QHBoxLayout(); left = QtWidgets.QVBoxLayout(); right = QtWidgets.QVBoxLayout()
-        left.addWidget(row(_("all day: ") + (_("on") if st["all_day"] else _("off")), click=lambda: self._set("all_day", not st["all_day"])))
-        left.addWidget(row(st["start"].strftime("%A %-d %B %Y").lower(), _("starts"), click=lambda: self._pick_date("start")))
-        if not st["all_day"]:
-            left.addWidget(row(fmt_time(st["start"]), _("start time"), click=lambda: self._pick_time("start")))
-        left.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), _("ends"), click=lambda: self._pick_date("end")))
-        if not st["all_day"]:
-            left.addWidget(row(fmt_time(st["end"]), _("end time"), click=lambda: self._pick_time("end")))
-        left.addStretch(1)
-        cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
-        right.addWidget(row(cal_name, _("calendar"), click=self._pick_calendar))
-        right.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
-        if st.get("scope") == "this":
-            right.addWidget(row(_("part of a series"), _("repeat")))
+        save = link(_("save"), self.save_event, "primary", "Ctrl+S")
+        host, col = column(640)
+        col.addWidget(page_header([link(_("← cancel"), self._back or self.show_agenda)], [save]))
+        title = QtWidgets.QLineEdit(st["summary"]); title.setObjectName("titleedit"); title.setPlaceholderText(_("title"))
+        title.textChanged.connect(lambda v: st.__setitem__("summary", v)); title.returnPressed.connect(self.save_event)
+        col.addWidget(title); self.edit_title = title
+        col.addSpacing(10)
+        day = st["start"].strftime("%A %-d %B %Y").lower()
+        col.addWidget(row(day, _("day"), role="tile", click=lambda: self._pick_date("start")))
+        if st["all_day"]:
+            col.addWidget(row(_("all day"), None, role="tile"))
         else:
-            right.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
-        right.addWidget(row(st["location"] or _("location"), _("location") if st["location"] else None, click=lambda: self._prompt("location", _("location"))))
-        right.addWidget(row((st["description"][:80] + "…") if len(st["description"]) > 80 else (st["description"] or _("description")), _("description") if st["description"] else None, click=lambda: self._prompt("description", _("description"), True)))
-        right.addStretch(1)
-        two.addLayout(left, 1); two.addSpacing(24); two.addLayout(right, 1)
-        lay.insertLayout(i, two); i += 1
-        actions = QtWidgets.QHBoxLayout(); actions.setSpacing(28); actions.setContentsMargins(0, 18, 0, 0)
-        for text, fn in ((_("cancel"), self.show_agenda), (_("save"), self.save_event)):
-            l = QtWidgets.QLabel(text); l.setCursor(QtCore.Qt.PointingHandCursor); l.mousePressEvent = lambda e, f=fn: f(); actions.addWidget(l)
-        actions.addStretch(1)
-        lay.insertLayout(i, actions)
+            col.addWidget(row(f"{fmt_time(st['start'])} – {fmt_time(st['end'])}", _("time"), role="tile", click=self._pick_times))
+        other_day = st["end"].date() != st["start"].date()
+        links = QtWidgets.QHBoxLayout(); links.setSpacing(26); links.setContentsMargins(0, 2, 0, 4)
+        links.addWidget(link(_("at set times") if st["all_day"] else _("all day"), lambda: self._set("all_day", not st["all_day"]), "dim"))
+        if not other_day:
+            links.addWidget(link(_("ends another day"), lambda: self._pick_date("end"), "dim"))
+        links.addStretch(1); col.addLayout(links)
+        if other_day:
+            col.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), _("ends"), role="tile", click=lambda: self._pick_date("end")))
+        col.addWidget(rule_line(14, 6))
+        cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
+        col.addWidget(dotted_row(ce.color_of(st["cal"]), row(cal_name, _("calendar"), click=self._pick_calendar if not st["href"] else None)))
+        col.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
+        if st.get("scope") == "this":
+            col.addWidget(row(_("part of a series"), _("repeat")))
+        else:
+            col.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
+        col.addWidget(rule_line(6, 10))
+        place = QtWidgets.QLineEdit(st["location"]); place.setObjectName("field"); place.setPlaceholderText(_("location"))
+        place.textChanged.connect(lambda v: st.__setitem__("location", v)); col.addWidget(place)
+        col.addSpacing(8)
+        notes = QtWidgets.QPlainTextEdit(st["description"]); notes.setObjectName("field"); notes.setPlaceholderText(_("description"))
+        notes.setFixedHeight(150); notes.textChanged.connect(lambda: st.__setitem__("description", notes.toPlainText())); col.addWidget(notes)
+        bottom = QtWidgets.QHBoxLayout(); bottom.setContentsMargins(0, 22, 0, 0); bottom.setSpacing(26)
+        bottom.addWidget(link(_("cancel"), self._back or self.show_agenda)); bottom.addStretch(1); bottom.addWidget(link(_("save"), self.save_event, "primary"))
+        col.addLayout(bottom)
+        lay.insertWidget(0, host)
+        if not st["summary"]:
+            QtCore.QTimer.singleShot(0, title.setFocus)
+
+    def _pick_times(self):
+        """Start, then end: two prompts in a row, each opening on its value selected."""
+        if self._pick_time("start", redraw=False):
+            self._pick_time("end", redraw=False)
+        self.render_edit()
 
     def _set(self, key, value):
         self._edit_state[key] = value; self.render_edit()
@@ -1257,18 +1725,20 @@ class Main(QtWidgets.QMainWindow):
                 st["end"] = st["end"] + (new - old)
             st[key] = new; self.render_edit()
 
-    def _pick_time(self, key):
-        dlg = TextPrompt(("start" if key == "start" else "end") + " time (hh:mm)", fmt_time(self._edit_state[key]), False, self, select_all=True, time_mask=True)
+    def _pick_time(self, key, redraw=True):
+        dlg = TextPrompt(_("start time") if key == "start" else _("end time"), fmt_time(self._edit_state[key]), False, self, select_all=True, time_mask=True)
         if dlg.exec_() != QtWidgets.QDialog.Accepted:
-            return
+            return False
         parsed = TimeMask.parse(dlg.value())
         if parsed is None:
-            return
+            return False
         h, mi = parsed
         st = self._edit_state; old = st[key]; new = old.replace(hour=h, minute=mi)
         if key == "start":
             st["end"] = st["end"] + (new - old)
-        st[key] = new; self.render_edit()
+        st[key] = new
+        if redraw: self.render_edit()
+        return True
 
     def _menu_pick(self, options):
         m = QtWidgets.QMenu(self); chosen = []
@@ -1291,8 +1761,9 @@ class Main(QtWidgets.QMainWindow):
 
     def save_event(self):
         st = self._edit_state
-        if not st["summary"]:
-            self._prompt("summary", _("title")); return
+        if not st["summary"].strip():
+            self.status.setText(_("title")); getattr(self, "edit_title", None) and self.edit_title.setFocus(); return
+        st["summary"] = st["summary"].strip()
         if st["all_day"]:
             start, end = st["start"].date(), st["end"].date()
             if end < start: self.status.setText(_("the end is before the start")); return

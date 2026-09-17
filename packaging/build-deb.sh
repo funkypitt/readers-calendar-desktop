@@ -22,6 +22,7 @@ Section: utils
 Priority: optional
 Architecture: all
 Depends: python3 (>= 3.8), python3-pyqt5, python3-requests, python3-dateutil
+Recommends: fonts-roboto
 Maintainer: funkypitt <pierregallaz@gmail.com>
 Homepage: https://github.com/funkypitt/readers-calendar-desktop
 Description: Black-and-white, text-only CalDAV calendar

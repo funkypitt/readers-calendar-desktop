@@ -75,24 +75,34 @@ Other `.ics` feeds work the same way as Google's secret address.
 
 | Where | Effect |
 |---|---|
-| a day in the month grid | agenda from that day |
-| ‹ › around the month, click the month name | previous, next, back to today |
+| a day in the small month on the left | agenda from that day |
+| "month" | the month as a board, as on the phone: each day with its events (a dot of the calendar's colour, the time when there is room, the title), all-day events as solid bars, "+n" when a day is full; click an event to open it, a day for its time grid, double-click a day for a new event there, drag an event to another day to move it |
 | a day heading in the agenda, or "day" | that day as a time grid: solid blocks over the hours, overlaps side by side, the place next to the time |
 | "workdays" | Monday to Friday at full width; the weekend folded into a narrow strip at the right, a dot when a day holds something; click the strip for the whole week |
 | "week", or a day header in the week | the week as a time grid, one column per day; click a day header for that day |
 | an empty slot in a grid | a new event at that hour |
-| an event | its page: date, time, reminder, calendar, place and notes in two columns |
-| edit | title, all day, dates (a month grid), times (typed), calendar, reminder, repeat, place, notes |
-| + new event | the same page, asking for the title first |
+| drag a block in a grid | move the event (by quarter hours and whole days) |
+| an event | its page: title, day and time, then its calendar, repeat, reminder, place and notes |
+| edit, + new event | one quiet column: the title typed in place, the day, the times (start then end, typed), all day or another end day, then calendar, reminder, repeat, place and notes |
+| ⌕ search | events whose title, place, notes or calendar hold the words, one year back and two ahead, accents and case ignored; a repeating event once |
+| the calendars in the left column | show or hide one; the column scrolls when there are many; the dot is the calendar's colour (Google's own, a CalDAV calendar's `calendar-color`, otherwise a quiet colour of its own), repeated in a corner of every event block |
+| ⚙ | settings: black on white or white on black, text size, font, the view it opens on, the first day of the week, the default reminder and calendar, the accounts |
 
 | Key | Effect |
 |---|---|
-| Ctrl+N | new event |
-| Ctrl+W | this week · Ctrl+Shift+W workdays · Ctrl+J today as a grid · Ctrl+D today's agenda · Escape agenda |
+| ← / → | previous / next week, day or month |
+| Ctrl+N | new event · Ctrl+S or Ctrl+Enter saves it |
+| Ctrl+F | search |
+| Ctrl+M | this month · Ctrl+W this week · Ctrl+Shift+W workdays · Ctrl+J today as a grid · Ctrl+D today's agenda |
+| Escape | back (clears the search first) |
 | F5 | sync now (also every 5 minutes) |
-| Ctrl+T | white on black / black on white |
+| Ctrl+T | white on black / black on white (also in the settings) |
 | Ctrl+= / Ctrl+- | text size |
-| Ctrl+, | account |
+| Ctrl+, | settings |
+
+The type follows the phone's scale — rows, titles at 0.8, secondary lines at 0.62 — in a light
+face: Roboto Light when `fonts-roboto` is installed (the .deb recommends it), otherwise Noto Sans
+Light or the closest light sans-serif.
 
 ## Languages
 
@@ -101,8 +111,8 @@ English, French, German, Spanish, Portuguese and Russian, following the system l
 
 ## What it does not do
 
-Meeting invitations, attendees, time zones other than yours, and colours. Recurring events
-are edited and deleted as a whole series.
+Meeting invitations and attendees, and time zones other than yours. Recurring CalDAV events
+are edited and deleted as a whole series (Google ones offer "only this event" too).
 
 ## Crédits / Credits
 
