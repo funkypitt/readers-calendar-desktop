@@ -116,6 +116,17 @@ jobs:
           Stop-Process -Id $p.Id
           Write-Host "it started and was still running"
 
+      - name: Is the time zone a named zone, not a fixed offset?
+        shell: bash
+        run: |
+          # Windows carries no time-zone database and no /etc/localtime: without the tzdata
+          # package and Qt's name for the zone, an event in December would show an hour off.
+          QT_QPA_PLATFORM=offscreen python -c "
+          import zoneinfo, caldav_events as ce
+          print('local zone:', ce.LOCAL)
+          assert isinstance(ce.LOCAL, zoneinfo.ZoneInfo), 'a fixed offset, so summer time would be wrong'
+          "
+
       - uses: actions/upload-artifact@v4
         with:
           name: readers-calendar-${{ matrix.target }}
