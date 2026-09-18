@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.9.0_all.deb
+sudo apt install ./readers-calendar_1.10.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -93,7 +93,7 @@ or in your own cloud folder, not by e-mail, and delete it once imported.
 | "week", or a day header in the week | the week as a time grid, one column per day; click a day header for that day |
 | an empty slot in a grid | a new event at that hour |
 | drag a block in a grid | move the event (by quarter hours and whole days) |
-| an event | its page: title, day and time, then its calendar, repeat, reminder, place and notes |
+| an event | its page: title, day and time, then its calendar, repeat, reminder, place and notes. The place and the notes are live text: a mail address or a web address opens where it belongs, the place opens the map, a phone number is copied (a computer has no dialer), and everything can be selected and copied. Dates, prices and room numbers stay plain text |
 | edit, + new event | one quiet column: the title typed in place, the day, the times (start then end, typed), all day or another end day, then calendar, reminder, repeat, place and notes |
 | ⌕ search | events whose title, place, notes or calendar hold the words, one year back and two ahead, accents and case ignored; a repeating event once |
 | the calendars in the left column | show or hide one; the column scrolls when there are many; the dot is the calendar's colour (Google's own, a CalDAV calendar's `calendar-color`, otherwise a quiet colour of its own), repeated in a corner of every event block |
