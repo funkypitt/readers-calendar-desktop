@@ -41,6 +41,11 @@ def _local_zone():
             names.append(f.read().strip())
     except OSError:
         pass
+    try:                    # Windows has neither file; Qt knows the name (Europe/Zurich) there too
+        from PyQt5 import QtCore
+        names.append(bytes(QtCore.QTimeZone.systemTimeZoneId()).decode())
+    except Exception:
+        pass
     for name in names:
         if name:
             try:

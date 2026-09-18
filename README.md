@@ -15,7 +15,7 @@ black on white. Nothing else.
 Debian, Ubuntu, Pop!_OS:
 
 ```
-sudo apt install ./readers-calendar_1.10.0_all.deb
+sudo apt install ./readers-calendar_1.11.0_all.deb
 ```
 
 Arch, Manjaro:
@@ -24,6 +24,18 @@ Arch, Manjaro:
 git clone https://github.com/funkypitt/readers-calendar-desktop
 cd readers-calendar-desktop/packaging && makepkg -si
 ```
+
+**Windows** — take the `.exe` from the
+[latest release](https://github.com/funkypitt/readers-calendar-desktop/releases/latest) and open it: one file,
+nothing to install, no Python needed. The app is not signed by a paid certificate, so Windows
+shows a blue "Windows protected your PC" panel the first time: *More info* › *Run anyway*.
+
+**macOS** — take the `.dmg` for your Mac (`apple-silicon` for an M1 and later, `intel` for an
+older one), open it and drag the app onto *Applications*. It is not signed by a paid Apple
+certificate either, so the first opening must be a **right click on the app › Open** › *Open*; a
+double click at that point says the app "cannot be opened" and offers nothing but the bin. Once
+opened that way it starts normally ever after. If macOS still refuses, in a Terminal:
+`xattr -dr com.apple.quarantine "/Applications/Readers Calendar.app"`.
 
 Anywhere else: `python3 readers_calendar.py` with PyQt5, requests and python-dateutil
 installed.
@@ -124,6 +136,15 @@ English, French, German, Spanish, Portuguese and Russian, following the system l
 
 Meeting invitations and attendees, and time zones other than yours. Recurring CalDAV events
 are edited and deleted as a whole series (Google ones offer "only this event" too).
+
+## Windows and macOS builds
+
+The Windows and macOS binaries are built by GitHub, since neither can be built here:
+`.github/workflows/desktop-builds.yml` runs PyInstaller on a Windows runner and on two macOS
+runners at every `v*` tag and attaches the `.exe` and the two `.dmg` to the release of that tag.
+*Actions* › *Windows and macOS builds* › *Run workflow* builds them without a tag, kept as
+artifacts. The icons come from `packaging/readers-calendar.png` (`.ico` beside it, `.icns` built on the
+runner).
 
 ## Crédits / Credits
 
