@@ -132,8 +132,10 @@ jobs:
         shell: bash
         run: |
           # The check above proves the runner has tzdata; this one proves the binary carries it.
-          python -m PyInstaller.utils.cliutils.archive_viewer -b -l out/*.exe \
-            | grep -q "tzdata/zoneinfo/Europe/Zurich"
+          # The listing goes to a file: piped into grep -q it would die of a broken pipe.
+          python -m PyInstaller.utils.cliutils.archive_viewer -b -l out/*.exe > listing.txt
+          echo "$(wc -l < listing.txt) files in the archive"
+          grep -q "tzdata/zoneinfo/Europe/Zurich" listing.txt
           echo "Europe/Zurich travels inside the .exe"
 
       - uses: actions/upload-artifact@v4
