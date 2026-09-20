@@ -16,8 +16,11 @@ landscape mode. No account with the app, only your own server.
 - Account: server, username and password, asked at first run and kept in `~/.config/readers-calendar/config.json`, readable by you only. Infomaniak: `https://sync.infomaniak.com` and the `AB12345` login.
 - Google Calendar: a secret iCal address as a read-only feed, or your own account, read and write, with an OAuth client you create yourself (steps in the notes). Other `.ics` feeds work too.
 - A new computer: *export credentials…* writes a JSON file that Reader's Calendar, Tasks and Notes share; *import credentials…* reads it back. It holds passwords in clear: delete it once imported.
-- Limits: no invitations or attendees, no time zones other than yours; a repeating CalDAV event is edited or deleted as a whole series (Google ones also offer "only this event").
+- Limits: no invitations or attendees, no time zones other than yours; a Google series offers "only this event" or "the whole series", not "this and the following ones".
 - English, French, German, Spanish, Portuguese and Russian, following the system language; dates follow the locale.
+- A repeating event asks what a change is for — only this event, this and the following ones, or
+  the whole series — when it is edited, dragged or deleted. Occurrences changed on another device
+  are shown as they were changed, and kept when the series is saved.
 
 More detail: [docs/NOTES.md](docs/NOTES.md).
 

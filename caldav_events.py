@@ -134,14 +134,25 @@ def props_of(lines):
 class Event:
     """One VEVENT (the master), plus the occurrences it expands to."""
 
-    def __init__(self, href, etag, ics):
+    def __init__(self, href, etag, ics, lines=None):
+        """lines: one VEVENT of the resource (an override); without it, the resource is read whole —
+        the master, and the occurrences changed one by one (RECURRENCE-ID) as events of their own."""
         self.href, self.etag, self.ics = href, etag, ics
         self.writable = True
-        lines = unfold(ics)
-        start = next((i for i, l in enumerate(lines) if l.upper().startswith("BEGIN:VEVENT")), 0)
-        end = next((i for i, l in enumerate(lines) if l.upper().startswith("END:VEVENT")), len(lines))
-        self.lines = lines[start:end + 1]
-        p = props_of(self.lines)
+        self.master = None; self.overrides = []; self.override_blocks = []; self.tz_blocks = []; self.recurrence_id = None
+        if lines is not None:
+            self.lines = lines
+        else:
+            all_lines = unfold(ics)
+            blocks = blocks_of(all_lines, "VEVENT")
+            self.tz_blocks = blocks_of(all_lines, "VTIMEZONE")
+            if not blocks:
+                start = next((i for i, l in enumerate(all_lines) if l.upper().startswith("BEGIN:VEVENT")), 0)
+                blocks = [all_lines[start:]]
+            master = next((b for b in blocks if "RECURRENCE-ID" not in props_of(top_level(b))), blocks[0])
+            self.lines = master
+            self.override_blocks = [b for b in blocks if b is not master and "RECURRENCE-ID" in props_of(top_level(b))]
+        p = props_of(top_level(self.lines))
         self.uid = p.get("UID", ("", {}))[0]
         self.summary = unescape(p.get("SUMMARY", ("", {}))[0]) or "(untitled)"
         self.location = unescape(p.get("LOCATION", ("", {}))[0])
@@ -165,6 +176,20 @@ class Event:
                         self.exdates.add(d if isinstance(d, date) and not isinstance(d, datetime) else d.date())
                     except ValueError:
                         pass
+        if "RECURRENCE-ID" in p:
+            try: self.recurrence_id, _ = parse_dt(*p["RECURRENCE-ID"])
+            except ValueError: pass
+        self.cancelled = p.get("STATUS", ("", {}))[0].upper() == "CANCELLED"
+        for block in self.override_blocks:
+            try:
+                ov = Event(href, etag, ics, lines=block)
+            except Exception:
+                continue
+            ov.master = self; ov.series_rule = self.rrule; ov.rrule = ""
+            self.overrides.append(ov)
+            if ov.recurrence_id is not None:
+                r = ov.recurrence_id
+                self.exdates.add(r if not isinstance(r, datetime) else r.date())
         self.reminder = None
         for i, l in enumerate(self.lines):
             if l.upper().startswith("BEGIN:VALARM"):
@@ -183,7 +208,7 @@ class Event:
             starts = [self.start]
         else:
             base = self.start if isinstance(self.start, datetime) else datetime(self.start.year, self.start.month, self.start.day, tzinfo=LOCAL)
-            rule = self.rrule.replace("\\,", ",")
+            rule = local_until(self.rrule.replace("\\,", ","))
             # dateutil needs an aware/naive dtstart consistent with UNTIL; strip Z-UNTIL's tz issues by parsing naive
             try:
                 r = rrulestr("RRULE:" + rule, dtstart=base.replace(tzinfo=None))
@@ -252,6 +277,165 @@ def fetch_feed(url, timeout=30):
     return r.text
 
 
+def blocks_of(lines, name):
+    """The BEGIN:name … END:name blocks of an unfolded iCalendar, each as its list of lines."""
+    out, cur = [], None
+    for l in lines:
+        u = l.upper()
+        if u.startswith("BEGIN:" + name):
+            cur = [l]
+        elif cur is not None:
+            cur.append(l)
+            if u.startswith("END:" + name):
+                out.append(cur); cur = None
+    return out
+
+
+def top_level(vevent):
+    """A VEVENT's own lines, without what its alarms hold (a VALARM has a DESCRIPTION too)."""
+    out, depth = [], 0
+    for l in vevent:
+        u = l.upper()
+        if u.startswith("BEGIN:VALARM"): depth += 1
+        elif u.startswith("END:VALARM"): depth -= 1
+        elif depth == 0: out.append(l)
+    return out
+
+
+def local_until(rule):
+    """UNTIL=…Z rewritten as local wall time: the rule is expanded from a naive local start, and
+    dateutil refuses a UTC UNTIL beside it — the series then showed its first occurrence only."""
+    def fix(m):
+        try:
+            d, _ = parse_dt(m.group(1), {})
+            return "UNTIL=" + d.strftime("%Y%m%dT%H%M%S")
+        except ValueError:
+            return m.group(0)
+    return re.sub(r"UNTIL=(\d{8}T\d{6}Z)", fix, rule, flags=re.I)
+
+
+def _form(master):
+    """How the master writes its DTSTART — dates of the series (RECURRENCE-ID, EXDATE) must be
+    written the same way to be recognised: ("DATE",) | ("UTC",) | ("TZID", name) | ("FLOAT",)."""
+    value, params = props_of(top_level(master.lines)).get("DTSTART", ("", {}))
+    if master.all_day: return ("DATE",)
+    if value.strip().upper().endswith("Z"): return ("UTC",)
+    if params.get("TZID"):
+        try: ZoneInfo(params["TZID"]); return ("TZID", params["TZID"])
+        except Exception: return ("UTC",)
+    return ("FLOAT",)
+
+
+def _stamp(name, dt, form):
+    """One date property in the master's form. dt: aware datetime (or a date for all-day)."""
+    if form[0] == "DATE":
+        d = dt.date() if isinstance(dt, datetime) else dt
+        return f"{name};VALUE=DATE:" + d.strftime("%Y%m%d")
+    if form[0] == "UTC":
+        return f"{name}:" + dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    if form[0] == "TZID":
+        return f"{name};TZID={form[1]}:" + dt.astimezone(ZoneInfo(form[1])).strftime("%Y%m%dT%H%M%S")
+    return f"{name}:" + dt.astimezone(LOCAL).strftime("%Y%m%dT%H%M%S")
+
+
+def _rid_key(ev_or_dt):
+    d = ev_or_dt
+    return d.astimezone(timezone.utc).strftime("%Y%m%dT%H%M") if isinstance(d, datetime) else d.strftime("%Y%m%d")
+
+
+def compose(master, master_lines, override_blocks):
+    """The resource again: the time zones it came with, the master, the changed occurrences."""
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//readers-calendar//EN"]
+    for b in master.tz_blocks: lines += b
+    lines += master_lines
+    for b in override_blocks: lines += b
+    lines.append("END:VCALENDAR")
+    return "\r\n".join(fold(l) for l in lines) + "\r\n"
+
+
+def _touched(vevent):
+    now = utcnow()
+    out = [l for l in vevent if l.split(":", 1)[0].upper() not in ("DTSTAMP", "LAST-MODIFIED")]
+    return out[:1] + [f"DTSTAMP:{now}", f"LAST-MODIFIED:{now}"] + out[1:]
+
+
+def _other_overrides(master, rid):
+    key = _rid_key(rid)
+    return [ov.lines for ov in master.overrides if ov.recurrence_id is None or _rid_key(ov.recurrence_id) != key]
+
+
+def ics_with_override(master, rid, **kw):
+    """One occurrence changed (rid: its original start): written beside the master as a VEVENT of
+    the same UID with a RECURRENCE-ID, replacing an earlier change of the same occurrence."""
+    kw = dict(kw); kw["rrule"] = ""
+    block = vevent_lines(master.uid, extra=[_stamp("RECURRENCE-ID", rid, _form(master))], **kw)
+    return compose(master, master.lines, _other_overrides(master, rid) + [block])
+
+
+def ics_without_occurrence(master, rid):
+    """One occurrence deleted: an EXDATE on the master, and its changed copy dropped if it had one."""
+    lines = _touched(master.lines)
+    lines = lines[:1] + [_stamp("EXDATE", rid, _form(master))] + lines[1:]
+    return compose(master, lines, _other_overrides(master, rid))
+
+
+def ics_until(master, first_gone):
+    """The series ended just before first_gone (the start of the first occurrence that goes):
+    UNTIL replaces whatever ended it, and the changed occurrences from there on are dropped."""
+    form = _form(master)
+    if form[0] == "DATE":
+        last = (first_gone.date() if isinstance(first_gone, datetime) else first_gone) - timedelta(days=1)
+        until = last.strftime("%Y%m%d")
+    elif form[0] == "FLOAT":
+        until = (first_gone.astimezone(LOCAL) - timedelta(seconds=1)).strftime("%Y%m%dT%H%M%S")
+    else:
+        until = (first_gone.astimezone(timezone.utc) - timedelta(seconds=1)).strftime("%Y%m%dT%H%M%SZ")
+    out = []
+    for l in _touched(master.lines):
+        if l.upper().startswith("RRULE"):
+            head, value = l.split(":", 1)
+            parts = [x for x in value.split(";") if x and x.split("=")[0].upper() not in ("UNTIL", "COUNT")]
+            l = head + ":" + ";".join(parts + ["UNTIL=" + until])
+        out.append(l)
+    cut = _rid_key(first_gone)
+    keep = [ov.lines for ov in master.overrides if ov.recurrence_id is not None and _rid_key(ov.recurrence_id) < cut]
+    return compose(master, out, keep)
+
+
+def shifted_exdates(master, delta):
+    """The master's EXDATE lines for a series whose start moved by delta, in the form build_ics
+    writes its DTSTART in — an EXDATE left at the old hour excludes nothing for a strict client."""
+    tz = getattr(LOCAL, "key", None)
+    form = ("DATE",) if master.all_day else (("TZID", tz) if tz else ("UTC",))
+    out = []
+    for l in top_level(master.lines):
+        if not l.upper().startswith("EXDATE"): continue
+        head, value = l.split(":", 1)
+        params = {k.upper(): v for k, v in (x.split("=", 1) for x in head.split(";")[1:] if "=" in x)}
+        for v in value.split(","):
+            try:
+                d, _ = parse_dt(v, params)
+            except ValueError:
+                continue
+            out.append(_stamp("EXDATE", d + (timedelta(days=delta.days) if not isinstance(d, datetime) else delta), form))
+    return out
+
+
+def rule_for_the_rest(master, first_kept):
+    """The master's rule for a series that starts at first_kept: a COUNT loses what came before."""
+    rule = master.rrule
+    m = re.search(r"COUNT=(\d+)", rule, flags=re.I)
+    if not m:
+        return rule
+    base = master.start if isinstance(master.start, datetime) else datetime(master.start.year, master.start.month, master.start.day, tzinfo=LOCAL)
+    try:
+        r = rrulestr("RRULE:" + local_until(rule.replace("\\,", ",")), dtstart=base.replace(tzinfo=None))
+        before = len(r.between(base.replace(tzinfo=None), first_kept.astimezone(LOCAL).replace(tzinfo=None) - timedelta(seconds=1), inc=True))
+    except Exception:
+        return rule
+    return re.sub(r"COUNT=\d+", "COUNT=%d" % max(1, int(m.group(1)) - before), rule, flags=re.I)
+
+
 def parse_duration(d):
     m = re.match(r"-?P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?", d or "")
     if not m:
@@ -260,11 +444,20 @@ def parse_duration(d):
     return timedelta(weeks=w, days=dd, hours=h, minutes=mi, seconds=s)
 
 
-def build_ics(uid, summary, start, end, all_day, location="", description="", rrule="", reminder=None, keep_lines=None):
-    """A full VCALENDAR for one VEVENT. keep_lines: extra lines of the original VEVENT to preserve."""
+def build_ics(uid, summary, start, end, all_day, location="", description="", rrule="", reminder=None, keep_lines=None, overrides=None):
+    """A full VCALENDAR for one VEVENT. keep_lines: extra lines of the original VEVENT to preserve.
+    overrides: the VEVENT blocks of occurrences changed one by one, written back beside it."""
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//readers-calendar//EN"]
+    lines += vevent_lines(uid, summary, start, end, all_day, location, description, rrule, reminder, keep_lines)
+    for b in overrides or []: lines += b
+    lines.append("END:VCALENDAR")
+    return "\r\n".join(fold(l) for l in lines) + "\r\n"
+
+
+def vevent_lines(uid, summary, start, end, all_day, location="", description="", rrule="", reminder=None, keep_lines=None, extra=None):
     now = utcnow()
-    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//readers-calendar//EN", "BEGIN:VEVENT",
-             f"UID:{uid}", f"DTSTAMP:{now}", f"LAST-MODIFIED:{now}", f"SUMMARY:{escape(summary)}"]
+    lines = ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{now}", f"LAST-MODIFIED:{now}", f"SUMMARY:{escape(summary)}"]
+    lines += extra or []
     if all_day:
         lines += ["DTSTART;VALUE=DATE:" + start.strftime("%Y%m%d"), "DTEND;VALUE=DATE:" + (end + timedelta(days=1)).strftime("%Y%m%d")]
     else:
@@ -283,8 +476,8 @@ def build_ics(uid, summary, start, end, all_day, location="", description="", rr
         lines.append(l)
     if reminder is not None:
         lines += ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + escape(summary), f"TRIGGER:-PT{int(reminder)}M", "END:VALARM"]
-    lines += ["END:VEVENT", "END:VCALENDAR"]
-    return "\r\n".join(fold(l) for l in lines) + "\r\n"
+    lines.append("END:VEVENT")
+    return lines
 
 
 # ------------------------------------------------------------------------------------------
