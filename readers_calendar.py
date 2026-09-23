@@ -10,7 +10,9 @@ import re
 import os
 import sys
 import unicodedata
+import uuid
 from datetime import date, datetime, timedelta
+from urllib.parse import urljoin
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -21,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.13.0"
+VERSION = "1.14.0"
 
 
 def _config_dir():
@@ -1751,7 +1753,7 @@ class Main(QtWidgets.QMainWindow):
         writable = [(n, u) for n, u, w in self.calendars if w]
         if writable:
             dc = self.cfg.get("default_calendar"); du = dc if any(u == dc for _x, u in writable) else writable[0][1]
-            left.addWidget(dotted_row(ce.color_of(du), row(next(n for n, u in writable if u == du), _("default calendar"), role="tile", click=lambda: (lambda u: u is not None and self._cfg("default_calendar", u))(self._menu_pick(writable)))))
+            left.addWidget(dotted_row(ce.color_of(du), row(next(n for n, u in writable if u == du), _("default calendar"), role="tile", click=lambda: (lambda u: u is not None and self._cfg("default_calendar", u))(self.pick_calendar()))))
         left.addStretch(1)
         heading(_("accounts"), right)
         right.addWidget(row(urlhost(self.cfg["url"]) if self.cfg.get("url") else "—", "CalDAV", role="tile", click=self.setup))
@@ -1903,7 +1905,7 @@ class Main(QtWidgets.QMainWindow):
         t = QtWidgets.QLabel(o.when()); t.setObjectName("dim"); t.setProperty("role", "tile"); col.addWidget(t)
         col.addWidget(rule_line(18, 8))
         cal = o.cal_name + ("" if ev.writable else _(" · read-only"))
-        col.addWidget(dotted_row(ce.color_of(getattr(ev, "cal_url", "")), row(cal, _("calendar"))))
+        col.addWidget(dotted_row(ce.color_of(getattr(ev, "cal_url", "")), row(cal, _("calendar") + " · " + self.account_of(getattr(ev, "cal_url", "")))))
         rule = ev.rrule or getattr(ev, "series_rule", "")
         if rule:
             col.addWidget(row(dict(REPEATS).get(rule, _("repeats")), _("repeat")))
@@ -2040,6 +2042,7 @@ class Main(QtWidgets.QMainWindow):
             "occ": o if scope in ("this", "following") and ev is not None and not is_google(ev) else None,
             "src": (series_master(ev) or ev) if ev is not None and not is_google(ev) else None,
             "cal": getattr(ev, "cal_url", None) if ev else (self.cfg.get("default_calendar") or writable[0][1]),
+            "from_cal": getattr(ev, "cal_url", None) if ev else None,
         }
         if state["occ"] is not None:
             # one occurrence, or the series from it on: the form opens on THAT day, not on the
@@ -2084,7 +2087,9 @@ class Main(QtWidgets.QMainWindow):
             col.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), _("ends"), role="tile", click=lambda: self._pick_date("end")))
         col.addWidget(rule_line(14, 6))
         cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
-        col.addWidget(dotted_row(ce.color_of(st["cal"]), row(cal_name, _("calendar"), click=self._pick_calendar if not st["href"] else None)))
+        # one occurrence (or the series from it on) stays in its series' calendar
+        fixed = st.get("scope") in ("this", "following")
+        col.addWidget(dotted_row(ce.color_of(st["cal"]), row(cal_name, _("calendar") + " · " + self.account_of(st["cal"]), click=None if fixed else self._pick_calendar)))
         col.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
         if st.get("scope") == "this":
             col.addWidget(row(_("part of a series"), _("repeat")))
@@ -2148,9 +2153,54 @@ class Main(QtWidgets.QMainWindow):
         m.exec_(QtGui.QCursor.pos())
         return chosen[0] if chosen else None
 
+    def account_of(self, url):
+        """The account a calendar belongs to, in a few words: two "family" calendars, one on the
+        CalDAV server and one at Google, must not be taken for each other."""
+        if url.startswith(gc.PREFIX):
+            return "Google" + (" · " + gc.ACCOUNT if gc.ACCOUNT else "")
+        if any(x.get("url") == url for x in self.cfg.get("subscriptions", [])):
+            return _("feeds")
+        server = self.cfg.get("url", "")
+        return " · ".join(x for x in (self.cfg.get("username", ""), urlhost(server)) if x) or "CalDAV"
+
+    def pick_calendar(self):
+        """The writable calendars, each with its account in small letters under its name."""
+        m = QtWidgets.QMenu(self); chosen = []
+        for n, u, w in self.calendars:
+            if not w:
+                continue
+            host = QtWidgets.QWidget(); host.setAttribute(QtCore.Qt.WA_StyledBackground, True); host.setObjectName("pick")
+            lay = QtWidgets.QHBoxLayout(host); lay.setContentsMargins(12, 6, 18, 6); lay.setSpacing(10)
+            lay.addWidget(Dot(ce.color_of(u)), 0, QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+            text = QtWidgets.QVBoxLayout(); text.setSpacing(0); lay.addLayout(text, 1)
+            name = QtWidgets.QLabel(n); text.addWidget(name)
+            acct = QtWidgets.QLabel(self.account_of(u)); acct.setObjectName("dim"); acct.setProperty("role", "small"); text.addWidget(acct)
+            a = QtWidgets.QWidgetAction(m); a.setDefaultWidget(host)
+            a.triggered.connect(lambda _c=False, v=u: chosen.append(v)); m.addAction(a)
+        m.setStyleSheet("QWidget#pick:hover { background: %s; }" % ("rgba(255,255,255,0.14)" if self.dark else "rgba(0,0,0,0.08)"))
+        m.exec_(QtGui.QCursor.pos())
+        return chosen[0] if chosen else None
+
     def _pick_calendar(self):
-        v = self._menu_pick([(n, u) for n, u, w in self.calendars if w])
+        v = self.pick_calendar()
         if v is not None: self._set("cal", v)
+
+    def _to_other_calendar(self, st, kw, overrides):
+        """The event (or the whole series) written in the calendar chosen in the form, then taken
+        out of the one it was in — in that order, so that a failure leaves one too many, never
+        none. Within one Google account, Google moves it itself (guests and all)."""
+        dest, google = st["cal"], self.google_client()
+        if st.get("gevent") is not None:
+            if dest.startswith(gc.PREFIX):
+                google.update(st["gevent"], **kw); google.move(st["gevent"], dest); return
+            self.client.create(dest, **kw)
+            google.delete(st["gevent"]); return
+        if dest.startswith(gc.PREFIX):
+            google.create(dest, **kw)
+        else:
+            # the same UID, so that invitations and other devices know it for the same event
+            self.client.put(urljoin(dest.rstrip("/") + "/", str(uuid.uuid4()) + ".ics"), ce.build_ics(st["uid"], overrides=overrides, **kw), create=True)
+        self.client.delete(st["href"])
 
     def _pick_reminder(self):
         v = self._menu_pick([(reminder_label(m), ("none" if m is None else m)) for m in REMINDERS])
@@ -2193,6 +2243,8 @@ class Main(QtWidgets.QMainWindow):
                 elif st["all_day"] == src.all_day: keep += ce.shifted_exdates(src, moved)
         kw = dict(summary=st["summary"], start=start, end=end, all_day=st["all_day"], location=st["location"], description=st["description"], rrule=st["rrule"], reminder=st["reminder"], keep_lines=keep)
         self.status.setText(_("saving…"))
+        if st.get("from_cal") and st["cal"] != st["from_cal"]:
+            self.run(lambda: self._to_other_calendar(st, kw, overrides), lambda _: (self.return_to_view(day), self.sync()), self.write_failed); return
         if st.get("gevent") is not None:
             google = self.google_client()
             self.run(lambda: google.update(st["gevent"], **kw), lambda _: (self.return_to_view(day), self.sync()), self.write_failed); return

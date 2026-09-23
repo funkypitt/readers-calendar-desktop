@@ -35,6 +35,9 @@ WRITE_SCOPES = ("https://www.googleapis.com/auth/calendar", "https://www.googlea
 PREFIX = "google:"   # calendar "urls" in the program: google:<calendar id>
 
 
+ACCOUNT = ""          # the connected account's address (its primary calendar's id), once read
+
+
 class GoogleError(Exception):
     pass
 
@@ -164,6 +167,9 @@ class Google:
         while True:
             page = self._get("/users/me/calendarList", pageToken=token) if token else self._get("/users/me/calendarList")
             for c in page.get("items", []):
+                if c.get("primary"):
+                    global ACCOUNT
+                    ACCOUNT = c["id"]
                 if c.get("selected", True) or c.get("primary"):
                     if c.get("backgroundColor"):
                         ce.COLORS[PREFIX + c["id"]] = c["backgroundColor"]
@@ -277,6 +283,11 @@ class Google:
             body.pop("recurrence")
         # the etag the user saw guards the occurrence; a series is read fresh just above
         return self._req("PUT", path, body=body, etag=None if event_id != g["id"] else ev.etag)
+
+    def move(self, ev, cal_url):
+        """The event (a single one or a whole series) handed to another calendar of the account."""
+        g = ev.google
+        return self._req("POST", self._events_path(g["cal"], g["id"]) + "/move", params={"destination": cal_url[len(PREFIX):]})
 
     def delete(self, ev, series=False):
         g = ev.google
