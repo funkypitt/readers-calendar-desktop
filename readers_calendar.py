@@ -21,7 +21,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.12.0"
+VERSION = "1.13.0"
 
 
 def _config_dir():
@@ -166,6 +166,15 @@ _CRED_TR = {
         "credentials exported to %1 — the file holds your passwords: keep it private": "учётные данные экспортированы в %1 — файл содержит ваши пароли: храните его в тайне",
         "credentials imported": "учётные данные импортированы", "server and login taken from %1": "сервер и логин взяты из %1", "not a Reader's credentials file": "это не файл учётных данных Reader's", "this file holds nothing for %1": "в этом файле нет ничего для %1"},
 }
+_COLOUR_TR = {
+ "fr": {"events": "événements", "plain, with a colour dot": "sobres, avec une pastille", "in their calendar's colour": "dans la couleur de leur agenda"},
+ "de": {"events": "Termine", "plain, with a colour dot": "schlicht, mit Farbpunkt", "in their calendar's colour": "in der Farbe ihres Kalenders"},
+ "es": {"events": "eventos", "plain, with a colour dot": "sobrios, con un punto de color", "in their calendar's colour": "en el color de su agenda"},
+ "pt": {"events": "eventos", "plain, with a colour dot": "sóbrios, com um ponto de cor", "in their calendar's colour": "na cor da sua agenda"},
+ "ru": {"events": "события", "plain, with a colour dot": "строго, с цветной точкой", "in their calendar's colour": "в цвете своего календаря"},
+}
+for _l, _d in _COLOUR_TR.items():
+    _TR.setdefault(_l, {}).update(_d)
 for _l, _d in _CRED_TR.items():
     _TR.setdefault(_l, {}).update(_d)
 
@@ -287,6 +296,23 @@ class Dot(QtWidgets.QWidget):
         else:
             p.setPen(QtGui.QPen(self.color, 1.5)); p.setBrush(QtCore.Qt.NoBrush); r.adjust(1, 1, -1, -1)
         p.drawEllipse(r)
+
+
+def block_look(event, fg, bg, coloured):
+    """An event block's fill, its text colour, and whether it wears the calendar's dot: black
+    (white on the dark theme) with a dot by default; with the "in their calendar's colour"
+    setting, the colour itself and black or white text, whichever contrasts more with it."""
+    if not coloured:
+        return QtGui.QColor(fg), QtGui.QColor(bg), True
+    fill = QtGui.QColor(ce.color_of(getattr(event, "cal_url", "")))
+    lin = lambda c: c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    lum = 0.2126 * lin(fill.redF()) + 0.7152 * lin(fill.greenF()) + 0.0722 * lin(fill.blueF())
+    ink = QtGui.QColor("#000") if (lum + 0.05) / 0.05 >= 1.05 / (lum + 0.05) else QtGui.QColor("#fff")
+    return fill, ink, False
+
+
+def faded(color, alpha):
+    c = QtGui.QColor(color); c.setAlphaF(alpha); return c
 
 
 def paint_dot(p, center, event, block_color):
@@ -631,6 +657,7 @@ class MonthBoard(QtWidgets.QWidget):
     of its events (a dot of the calendar's colour, the time when there is room, the title); an
     all-day event is a solid bar. Click a line: the event; click a day: that day's grid; double
     click: a new event that day; drag a line to another day to move the event."""
+    coloured = False     # events in their calendar's colour instead of black with a dot
     day_clicked = QtCore.pyqtSignal(object)
     new_on_day = QtCore.pyqtSignal(object)
     event_clicked = QtCore.pyqtSignal(object)
@@ -701,7 +728,11 @@ class MonthBoard(QtWidgets.QWidget):
                 for k, o in enumerate(shown):
                     line = QtCore.QRectF(cell.left() + 4, top + k * lh, cw - 8, lh - 1)
                     lifted = self._press is not None and self._press[0] is o and self._target is not None
-                    if o.event.all_day:
+                    if self.coloured:
+                        fill, ink, _dot = block_look(o.event, self.fg, self.bg, True)
+                        p.fillRect(line, faded(fill, 0.45) if lifted else fill); p.setPen(ink)
+                        text_rect = line.adjusted(4, 0, -3, 0)
+                    elif o.event.all_day:
                         p.fillRect(line, dim if lifted else self.fg); p.setPen(self.bg)
                         paint_dot(p, QtCore.QPointF(line.left() + 7, line.center().y()), o.event, self.fg)
                         text_rect = line.adjusted(15, 0, -3, 0)
@@ -751,6 +782,7 @@ class MonthBoard(QtWidgets.QWidget):
 
 class WeekHead(QtWidgets.QWidget):
     """Day headers and the all-day strip: stays put while the time grid scrolls."""
+    coloured = False     # events in their calendar's colour instead of black with a dot
     event_clicked = QtCore.pyqtSignal(object)
     GUTTER = 48
 
@@ -812,8 +844,9 @@ class WeekHead(QtWidgets.QWidget):
             for o in self.occs:
                 if o.start.date() <= d < o.end.date():
                     rect = QtCore.QRectF(x, y, colw, 20).adjusted(2, 0, -2, 0)
-                    p.fillRect(rect, self.fg); p.setPen(self.bg); p.setFont(small)
-                    dot = rect.width() >= 30
+                    fill, ink, dot = block_look(o.event, self.fg, self.bg, self.coloured)
+                    p.fillRect(rect, fill); p.setPen(ink); p.setFont(small)
+                    dot = dot and rect.width() >= 30
                     p.drawText(rect.adjusted(4, 0, -16 if dot else -4, 0), QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft, p.fontMetrics().elidedText(o.event.summary, QtCore.Qt.ElideRight, int(rect.width()) - (20 if dot else 8)))
                     if dot:
                         paint_dot(p, QtCore.QPointF(rect.right() - 8, rect.center().y()), o.event, self.fg)
@@ -837,6 +870,7 @@ class WeekHead(QtWidgets.QWidget):
 class WeekGrid(QtWidgets.QWidget):
     """The 24-hour time grid of one week (scrolls). A block dragged with the mouse moves by
     quarter hours and whole columns; event_moved carries the shift on release."""
+    coloured = False     # events in their calendar's colour instead of black with a dot
     event_clicked = QtCore.pyqtSignal(object)
     event_moved = QtCore.pyqtSignal(object, int, int)   # (occ, days, minutes)
     slot_clicked = QtCore.pyqtSignal(object, int)   # (date, hour)
@@ -924,8 +958,9 @@ class WeekGrid(QtWidgets.QWidget):
         y0 = top + s / 60 * self.HOUR; y1 = top + e / 60 * self.HOUR
         # solid blocks: the white between them is the free time
         rect = QtCore.QRectF(x0, y0, lane_w - (1 if lane < lanes - 1 else 0), y1 - y0 - 1)
-        p.fillRect(rect, self.fg)
-        dot = rect.width() >= 22 and rect.height() >= 14
+        fill, ink, dot = block_look(o.event, self.fg, self.bg, self.coloured)
+        p.fillRect(rect, fill)
+        dot = dot and rect.width() >= 22 and rect.height() >= 14
         if dot:
             paint_dot(p, QtCore.QPointF(rect.right() - 7, rect.top() + 7), o.event, self.fg)
         if frame:
@@ -935,11 +970,11 @@ class WeekGrid(QtWidgets.QWidget):
         whole = int(inner.height() // fm_small.lineSpacing()) * fm_small.lineSpacing()
         inner.setHeight(max(whole, fm_small.lineSpacing()))
         p.save(); p.setClipRect(rect.adjusted(2, 1, -2, -1))
-        p.setFont(small); p.setPen(self.bg)
+        p.setFont(small); p.setPen(ink)
         flags = QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft | (QtCore.Qt.TextWordWrap if lane_w >= 44 else 0)
         p.drawText(inner, flags, o.event.summary)
         if show_time:
-            p.setPen(dimbg)
+            p.setPen(faded(ink, 0.75) if self.coloured else dimbg)
             if not frame and self.ndays == 1 and o.event.location:
                 label += " · " + o.event.location
             p.drawText(rect.adjusted(4, 0, -4, -3), QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft, label)
@@ -1236,7 +1271,7 @@ class Main(QtWidgets.QMainWindow):
         self.search_results = self._page_scroll(); self.search_results[1].setContentsMargins(0, 6, 0, 18); sl.addWidget(self.search_results[0], 1)
         self.pages.addWidget(self.page_search)
         self.search_timer = QtCore.QTimer(self, singleShot=True, interval=200, timeout=self.render_search)
-        self._wide = None; self._wide_loading = False; self._back = None
+        self._wide = None; self._wide_loading = False; self._back = None; self._view = None
         # 6: month board
         self.page_month = QtWidgets.QWidget(); ml = QtWidgets.QVBoxLayout(self.page_month); ml.setContentsMargins(24, 18, 24, 16); ml.setSpacing(8)
         mh = QtWidgets.QHBoxLayout(); mh.setSpacing(18)
@@ -1265,8 +1300,7 @@ class Main(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer(self); self.timer.timeout.connect(self.sync); self.timer.start(SYNC_MINUTES * 60 * 1000)
         self.apply_style()
         self.refresh_month_title()
-        # the view the window opens on: the week unless configured otherwise
-        {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "month": lambda: self.show_month(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
+        self.show_default()
         if self.cfg.get("url") or self.cfg.get("subscriptions") or self.google_ready():
             self.connect_client()
         else:
@@ -1323,6 +1357,8 @@ class Main(QtWidgets.QMainWindow):
             QDialog {{ background: {bg}; }} QToolTip {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }}
         """)
         self.grid.set_colors(fg, bg); self.week.set_colors(fg, bg); self.week_head.set_colors(fg, bg); self.board.set_colors(fg, bg)
+        for w in (self.week, self.week_head, self.board):
+            w.coloured = bool(self.cfg.get("coloured_events", False))
         f = QtGui.QFont(fam); f.setPointSize(s); f.setWeight(QtGui.QFont.Light if weight == 300 else QtGui.QFont.Normal); self.grid.setFont(f); self.week.setFont(f); self.week_head.setFont(f); self.board.setFont(f)
         QtWidgets.QApplication.instance().setFont(f)
         self.render_current()
@@ -1548,9 +1584,34 @@ class Main(QtWidgets.QMainWindow):
     def go_today(self):
         self.grid.set_month(date.today()); self.refresh_month_title(); self.show_agenda()
 
+    def show_default(self):
+        """The view the window opens on: the week unless configured otherwise."""
+        {"week": lambda: self.show_week(date.today()), "workdays": lambda: self.show_week(date.today(), workdays=True), "day": lambda: self.show_day_grid(date.today()), "month": lambda: self.show_month(date.today()), "agenda": self.show_agenda}.get(self.cfg.get("default_view", "week"), lambda: self.show_week(date.today()))()
+
+    def return_to_view(self, focus=None):
+        """Back to the view an event was opened, created or edited from — the week stays the week,
+        the month the month. focus: the day of the event just saved; when the view shows another
+        week, day or month, it moves to the one holding that day."""
+        v = self._view or {"kind": "default"}
+        k = v["kind"]
+        if k == "grid" and v["ndays"] == 1:
+            self.show_day_grid(focus or v["start"])
+        elif k == "grid":
+            days = [v["start"] + timedelta(days=i) for i in range(7)]
+            self.show_week(v["start"] if focus is None or focus in days else focus, workdays=v["workdays"])
+        elif k == "month":
+            self.show_month(focus or v["month"])
+        elif k == "agenda":
+            self.show_agenda(v["from"])
+        elif k == "search":
+            self.back_to_search()
+        else:
+            self.show_default()
+
     def show_agenda(self, from_date=None):
         self._back = None
         self.pages.setCurrentIndex(0); self._agenda_from = from_date or date.today(); self.render_agenda()
+        self._view = {"kind": "agenda", "from": self._agenda_from}
 
     def show_day(self, d):
         self.grid.selected = d; self.grid.update(); self.show_agenda(d)
@@ -1578,13 +1639,14 @@ class Main(QtWidgets.QMainWindow):
     def escape(self):
         if self.pages.currentIndex() == 5 and self.search_edit.text():
             self.search_edit.clear(); return
-        (self._back or self.show_agenda)()
+        (self._back or self.return_to_view)()
 
     # ---- search ------------------------------------------------------------------------
 
     def show_search(self):
         self._back = None
         self.pages.setCurrentIndex(5); self.search_edit.setFocus(); self.search_edit.selectAll()
+        self._view = {"kind": "search"}
         self.render_search()
 
     def _open_from_search(self, o):
@@ -1658,13 +1720,16 @@ class Main(QtWidgets.QMainWindow):
         scroll, lay = self.page_settings
         self._clear(lay)
         host = QtWidgets.QWidget(); host.setMaximumWidth(1000); outer = QtWidgets.QVBoxLayout(host); outer.setContentsMargins(0, 0, 0, 0)
-        outer.addWidget(page_header([link(_("← back"), self.show_agenda), QtWidgets.QLabel(_("settings"))]))
+        outer.addWidget(page_header([link(_("← back"), self.return_to_view), QtWidgets.QLabel(_("settings"))]))
         two = QtWidgets.QHBoxLayout(); two.setContentsMargins(0, 0, 0, 0); two.setSpacing(64); outer.addLayout(two)
         left = QtWidgets.QVBoxLayout(); left.setSpacing(0); right = QtWidgets.QVBoxLayout(); right.setSpacing(0)
         def heading(text, box):
             h = QtWidgets.QLabel(text); h.setObjectName("heading"); box.addWidget(h)
         heading(_("look"), left)
         left.addWidget(row(_("white on black") if self.dark else _("black on white"), _("colours"), role="tile", click=lambda: (self.toggle_theme(), self.render_settings())))
+        coloured = bool(self.cfg.get("coloured_events", False))
+        left.addWidget(row(_("in their calendar's colour") if coloured else _("plain, with a colour dot"), _("events"), role="tile",
+                           click=lambda: (self.cfg.__setitem__("coloured_events", not coloured), save_config(self.cfg), self.apply_style(), self.render_settings())))
         size_line = QtWidgets.QHBoxLayout(); size_line.setSpacing(4)
         size_line.addWidget(row(f"{self.font_size} pt", _("text size"), role="tile"))
         size_line.addSpacing(18)
@@ -1729,6 +1794,7 @@ class Main(QtWidgets.QMainWindow):
     def show_month(self, d):
         self._back = None
         self.board.month = d.replace(day=1); self.pages.setCurrentIndex(6); self.render_month()
+        self._view = {"kind": "month", "month": self.board.month}
         self.grid.set_month(d); self.refresh_month_title()
 
     def render_month(self):
@@ -1757,6 +1823,7 @@ class Main(QtWidgets.QMainWindow):
     def _open_grid(self):
         self._back = None
         self.pages.setCurrentIndex(1); self.render_week()
+        self._view = {"kind": "grid", "start": self.week.start, "ndays": self.week.ndays, "workdays": self.week.workdays}
         # open an hour before the first thing shown (or now, if today is shown); 08:00 when empty
         days = [self.week.start + timedelta(days=i) for i in range(self.week.ndays)]
         firsts = [o.start.hour for o in self.week.occs if not o.event.all_day and o.start.date() in days]
@@ -1825,7 +1892,7 @@ class Main(QtWidgets.QMainWindow):
         ev = o.event
         right = [link(_("edit"), lambda: self.edit_event(o)), link(_("delete"), lambda: self.delete_event(o))] if ev.writable else []
         host, col = column(720)
-        col.addWidget(page_header([link(_("← back"), self._back or self.show_agenda)], right))
+        col.addWidget(page_header([link(_("← back"), self._back or self.return_to_view)], right))
         title = QtWidgets.QLabel(ev.summary); title.setObjectName("big"); title.setWordWrap(True); title.setContentsMargins(0, 10, 0, 6); col.addWidget(title)
         last = o.end - timedelta(seconds=1)
         if o.start.date() == last.date():
@@ -1913,8 +1980,8 @@ class Main(QtWidgets.QMainWindow):
         self.status.setText(_("deleting…"))
         if is_google(o.event):
             google = self.google_client()
-            self.run(lambda: google.delete(o.event, series), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
-        self.run(lambda: self.client.delete(o.event.href), lambda _: (self.show_agenda(), self.sync()))
+            self.run(lambda: google.delete(o.event, series), lambda _: (self.return_to_view(), self.sync()), self.write_failed); return
+        self.run(lambda: self.client.delete(o.event.href), lambda _: (self.return_to_view(), self.sync()))
 
     def copy_number(self, number):
         QtWidgets.QApplication.clipboard().setText(number)
@@ -1933,7 +2000,7 @@ class Main(QtWidgets.QMainWindow):
         self.notice = message       # kept over the "synced" line that follows
         self.status.setText(message)
         if self.pages.currentIndex() == 3:
-            self.show_agenda()
+            self.return_to_view()
         self.sync()
 
     # ---- edit --------------------------------------------------------------------------
@@ -1996,7 +2063,7 @@ class Main(QtWidgets.QMainWindow):
         self._clear(lay)
         save = link(_("save"), self.save_event, "primary", "Ctrl+S")
         host, col = column(640)
-        col.addWidget(page_header([link(_("← cancel"), self._back or self.show_agenda)], [save]))
+        col.addWidget(page_header([link(_("← cancel"), self._back or self.return_to_view)], [save]))
         title = QtWidgets.QLineEdit(st["summary"]); title.setObjectName("titleedit"); title.setPlaceholderText(_("title"))
         title.textChanged.connect(lambda v: st.__setitem__("summary", v)); title.returnPressed.connect(self.save_event)
         col.addWidget(title); self.edit_title = title
@@ -2030,7 +2097,7 @@ class Main(QtWidgets.QMainWindow):
         notes = QtWidgets.QPlainTextEdit(st["description"]); notes.setObjectName("field"); notes.setPlaceholderText(_("description"))
         notes.setFixedHeight(150); notes.textChanged.connect(lambda: st.__setitem__("description", notes.toPlainText())); col.addWidget(notes)
         bottom = QtWidgets.QHBoxLayout(); bottom.setContentsMargins(0, 22, 0, 0); bottom.setSpacing(26)
-        bottom.addWidget(link(_("cancel"), self._back or self.show_agenda)); bottom.addStretch(1); bottom.addWidget(link(_("save"), self.save_event, "primary"))
+        bottom.addWidget(link(_("cancel"), self._back or self.return_to_view)); bottom.addStretch(1); bottom.addWidget(link(_("save"), self.save_event, "primary"))
         col.addLayout(bottom)
         lay.insertWidget(0, host)
         if not st["summary"]:
@@ -2105,10 +2172,11 @@ class Main(QtWidgets.QMainWindow):
             start, end = st["start"], st["end"]
             if end <= start: self.status.setText(_("the end is before the start")); return
         keep = []; overrides = None
+        day = start.date() if isinstance(start, datetime) else start     # where the view goes back to
         if st.get("occ") is not None:
             kw = dict(summary=st["summary"], start=start, end=end, all_day=st["all_day"], location=st["location"], description=st["description"], reminder=st["reminder"])
             if st["scope"] == "following": kw["rrule"] = st["rrule"]
-            self._series_write(st["occ"], st["scope"], kw=kw, done=lambda _r: (self.show_agenda(), self.sync()))
+            self._series_write(st["occ"], st["scope"], kw=kw, done=lambda _r: (self.return_to_view(day), self.sync()))
             return
         if st["href"] and st.get("gevent") is None:
             # the event as it was when the form opened — not looked up again in a list that a
@@ -2127,15 +2195,15 @@ class Main(QtWidgets.QMainWindow):
         self.status.setText(_("saving…"))
         if st.get("gevent") is not None:
             google = self.google_client()
-            self.run(lambda: google.update(st["gevent"], **kw), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
+            self.run(lambda: google.update(st["gevent"], **kw), lambda _: (self.return_to_view(day), self.sync()), self.write_failed); return
         if not st["href"] and st["cal"].startswith(gc.PREFIX):
             google = self.google_client()
-            self.run(lambda: google.create(st["cal"], **kw), lambda _: (self.show_agenda(), self.sync()), self.write_failed); return
+            self.run(lambda: google.create(st["cal"], **kw), lambda _: (self.return_to_view(day), self.sync()), self.write_failed); return
         if st["href"]:
             fn = lambda: self.client.put(st["href"], ce.build_ics(st["uid"], overrides=overrides, **kw), etag=st["etag"])
         else:
             fn = lambda: self.client.create(st["cal"], **kw)
-        self.run(fn, lambda _: (self.show_agenda(), self.sync()))
+        self.run(fn, lambda _: (self.return_to_view(day), self.sync()))
 
 
 def _icon():
