@@ -46,8 +46,13 @@ class Conflict(GoogleError):
     """The event changed on Google since it was shown (HTTP 412)."""
 
 
+def tr(text):
+    """Replaced by the app's own _() at start-up, so the browser page speaks the interface's language."""
+    return text
+
+
 def _done_page(ok):
-    text = "Reader's Calendar is connected. You can close this tab." if ok else "Something went wrong. Close this tab and try again."
+    text = tr("Reader's Calendar is connected. You can close this tab.") if ok else tr("Something went wrong. Close this tab and try again.")
     return ("<!doctype html><meta charset=utf-8><title>reader's calendar</title>"
             "<body style='font-family:serif;background:#fff;color:#000;padding:2em;font-size:1.3em'>" + text + "</body>").encode()
 
@@ -59,11 +64,15 @@ class _Catch(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
         if q.get("state", [None])[0] != _Catch.state:
-            _Catch.error = "state mismatch"
+            _Catch.error = "the answer in the browser did not match this request — try again"
         elif "code" in q:
             _Catch.code = q["code"][0]
+        elif q.get("error", [""])[0] == "access_denied":
+            _Catch.error = "access was refused in the browser"
+        elif q.get("error"):
+            _Catch.error = "Google refused access: " + q["error"][0]
         else:
-            _Catch.error = q.get("error", ["no code"])[0]
+            _Catch.error = "Google sent no authorisation code"
         body = _done_page(_Catch.code is not None)
         self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.send_header("Content-Length", str(len(body))); self.end_headers()
         self.wfile.write(body)
@@ -103,7 +112,7 @@ def connect(client_id, client_secret, open_browser=webbrowser.open, timeout=300)
         raise GoogleError(f"token: HTTP {r.status_code} {r.text[:200]}")
     tok = r.json()
     if "refresh_token" not in tok:
-        raise GoogleError("Google gave no refresh token — remove the app from your Google account's connections and connect again")
+        raise GoogleError("Google did not grant lasting access — remove this app from your Google account's connections, then connect again")
     return {"refresh_token": tok["refresh_token"], "access_token": tok.get("access_token", ""), "expires_at": time.time() + int(tok.get("expires_in", 0)) - 60,
             "scope": tok.get("scope", SCOPE)}
 

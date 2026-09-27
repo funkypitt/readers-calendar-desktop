@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.0"
+VERSION = "1.14.1"
 
 
 def _config_dir():
@@ -62,7 +62,7 @@ _TR = {
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
-        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · nur lesen", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "move this and the following events": "diesen und die folgenden verschieben", "edit this and the following events": "diesen und die folgenden bearbeiten", "delete this and the following events": "diesen und die folgenden löschen", "delete the whole series": "die ganze Serie löschen", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender", "%1 copied": "%1 kopiert", "%1 feeds": "%1 Feeds", "accounts": "Konten", "at set times": "mit Uhrzeit", "black on white": "Schwarz auf Weiß", "white on black": "Weiß auf Schwarz", "colours": "Farben", "default calendar": "Standardkalender", "default reminder": "Standarderinnerung", "ends another day": "endet an einem anderen Tag", "first day of the week": "erster Tag der Woche", "look": "Aussehen", "monday": "Montag", "sunday": "Sonntag", "month": "Monat", "no event found": "kein Termin gefunden", "past": "vergangen", "upcoming": "bevorstehend", "read only": "nur lesen", "search": "suchen", "search events: title, place, notes": "Termine suchen: Titel, Ort, Notizen", "searching further…": "suche weiter…", "settings": "Einstellungen", "sync now": "jetzt synchronisieren", "text size": "Textgröße", "time": "Uhrzeit", "← cancel": "← abbrechen", "Google: the event changed elsewhere — shown again as it is now": "Google: der Termin wurde anderswo geändert — hier sein aktueller Stand", "move only this event": "nur diesen Termin verschieben", "edit only this event": "nur diesen Termin bearbeiten", "edit the whole series": "die ganze Serie bearbeiten", "delete only this event": "nur diesen Termin löschen", "part of a series": "Teil einer Serie", "this calendar is read-only": "dieser Kalender ist schreibgeschützt", "Google: connect the account again (Ctrl+,) to edit its events": "Google: Konto erneut verbinden (Strg+,), um Termine zu bearbeiten", "connected read-only — forget, then connect again to edit": "nur lesend verbunden — vergessen, dann erneut verbinden, um zu bearbeiten", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Kalender, lesen und schreiben, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, Sie selbst als Tester, dann App veröffentlichen: im Testmodus verlangt Google alle 7 Tage\neine neue Verbindung) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App. ID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet\nGoogle („Google hat diese App nicht überprüft“: Erweitert › weiter — es ist Ihr eigener Client) und kommt von selbst zurück.",
+        "repeats": "wiederholt sich", "repeats (custom rule)": "wiederholt sich (eigene Regel)", " · read-only": " · schreibgeschützt", "← back": "← zurück", "edit": "bearbeiten", "delete": "löschen", " the whole series": " die ganze Serie", "move the whole series": "die ganze Serie verschieben", "move this and the following events": "diesen und die folgenden verschieben", "edit this and the following events": "diesen und die folgenden bearbeiten", "delete this and the following events": "diesen und die folgenden löschen", "delete the whole series": "die ganze Serie löschen", "deleting…": "lösche…", "this event comes from a read-only feed": "dieser Termin stammt aus einem Nur-Lese-Feed", "no writable calendar": "kein beschreibbarer Kalender", "%1 copied": "%1 kopiert", "%1 feeds": "%1 Feeds", "accounts": "Konten", "at set times": "mit Uhrzeit", "black on white": "Schwarz auf Weiß", "white on black": "Weiß auf Schwarz", "colours": "Farben", "default calendar": "Standardkalender", "default reminder": "Standarderinnerung", "ends another day": "endet an einem anderen Tag", "first day of the week": "erster Tag der Woche", "look": "Aussehen", "monday": "Montag", "sunday": "Sonntag", "month": "Monat", "no event found": "kein Termin gefunden", "past": "vergangen", "upcoming": "bevorstehend", "read only": "schreibgeschützt", "search": "suchen", "search events: title, place, notes": "Termine suchen: Titel, Ort, Notizen", "searching further…": "suche weiter…", "settings": "Einstellungen", "sync now": "jetzt synchronisieren", "text size": "Textgröße", "time": "Uhrzeit", "← cancel": "← abbrechen", "Google: the event changed elsewhere — shown again as it is now": "Google: der Termin wurde anderswo geändert — hier sein aktueller Stand", "move only this event": "nur diesen Termin verschieben", "edit only this event": "nur diesen Termin bearbeiten", "edit the whole series": "die ganze Serie bearbeiten", "delete only this event": "nur diesen Termin löschen", "part of a series": "Teil einer Serie", "this calendar is read-only": "dieser Kalender ist schreibgeschützt", "Google: connect the account again (Ctrl+,) to edit its events": "Google: Konto erneut verbinden (Strg+,), um Termine zu bearbeiten", "connected read-only — forget, then connect again to edit": "nur lesend verbunden — vergessen, dann erneut verbinden, um zu bearbeiten", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Kalender, lesen und schreiben, mit eigenem OAuth-Client: console.cloud.google.com › neues Projekt › APIs & Dienste › Google Calendar API\naktivieren › OAuth-Zustimmungsbildschirm (extern, Sie selbst als Tester, dann App veröffentlichen: im Testmodus verlangt Google alle 7 Tage\neine neue Verbindung) › Anmeldedaten › OAuth-Client-ID, Typ Desktop-App. ID und Geheimnis hier eintragen, dann verbinden: der Browser öffnet\nGoogle („Google hat diese App nicht überprüft“: Erweitert › weiter — es ist Ihr eigener Client) und kommt von selbst zurück.",
         "title": "Titel", "all day: ": "ganztägig: ", "on": "an", "off": "aus", "starts": "beginnt", "start time": "Beginn", "ends": "endet", "end time": "Ende", "calendar": "Kalender", "reminder": "Erinnerung", "repeat": "Wiederholung", "location": "Ort", "description": "Beschreibung",
         "save": "speichern", "the end is before the start": "das Ende liegt vor dem Beginn", "saving…": "speichere…", "start time (hh:mm)": "Beginn (hh:mm)", "end time (hh:mm)": "Ende (hh:mm)",
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
@@ -75,7 +75,7 @@ _TR = {
         "repeats": "se repite", "repeats (custom rule)": "se repite (regla personalizada)", " · read-only": " · solo lectura", "← back": "← volver", "edit": "editar", "delete": "eliminar", " the whole series": " toda la serie", "move the whole series": "mover toda la serie", "move this and the following events": "mover este y los siguientes", "edit this and the following events": "editar este y los siguientes", "delete this and the following events": "eliminar este y los siguientes", "delete the whole series": "eliminar toda la serie", "deleting…": "eliminando…", "this event comes from a read-only feed": "este evento viene de un feed de solo lectura", "no writable calendar": "ningún calendario editable", "%1 copied": "%1 copiado", "%1 feeds": "%1 feeds", "accounts": "cuentas", "at set times": "con hora", "black on white": "negro sobre blanco", "white on black": "blanco sobre negro", "colours": "colores", "default calendar": "calendario predeterminado", "default reminder": "recordatorio predeterminado", "ends another day": "termina otro día", "first day of the week": "primer día de la semana", "look": "aspecto", "monday": "lunes", "sunday": "domingo", "month": "mes", "no event found": "ningún evento encontrado", "past": "pasados", "upcoming": "próximos", "read only": "solo lectura", "search": "buscar", "search events: title, place, notes": "buscar eventos: título, lugar, notas", "searching further…": "buscando más lejos…", "settings": "ajustes", "sync now": "sincronizar ahora", "text size": "tamaño del texto", "time": "hora", "← cancel": "← cancelar", "Google: the event changed elsewhere — shown again as it is now": "Google: el evento cambió en otro lugar — se muestra tal como está ahora", "move only this event": "mover solo este evento", "edit only this event": "editar solo este evento", "edit the whole series": "editar toda la serie", "delete only this event": "eliminar solo este evento", "part of a series": "parte de una serie", "this calendar is read-only": "este calendario es de solo lectura", "Google: connect the account again (Ctrl+,) to edit its events": "Google: vuelva a conectar la cuenta (Ctrl+,) para editar sus eventos", "connected read-only — forget, then connect again to edit": "conectada en solo lectura — olvídela y vuelva a conectarla para editar", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Calendar, lectura y escritura, con su propio cliente OAuth: console.cloud.google.com › proyecto nuevo › APIs y servicios › activar la\nAPI de Google Calendar › pantalla de consentimiento OAuth (externa, usted como probador, luego Publicar la app: en pruebas, Google pide\nreconectar cada 7 días) › Credenciales › ID de cliente OAuth, tipo Aplicación de escritorio. Copie el ID y el secreto aquí y conecte: el\nnavegador abre Google («Google no ha verificado esta app»: Avanzado › continuar — es su propio cliente) y vuelve solo.",
         "title": "título", "all day: ": "todo el día: ", "on": "sí", "off": "no", "starts": "empieza", "start time": "hora de inicio", "ends": "termina", "end time": "hora de fin", "calendar": "calendario", "reminder": "recordatorio", "repeat": "repetición", "location": "lugar", "description": "descripción",
         "save": "guardar", "the end is before the start": "el fin es anterior al inicio", "saving…": "guardando…", "start time (hh:mm)": "hora de inicio (hh:mm)", "end time (hh:mm)": "hora de fin (hh:mm)",
-        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
+        "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tiene la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desarrollado con Claude Code"},
  "pt": {"Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
@@ -90,7 +90,7 @@ _TR = {
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desenvolvido com Claude Code"},
  "ru": {"Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
-        "agenda": "повестка", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
+        "agenda": "расписание", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
         "repeats": "повторяется", "repeats (custom rule)": "повторяется (своё правило)", " · read-only": " · только чтение", "← back": "← назад", "edit": "изменить", "delete": "удалить", " the whole series": " всю серию", "move the whole series": "перенести всю серию", "move this and the following events": "перенести это и следующие", "edit this and the following events": "изменить это и следующие", "delete this and the following events": "удалить это и следующие", "delete the whole series": "удалить всю серию", "deleting…": "удаление…", "this event comes from a read-only feed": "это событие из ленты только для чтения", "no writable calendar": "нет календаря для записи", "%1 copied": "%1 скопирован", "%1 feeds": "лент: %1", "accounts": "аккаунты", "at set times": "по времени", "black on white": "чёрным по белому", "white on black": "белым по чёрному", "colours": "цвета", "default calendar": "календарь по умолчанию", "default reminder": "напоминание по умолчанию", "ends another day": "заканчивается в другой день", "first day of the week": "первый день недели", "look": "вид", "monday": "понедельник", "sunday": "воскресенье", "month": "месяц", "no event found": "событий не найдено", "past": "прошедшие", "upcoming": "предстоящие", "read only": "только чтение", "search": "поиск", "search events: title, place, notes": "поиск событий: название, место, заметки", "searching further…": "ищу дальше…", "settings": "настройки", "sync now": "синхронизировать", "text size": "размер текста", "time": "время", "← cancel": "← отмена", "Google: the event changed elsewhere — shown again as it is now": "Google: событие изменено в другом месте — показано в текущем виде", "move only this event": "перенести только это событие", "edit only this event": "изменить только это событие", "edit the whole series": "изменить всю серию", "delete only this event": "удалить только это событие", "part of a series": "часть серии", "this calendar is read-only": "этот календарь только для чтения", "Google: connect the account again (Ctrl+,) to edit its events": "Google: подключите аккаунт заново (Ctrl+,), чтобы изменять события", "connected read-only — forget, then connect again to edit": "подключён только для чтения — забудьте и подключите заново, чтобы изменять", "Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.": "Google Календарь, чтение и запись, со своим OAuth-клиентом: console.cloud.google.com › новый проект › API и сервисы › включить\nGoogle Calendar API › экран согласия OAuth (внешний, вы как тестировщик, затем «Опубликовать приложение»: в режиме тестирования Google\nпросит подключаться заново каждые 7 дней) › Учётные данные › идентификатор клиента OAuth, тип «Компьютерное приложение». Вставьте ID и\nсекрет сюда и подключите: браузер откроет Google («Google не проверил это приложение»: Дополнительно › продолжить — это ваш собственный\nклиент) и вернётся сам.",
         "title": "название", "all day: ": "весь день: ", "on": "вкл", "off": "выкл", "starts": "начало", "start time": "время начала", "ends": "конец", "end time": "время окончания", "calendar": "календарь", "reminder": "напоминание", "repeat": "повтор", "location": "место", "description": "описание",
@@ -171,14 +171,137 @@ _CRED_TR = {
 _COLOUR_TR = {
  "fr": {"events": "événements", "plain, with a colour dot": "sobres, avec une pastille", "in their calendar's colour": "dans la couleur de leur agenda"},
  "de": {"events": "Termine", "plain, with a colour dot": "schlicht, mit Farbpunkt", "in their calendar's colour": "in der Farbe ihres Kalenders"},
- "es": {"events": "eventos", "plain, with a colour dot": "sobrios, con un punto de color", "in their calendar's colour": "en el color de su agenda"},
- "pt": {"events": "eventos", "plain, with a colour dot": "sóbrios, com um ponto de cor", "in their calendar's colour": "na cor da sua agenda"},
- "ru": {"events": "события", "plain, with a colour dot": "строго, с цветной точкой", "in their calendar's colour": "в цвете своего календаря"},
+ "es": {"events": "eventos", "plain, with a colour dot": "sobrios, con un punto de color", "in their calendar's colour": "con el color de su calendario"},
+ "pt": {"events": "eventos", "plain, with a colour dot": "sóbrios, com um ponto de cor", "in their calendar's colour": "na cor do seu calendário"},
+ "ru": {"events": "события", "plain, with a colour dot": "без заливки, с цветной точкой", "in their calendar's colour": "цветом своего календаря"},
 }
 for _l, _d in _COLOUR_TR.items():
     _TR.setdefault(_l, {}).update(_d)
 for _l, _d in _CRED_TR.items():
     _TR.setdefault(_l, {}).update(_d)
+
+# Messages raised in caldav_events / google_calendar (which have no _() of their own), translated when
+# shown; err_text() also rewords the ones that carry a number or a server's own words.
+_ERR_TR = {
+ "fr": {"wrong username or app password": "identifiant ou mot de passe d'application incorrect", "no calendar found at this address": "aucun agenda à cette adresse",
+        "no client id": "aucun ID client", "the browser did not come back": "le navigateur n'est pas revenu",
+        "the answer in the browser did not match this request — try again": "la réponse du navigateur ne correspond pas à cette demande — réessayez",
+        "access was refused in the browser": "l'accès a été refusé dans le navigateur", "Google sent no authorisation code": "Google n'a envoyé aucun code d'autorisation",
+        "Google refused access: %1": "Google a refusé l'accès : %1",
+        "Google did not grant lasting access — remove this app from your Google account's connections, then connect again": "Google n'a pas accordé d'accès durable — retirez cette app des connexions de votre compte Google, puis connectez-vous à nouveau",
+        "feed: HTTP %1": "flux : erreur HTTP %1", "the server refused the request (HTTP %1)": "le serveur a refusé la demande (HTTP %1)",
+        "Google refused the connection (HTTP %1): %2": "Google a refusé la connexion (HTTP %1) : %2", "Google: HTTP %1 — connect the account again": "Google : HTTP %1 — reconnectez le compte",
+        "Google answered with an error (HTTP %1): %2": "Google a répondu par une erreur (HTTP %1) : %2",
+        "the server did not answer in time": "le serveur n'a pas répondu à temps", "this server address is not valid": "cette adresse de serveur n'est pas valable",
+        "cannot reach the server": "serveur injoignable", "network error — %1": "erreur réseau — %1", "the server sent an unreadable answer": "le serveur a envoyé une réponse illisible",
+        "error — %1": "erreur — %1", "cannot use this file — %1": "impossible d'utiliser ce fichier — %1",
+        "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar est connecté. Vous pouvez fermer cet onglet.",
+        "Something went wrong. Close this tab and try again.": "Quelque chose n'a pas fonctionné. Fermez cet onglet et réessayez."},
+ "de": {"wrong username or app password": "falscher Benutzername oder falsches App-Passwort", "no calendar found at this address": "kein Kalender unter dieser Adresse",
+        "no client id": "keine Client-ID", "the browser did not come back": "der Browser ist nicht zurückgekommen",
+        "the answer in the browser did not match this request — try again": "die Antwort im Browser passt nicht zu dieser Anfrage — bitte erneut versuchen",
+        "access was refused in the browser": "der Zugriff wurde im Browser abgelehnt", "Google sent no authorisation code": "Google hat keinen Autorisierungscode gesendet",
+        "Google refused access: %1": "Google hat den Zugriff abgelehnt: %1",
+        "Google did not grant lasting access — remove this app from your Google account's connections, then connect again": "Google hat keinen dauerhaften Zugriff gewährt — entfernen Sie diese App aus den Verbindungen Ihres Google-Kontos und verbinden Sie sie dann erneut",
+        "feed: HTTP %1": "Feed: HTTP-Fehler %1", "the server refused the request (HTTP %1)": "der Server hat die Anfrage abgelehnt (HTTP %1)",
+        "Google refused the connection (HTTP %1): %2": "Google hat die Verbindung abgelehnt (HTTP %1): %2", "Google: HTTP %1 — connect the account again": "Google: HTTP %1 — Konto erneut verbinden",
+        "Google answered with an error (HTTP %1): %2": "Google hat mit einem Fehler geantwortet (HTTP %1): %2",
+        "the server did not answer in time": "der Server hat nicht rechtzeitig geantwortet", "this server address is not valid": "diese Serveradresse ist ungültig",
+        "cannot reach the server": "Server nicht erreichbar", "network error — %1": "Netzwerkfehler — %1", "the server sent an unreadable answer": "der Server hat eine unlesbare Antwort gesendet",
+        "error — %1": "Fehler — %1", "cannot use this file — %1": "diese Datei kann nicht verwendet werden — %1",
+        "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar ist verbunden. Sie können diesen Tab schließen.",
+        "Something went wrong. Close this tab and try again.": "Etwas ist schiefgegangen. Schließen Sie diesen Tab und versuchen Sie es erneut."},
+ "es": {"wrong username or app password": "usuario o contraseña de aplicación incorrectos", "no calendar found at this address": "no hay ningún calendario en esta dirección",
+        "no client id": "falta el ID de cliente", "the browser did not come back": "el navegador no ha vuelto",
+        "the answer in the browser did not match this request — try again": "la respuesta del navegador no corresponde a esta solicitud — inténtelo de nuevo",
+        "access was refused in the browser": "se denegó el acceso en el navegador", "Google sent no authorisation code": "Google no ha enviado ningún código de autorización",
+        "Google refused access: %1": "Google ha denegado el acceso: %1",
+        "Google did not grant lasting access — remove this app from your Google account's connections, then connect again": "Google no ha concedido un acceso duradero — quite esta app de las conexiones de su cuenta de Google y vuelva a conectar",
+        "feed: HTTP %1": "feed: error HTTP %1", "the server refused the request (HTTP %1)": "el servidor ha rechazado la solicitud (HTTP %1)",
+        "Google refused the connection (HTTP %1): %2": "Google ha rechazado la conexión (HTTP %1): %2", "Google: HTTP %1 — connect the account again": "Google: HTTP %1 — vuelva a conectar la cuenta",
+        "Google answered with an error (HTTP %1): %2": "Google ha respondido con un error (HTTP %1): %2",
+        "the server did not answer in time": "el servidor no ha respondido a tiempo", "this server address is not valid": "esta dirección de servidor no es válida",
+        "cannot reach the server": "no se puede contactar con el servidor", "network error — %1": "error de red — %1", "the server sent an unreadable answer": "el servidor ha enviado una respuesta ilegible",
+        "error — %1": "error — %1", "cannot use this file — %1": "no se puede usar este archivo — %1",
+        "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar está conectado. Puede cerrar esta pestaña.",
+        "Something went wrong. Close this tab and try again.": "Algo ha fallado. Cierre esta pestaña e inténtelo de nuevo."},
+ "pt": {"wrong username or app password": "utilizador ou palavra-passe de aplicação incorretos", "no calendar found at this address": "nenhum calendário neste endereço",
+        "no client id": "falta o ID de cliente", "the browser did not come back": "o navegador não voltou",
+        "the answer in the browser did not match this request — try again": "a resposta do navegador não corresponde a este pedido — tente novamente",
+        "access was refused in the browser": "o acesso foi recusado no navegador", "Google sent no authorisation code": "a Google não enviou nenhum código de autorização",
+        "Google refused access: %1": "a Google recusou o acesso: %1",
+        "Google did not grant lasting access — remove this app from your Google account's connections, then connect again": "a Google não concedeu acesso duradouro — retire esta app das ligações da sua conta Google e volte a ligar",
+        "feed: HTTP %1": "feed: erro HTTP %1", "the server refused the request (HTTP %1)": "o servidor recusou o pedido (HTTP %1)",
+        "Google refused the connection (HTTP %1): %2": "a Google recusou a ligação (HTTP %1): %2", "Google: HTTP %1 — connect the account again": "Google: HTTP %1 — volte a ligar a conta",
+        "Google answered with an error (HTTP %1): %2": "a Google respondeu com um erro (HTTP %1): %2",
+        "the server did not answer in time": "o servidor não respondeu a tempo", "this server address is not valid": "este endereço de servidor não é válido",
+        "cannot reach the server": "não é possível contactar o servidor", "network error — %1": "erro de rede — %1", "the server sent an unreadable answer": "o servidor enviou uma resposta ilegível",
+        "error — %1": "erro — %1", "cannot use this file — %1": "não é possível usar este ficheiro — %1",
+        "Reader's Calendar is connected. You can close this tab.": "O Reader's Calendar está ligado. Pode fechar este separador.",
+        "Something went wrong. Close this tab and try again.": "Algo correu mal. Feche este separador e tente novamente."},
+ "ru": {"wrong username or app password": "неверное имя пользователя или пароль приложения", "no calendar found at this address": "по этому адресу нет календарей",
+        "no client id": "нет ID клиента", "the browser did not come back": "браузер не вернулся",
+        "the answer in the browser did not match this request — try again": "ответ в браузере не соответствует этому запросу — попробуйте ещё раз",
+        "access was refused in the browser": "доступ отклонён в браузере", "Google sent no authorisation code": "Google не прислал код авторизации",
+        "Google refused access: %1": "Google отказал в доступе: %1",
+        "Google did not grant lasting access — remove this app from your Google account's connections, then connect again": "Google не дал постоянного доступа — удалите это приложение из подключений аккаунта Google и подключитесь снова",
+        "feed: HTTP %1": "лента: ошибка HTTP %1", "the server refused the request (HTTP %1)": "сервер отклонил запрос (HTTP %1)",
+        "Google refused the connection (HTTP %1): %2": "Google отклонил подключение (HTTP %1): %2", "Google: HTTP %1 — connect the account again": "Google: HTTP %1 — подключите аккаунт снова",
+        "Google answered with an error (HTTP %1): %2": "Google ответил ошибкой (HTTP %1): %2",
+        "the server did not answer in time": "сервер не ответил вовремя", "this server address is not valid": "неверный адрес сервера",
+        "cannot reach the server": "сервер недоступен", "network error — %1": "ошибка сети — %1", "the server sent an unreadable answer": "сервер прислал нечитаемый ответ",
+        "error — %1": "ошибка — %1", "cannot use this file — %1": "не удаётся использовать этот файл — %1",
+        "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar подключён. Эту вкладку можно закрыть.",
+        "Something went wrong. Close this tab and try again.": "Что-то пошло не так. Закройте эту вкладку и попробуйте ещё раз."},
+}
+for _l, _d in _ERR_TR.items():
+    _TR.setdefault(_l, {}).update(_d)
+gc.tr = _      # the page the browser shows after the Google consent
+
+# Raised word for word by the data modules: looked up as they are.
+DATA_MESSAGES = ("wrong username or app password", "no calendar found at this address", "no client id", "the browser did not come back",
+                 "the answer in the browser did not match this request — try again", "access was refused in the browser",
+                 "Google sent no authorisation code", "Google: the event changed elsewhere — shown again as it is now",
+                 "Google did not grant lasting access — remove this app from your Google account's connections, then connect again",
+                 "Reader's Calendar is connected. You can close this tab.", "Something went wrong. Close this tab and try again.")
+_ERR_PATTERNS = (
+    (re.compile(r"feed: HTTP (\d+)$"), lambda m: _("feed: HTTP %1", m[1])),
+    (re.compile(r"[A-Z]+ \S+: HTTP (\d+)$"), lambda m: _("the server refused the request (HTTP %1)", m[1])),
+    (re.compile(r"token: HTTP (\d+) (.*)$", re.S), lambda m: _("Google refused the connection (HTTP %1): %2", m[1], m[2])),
+    (re.compile(r"Google: HTTP (\d+) — connect the account again$"), lambda m: _("Google: HTTP %1 — connect the account again", m[1])),
+    (re.compile(r"Google: HTTP (\d+) (.*)$", re.S), lambda m: _("Google answered with an error (HTTP %1): %2", m[1], m[2])),
+    (re.compile(r"Google refused access: (.*)$", re.S), lambda m: _("Google refused access: %1", m[1])),
+)
+
+
+def err_text(e):
+    """What a failed background job says in the status line, in the interface's language: the data
+    modules' own messages looked up, a number or a server's words kept inside a translated phrase,
+    and a library's English only after a translated lead."""
+    import requests
+    import xml.etree.ElementTree as ET
+    msg = str(e)
+    if msg in DATA_MESSAGES:
+        return _(msg)
+    if isinstance(e, (ce.CalDAVError, gc.GoogleError)):
+        for rx, fn in _ERR_PATTERNS:
+            m = rx.match(msg)
+            if m:
+                return fn(m)
+        return _(msg)
+    if isinstance(e, requests.exceptions.Timeout):
+        return _("the server did not answer in time")
+    if isinstance(e, (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL)):
+        return _("this server address is not valid")
+    if isinstance(e, requests.exceptions.ConnectionError):
+        return _("cannot reach the server")
+    if isinstance(e, requests.exceptions.RequestException):
+        return _("network error — %1", msg)
+    if isinstance(e, ET.ParseError):
+        return _("the server sent an unreadable answer")
+    if _(msg) != msg:              # a message the app raised already translated, or a known key
+        return _(msg)
+    return _("error — %1", msg or type(e).__name__)
 
 
 def export_credentials(cfg, path):
@@ -262,8 +385,15 @@ def credentials_dialog(parent, export, cfg):
         if export:
             return True, _("credentials exported to %1 — the file holds your passwords: keep it private", export_credentials(cfg, path))
         return True, import_credentials(cfg, path)
-    except (OSError, ValueError) as e:
+    except ValueError as e:
         return False, str(e)
+    except OSError as e:
+        return False, _("cannot use this file — %1", e.strerror or str(e))
+
+
+def month_year(d):
+    """ "september 2026": the month's standalone name (Russian "сентябрь", not the "сентября" of a date)."""
+    return f"{QtCore.QLocale().standaloneMonthName(d.month)} {d.year}"
 
 
 def add_months(d, n):
@@ -544,7 +674,7 @@ class Worker(QtCore.QObject):
         try:
             self.done.emit(self.fn())
         except Exception as e:
-            self.failed.emit(str(e))
+            self.failed.emit(err_text(e))
 
 
 # ------------------------------------------------------------------------------------------
@@ -1164,7 +1294,7 @@ class DatePick(QtWidgets.QDialog):
         self._refresh()
 
     def _refresh(self):
-        self.title.setText(self.grid.month.strftime("%B %Y").lower())
+        self.title.setText(month_year(self.grid.month).lower())
 
     def _move(self, delta):
         m = self.grid.month
@@ -1575,7 +1705,7 @@ class Main(QtWidgets.QMainWindow):
         elif idx == 6: self.render_month()
 
     def refresh_month_title(self):
-        self.m_title.setText(self.grid.month.strftime("%B %Y").lower())
+        self.m_title.setText(month_year(self.grid.month).lower())
 
     def move_month(self, delta):
         m = self.grid.month; y, mo = m.year, m.month + delta
@@ -1801,7 +1931,7 @@ class Main(QtWidgets.QMainWindow):
 
     def render_month(self):
         self.board.set_data(self.board.month, self.occs, self.cfg.get("week_monday", True))
-        self.mo_title.setText(self.board.month.strftime("%B %Y").lower())
+        self.mo_title.setText(month_year(self.board.month).lower())
         first = self.board.first_day()
         self.ensure_window(first + timedelta(days=42))
 
