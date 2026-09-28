@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.1"
+VERSION = "1.14.2"
 
 
 def _config_dir():
@@ -1239,6 +1239,62 @@ class TimeMask:
         return (hh, mm) if 0 <= hh <= 23 and 0 <= mm <= 59 else None
 
 
+def scrolling_page(window):
+    """The widget a window's content is laid on. It scrolls when the screen is too small for it."""
+    area = QtWidgets.QScrollArea()
+    area.setWidgetResizable(True)
+    area.setFrameShape(QtWidgets.QFrame.NoFrame)
+    page = QtWidgets.QWidget()
+    area.setWidget(page)
+    box = QtWidgets.QVBoxLayout(window)
+    box.setContentsMargins(0, 0, 0, 0)
+    box.addWidget(area)
+    return page
+
+
+class Fit(QtCore.QObject):
+    """A window as tall as its content asks for at its width, now and when a message comes.
+    Left to itself Qt counts a wrapped text for fewer lines than it takes, and a height given
+    in pixels squeezes the fields once the text is larger or longer than the day it was chosen.
+    The width is in characters, so it follows the text size; the screen is the limit."""
+
+    def __init__(self, window, chars, page=None):
+        super().__init__(window)
+        self.window, self.chars, self.page = window, chars, page or window
+        window.installEventFilter(self)
+        self.page.installEventFilter(self)
+        self.fit()
+
+    def eventFilter(self, obj, event):
+        kind = event.type()
+        if (obj is self.window and kind == QtCore.QEvent.Show) or (obj is self.page and kind == QtCore.QEvent.LayoutRequest):
+            self.fit()
+        return False
+
+    def fit(self):
+        w, lay = self.window, self.page.layout()
+        w.ensurePolished()
+        for child in w.findChildren(QtWidgets.QWidget):
+            child.ensurePolished()      # the sizes of the style sheet, known before the first show
+        lay.invalidate()
+        shown = w.isVisible()
+        screen = QtWidgets.QApplication.screenAt(w.geometry().center()) if shown else None
+        room = (screen or QtWidgets.QApplication.primaryScreen()).availableGeometry().size() - QtCore.QSize(40, 80)
+        width = max(self.chars * w.fontMetrics().averageCharWidth(), lay.totalMinimumSize().width(), w.width() if shown else 0)
+        need = lay.totalHeightForWidth(width) if lay.hasHeightForWidth() else lay.totalSizeHint().height()
+        height = min(need, max(room.height(), 240))
+        area = w.findChild(QtWidgets.QScrollArea)
+        if need > height and area and not shown:
+            width += area.verticalScrollBar().sizeHint().width()      # the page keeps its width beside the scroll bar
+        width = min(width, max(room.width(), 320))
+        if not shown:
+            w.setMinimumSize(width, height)
+            w.resize(width, height)
+        elif height > w.height():
+            w.setMinimumHeight(height)
+            w.resize(w.width(), height)
+
+
 class TextPrompt(QtWidgets.QDialog):
     """A line (or a box) of text to type. With select_all the suggestion opens selected, so the
     first key replaces it instead of landing after its last character; time_mask keeps a ":"
@@ -1262,7 +1318,7 @@ class TextPrompt(QtWidgets.QDialog):
         c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(self.reject); btns.addWidget(c)
         ok = QtWidgets.QPushButton(_("ok")); ok.setDefault(True); ok.clicked.connect(self.accept); btns.addWidget(ok)
         lay.addLayout(btns)
-        self.resize(520, 300 if multiline else 120)
+        Fit(self, 58)
 
     def _masked(self, typed):
         self.edit.setText(self.mask.apply(typed)); self.edit.setCursorPosition(len(self.edit.text()))
@@ -1515,23 +1571,24 @@ class Main(QtWidgets.QMainWindow):
 
     def setup(self):
         dlg = QtWidgets.QDialog(self); dlg.setWindowTitle("reader's calendar")
-        form = QtWidgets.QFormLayout(dlg); form.setSpacing(12)
-        intro = QtWidgets.QLabel(_("CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too."))
-        intro.setObjectName("dim"); form.addRow(intro)
+        page = scrolling_page(dlg)
+        form = QtWidgets.QFormLayout(page); form.setSpacing(12)
+        intro = QtWidgets.QLabel(_("CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.").replace("\n", " "))
+        intro.setObjectName("dim"); intro.setWordWrap(True); form.addRow(intro)
         url = QtWidgets.QLineEdit(self.cfg.get("url", "")); user = QtWidgets.QLineEdit(self.cfg.get("username", "")); pw = QtWidgets.QLineEdit(self.cfg.get("password", "")); pw.setEchoMode(QtWidgets.QLineEdit.Password)
         form.addRow(_("server"), url); form.addRow(_("username"), user); form.addRow(_("app password"), pw)
-        sub_hint = QtWidgets.QLabel(_("Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars."))
-        sub_hint.setObjectName("dim"); form.addRow(sub_hint)
+        sub_hint = QtWidgets.QLabel(_("Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.").replace("\n", " "))
+        sub_hint.setObjectName("dim"); sub_hint.setWordWrap(True); form.addRow(sub_hint)
         subs = QtWidgets.QPlainTextEdit("\n".join(f"{x.get('name', '')} | {x.get('url', '')}" for x in self.cfg.get("subscriptions", [])))
-        subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(90)
+        subs.setPlaceholderText("Google | https://calendar.google.com/calendar/ical/…/private-…/basic.ics"); subs.setFixedHeight(max(90, self.font_size * 7))
         form.addRow(_("feeds"), subs)
-        g_hint = QtWidgets.QLabel(_("Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself."))
-        g_hint.setObjectName("dim"); form.addRow(g_hint)
+        g_hint = QtWidgets.QLabel(_("Google Calendar, read and write, with your own OAuth client: console.cloud.google.com › new project › APIs & Services › enable the\nGoogle Calendar API › OAuth consent screen (external, yourself as test user, then Publish app: in Testing, Google asks you to connect\nagain every 7 days) › Credentials › OAuth client ID, type Desktop app. Copy the ID and the secret here, then connect: the browser\nopens on Google (\"Google hasn't verified this app\": Advanced › continue — it is your own client) and comes back by itself.").replace("\n", " "))
+        g_hint.setObjectName("dim"); g_hint.setWordWrap(True); form.addRow(g_hint)
         g = self.cfg.get("google", {})
         g_id = QtWidgets.QLineEdit(g.get("client_id", "")); g_secret = QtWidgets.QLineEdit(g.get("client_secret", "")); g_secret.setEchoMode(QtWidgets.QLineEdit.Password)
         form.addRow(_("client ID"), g_id); form.addRow(_("client secret"), g_secret)
         g_row = QtWidgets.QHBoxLayout(); g_state = QtWidgets.QLabel((_("Google account connected") if gc.can_write(g["tokens"]) else _("connected read-only — forget, then connect again to edit")) if g.get("tokens") else ""); g_state.setObjectName("dim")
-        g_connect = QtWidgets.QPushButton(_("forget the Google account") if g.get("tokens") else _("connect the Google account"))
+        g_connect = QtWidgets.QPushButton(_("forget the Google account") if g.get("tokens") else _("connect the Google account")); g_connect.setAutoDefault(False)
         def google_click():
             cur = self.cfg.get("google", {})
             if cur.get("tokens"):
@@ -1557,13 +1614,14 @@ class Main(QtWidgets.QMainWindow):
             if ok and not export:
                 save_config(self.cfg); dlg.done(2)
         for text, export in ((_("import credentials…"), False), (_("export credentials…"), True)):
-            b = QtWidgets.QPushButton(text); b.setObjectName("quiet"); b.clicked.connect(lambda _c=False, x=export: credentials(x)); btns.addWidget(b)
+            b = QtWidgets.QPushButton(text); b.setObjectName("quiet"); b.setAutoDefault(False)
+            b.clicked.connect(lambda _c=False, x=export: credentials(x)); btns.addWidget(b)
         btns.addStretch(1)
-        c = QtWidgets.QPushButton(_("cancel")); c.clicked.connect(dlg.reject); btns.addWidget(c)
+        c = QtWidgets.QPushButton(_("cancel")); c.setAutoDefault(False); c.clicked.connect(dlg.reject); btns.addWidget(c)
         ok = QtWidgets.QPushButton(_("connect")); ok.setDefault(True); ok.clicked.connect(dlg.accept); btns.addWidget(ok)
         form.addRow(btns); form.addRow(cred_msg)
         credits = QtWidgets.QLabel(f"reader's calendar {VERSION} · " + _("Pierre Gallaz · developed with Claude Code")); credits.setObjectName("dim"); form.addRow(credits)
-        dlg.resize(640, 440)
+        Fit(dlg, 88, page)
         result = dlg.exec_()
         if result == 2:     # credentials imported: the accounts are in cfg already
             self.status.setText(_("credentials imported")); self.connect_client(); return
@@ -2230,7 +2288,7 @@ class Main(QtWidgets.QMainWindow):
         place.textChanged.connect(lambda v: st.__setitem__("location", v)); col.addWidget(place)
         col.addSpacing(8)
         notes = QtWidgets.QPlainTextEdit(st["description"]); notes.setObjectName("field"); notes.setPlaceholderText(_("description"))
-        notes.setFixedHeight(150); notes.textChanged.connect(lambda: st.__setitem__("description", notes.toPlainText())); col.addWidget(notes)
+        notes.setFixedHeight(max(150, self.font_size * 11)); notes.textChanged.connect(lambda: st.__setitem__("description", notes.toPlainText())); col.addWidget(notes)
         bottom = QtWidgets.QHBoxLayout(); bottom.setContentsMargins(0, 22, 0, 0); bottom.setSpacing(26)
         bottom.addWidget(link(_("cancel"), self._back or self.return_to_view)); bottom.addStretch(1); bottom.addWidget(link(_("save"), self.save_event, "primary"))
         col.addLayout(bottom)
