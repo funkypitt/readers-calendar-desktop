@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.2"
+VERSION = "1.14.3"
 
 
 def _config_dir():
@@ -1390,7 +1390,8 @@ class Main(QtWidgets.QMainWindow):
         self.threads = []
         self.font_size = int(self.cfg.get("font_size", 13))
         self.dark = bool(self.cfg.get("dark", False))
-        self.window_days = 60
+        self.window_days = 60; self.back_days = 45   # the range read from the servers, around today
+        self._sync_no = 0; self._sync_shown = 0       # a late answer never replaces a newer one
         self.setWindowTitle("reader's calendar")
         self.resize(1180, 760)
 
@@ -1701,15 +1702,16 @@ class Main(QtWidgets.QMainWindow):
         self.got_calendars(self.calendars)
 
     def window(self):
-        start = datetime.combine(date.today() - timedelta(days=45), datetime.min.time(), LOCAL)
-        return start, start + timedelta(days=45 + self.window_days)
+        start = datetime.combine(date.today() - timedelta(days=self.back_days), datetime.min.time(), LOCAL)
+        return start, start + timedelta(days=self.back_days + self.window_days)
 
     def sync(self):
         if not self.calendars:
             return
         self.status.setText(_("syncing…"))
         ws, we = self.window()
-        self.run(self.fetcher(ws, we), self.got_events)
+        self._sync_no += 1; n = self._sync_no
+        self.run(self.fetcher(ws, we), lambda occs: self.got_events(occs, n))
 
     def fetcher(self, ws, we):
         """A function (run off the UI thread) returning every occurrence between ws and we in the
@@ -1739,8 +1741,12 @@ class Main(QtWidgets.QMainWindow):
             return out
         return fetch
 
-    def got_events(self, occs):
+    def got_events(self, occs, n=None):
         if self.google_ready(): save_config(self.cfg)   # the access token may have been renewed
+        if n is not None:
+            if n < self._sync_shown:
+                return             # the answer to an older, narrower request, come after a newer one
+            self._sync_shown = n
         self.occs = occs
         self._wide = None          # the search's wider range is read again when next needed
         self.grid.marked = {o.date for o in occs}; self.grid.update()
@@ -1770,6 +1776,7 @@ class Main(QtWidgets.QMainWindow):
         if mo == 0: y, mo = y - 1, 12
         if mo == 13: y, mo = y + 1, 1
         self.grid.set_month(date(y, mo, 1)); self.refresh_month_title()
+        self.ensure_window(date(y, mo, 1), date(y, mo, 1) + timedelta(days=31))   # its dots
 
     def go_today(self):
         self.grid.set_month(date.today()); self.refresh_month_title(); self.show_agenda()
@@ -1810,6 +1817,7 @@ class Main(QtWidgets.QMainWindow):
         scroll, lay = self.page_agenda
         self._clear(lay)
         today = date.today(); start = getattr(self, "_agenda_from", today)
+        self.ensure_window(start, start + timedelta(days=30))
         occs = [o for o in self.occs if o.end > datetime.combine(start, datetime.min.time(), LOCAL)]
         i = 0
         if not occs:
@@ -1991,13 +1999,18 @@ class Main(QtWidgets.QMainWindow):
         self.board.set_data(self.board.month, self.occs, self.cfg.get("week_monday", True))
         self.mo_title.setText(month_year(self.board.month).lower())
         first = self.board.first_day()
-        self.ensure_window(first + timedelta(days=42))
+        self.ensure_window(first, first + timedelta(days=42))
 
-    def ensure_window(self, last_day):
-        """The synced range (45 days back, window_days ahead) stretched to a month shown further on."""
-        need = (last_day - date.today()).days + 1
-        if need > self.window_days:
-            self.window_days = need + 14; self.sync()
+    def ensure_window(self, first_day, last_day):
+        """The range read from the servers (back_days before today, window_days after) stretched
+        to the days a view shows, in the past as in the future — every view calls it, else a week
+        or a month beyond the range would look empty. A margin spares a request at every step."""
+        ahead = (last_day - date.today()).days + 1; back = (date.today() - first_day).days + 1
+        if ahead <= self.window_days and back <= self.back_days:
+            return
+        if ahead > self.window_days: self.window_days = ahead + 45
+        if back > self.back_days: self.back_days = back + 45
+        self.sync()
 
     def step(self, delta):
         """← / →: the previous or next week or day in the grids, the previous or next month elsewhere."""
@@ -2029,6 +2042,7 @@ class Main(QtWidgets.QMainWindow):
 
     def render_week(self):
         s = self.week.start; e = s + timedelta(days=self.week.ndays)
+        self.ensure_window(s, e)
         self.week.set_occs([o for o in self.occs if o.start.date() < e and o.end.date() >= s])
         self.week_head.set_data(s, self.week.ndays, self.week.occs, self.week.workdays)
 
