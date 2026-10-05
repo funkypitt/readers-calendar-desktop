@@ -116,3 +116,14 @@ runners at every `v*` tag and attaches the `.exe` and the two `.dmg` to the rele
 *Actions* › *Windows and macOS builds* › *Run workflow* builds them without a tag, kept as
 artifacts. The icons come from `packaging/readers-calendar.png` (`.ico` beside it, `.icns` built on the
 runner).
+
+## 1.14.4 (2026-10-05): the fitted windows fitted themselves without end
+
+`Fit.fit()` invalidated the layout at every call, and Qt answers an invalidation with a
+LayoutRequest, which `Fit` took for a text change and answered with another fit: thousands of
+fits a second for as long as the window was open. The main thread never rested, and on Ubuntu
+24.04 (GNOME on Wayland, Qt's GTK file dialog drawn in the same process) the file dialog of
+« export credentials… » was a window without content: in Alt-Tab, focused, never drawn. Seen
+in a headless GNOME Shell 46 run on 2026-10-05 and gone with the fix. The layout is now
+invalidated only before the first show (the sizes cached before the style sheet applied), and
+a LayoutRequest fits the window only once it is shown: Qt has refreshed the sizes by then.
