@@ -61,6 +61,7 @@ jobs:
             --icon packaging/readers-calendar.ico \
             --collect-all tzdata \
             --add-data "packaging/readers-calendar.png;." \
+            --add-data "packaging/fonts;fonts" \
             readers_calendar.py
           mkdir -p out
           mv "dist/Readers Calendar.exe" "out/readers-calendar_${VERSION}_windows_x64.exe"
@@ -85,6 +86,7 @@ jobs:
             --collect-all tzdata \
             --osx-bundle-identifier ch.gallaz.readerscalendar \
             --add-data "packaging/readers-calendar.png:." \
+            --add-data "packaging/fonts:fonts" \
             readers_calendar.py
           # Ad hoc signature: on Apple Silicon an unsigned binary does not start at all.
           codesign --force --deep --sign - "dist/Readers Calendar.app"

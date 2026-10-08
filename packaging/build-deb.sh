@@ -7,6 +7,7 @@ ROOT="$HERE/deb-root"; rm -rf "$ROOT"
 install -Dm755 "$SRC/readers_calendar.py" "$ROOT/usr/lib/readers-calendar/readers_calendar.py"
 install -Dm644 "$SRC/caldav_events.py" "$ROOT/usr/lib/readers-calendar/caldav_events.py"
 install -Dm644 "$SRC/google_calendar.py" "$ROOT/usr/lib/readers-calendar/google_calendar.py"
+for f in "$HERE"/fonts/*; do install -Dm644 "$f" "$ROOT/usr/lib/readers-calendar/fonts/$(basename "$f")"; done
 install -Dm755 /dev/stdin "$ROOT/usr/bin/readers-calendar" <<'SH'
 #!/bin/sh
 exec python3 /usr/lib/readers-calendar/readers_calendar.py "$@"

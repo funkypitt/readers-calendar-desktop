@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.4"
+VERSION = "1.14.5"
 
 
 def _config_dir():
@@ -691,9 +691,17 @@ class MonthGrid(QtWidgets.QWidget):
         self.selected = None
         self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
         self.week_monday = True
-        self.setMinimumHeight(220)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         self._cells = []
+
+    def sizeHint(self):
+        # seven rows of numbers: as tall as the font asks (250 px with the usual 13 pt Roboto),
+        # so a bigger text size or a scaled screen never overflows the cells
+        return QtCore.QSize(330, max(220, round(QtGui.QFontMetrics(self.font()).height() * 10.9)))
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
 
     def set_colors(self, fg, bg):
         self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
@@ -1413,7 +1421,7 @@ class Main(QtWidgets.QMainWindow):
         for l in (self.m_prev, self.m_next, self.m_title): l.setCursor(QtCore.Qt.PointingHandCursor)
         mnav.addWidget(self.m_prev); mnav.addWidget(self.m_title, 1, QtCore.Qt.AlignCenter); mnav.addWidget(self.m_next)
         ll.addLayout(mnav)
-        self.grid = MonthGrid(); self.grid.setFixedHeight(250); ll.addWidget(self.grid)
+        self.grid = MonthGrid(); ll.addWidget(self.grid)   # its height follows the font (sizeHint)
         ll.addSpacing(10)
         self.nav_agenda = row(_("agenda"), click=lambda: self.show_agenda()); ll.addWidget(self.nav_agenda)
         self.nav_day = row(_("day"), click=lambda: self.show_day_grid(date.today())); ll.addWidget(self.nav_day)
@@ -1555,6 +1563,7 @@ class Main(QtWidgets.QMainWindow):
         for w in (self.week, self.week_head, self.board):
             w.coloured = bool(self.cfg.get("coloured_events", False))
         f = QtGui.QFont(fam); f.setPointSize(s); f.setWeight(QtGui.QFont.Light if weight == 300 else QtGui.QFont.Normal); self.grid.setFont(f); self.week.setFont(f); self.week_head.setFont(f); self.board.setFont(f)
+        self.grid.updateGeometry()   # its height follows the font (MonthGrid.sizeHint)
         QtWidgets.QApplication.instance().setFont(f)
         self.render_current()
 
@@ -2476,9 +2485,39 @@ def _icon():
     return QtGui.QIcon()
 
 
+def bundled_fonts_dir():
+    """Where the fonts shipped with the app lie: next to the script (packaging/fonts in the
+    source tree, fonts/ once installed) or inside a PyInstaller bundle."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    for d in (os.path.join(getattr(sys, "_MEIPASS", ""), "fonts"), os.path.join(here, "fonts"), os.path.join(here, "packaging", "fonts")):
+        if d and os.path.isdir(d):
+            return d
+    return None
+
+
+def load_bundled_fonts():
+    """Roboto Light and Regular travel with the app, so that every computer draws the same
+    text; the installed fonts were only a recommendation and the fallback differed."""
+    d = bundled_fonts_dir()
+    if not d:
+        return 0
+    n = 0
+    for name in sorted(os.listdir(d)):
+        if name.lower().endswith((".ttf", ".otf")) and QtGui.QFontDatabase.addApplicationFont(os.path.join(d, name)) >= 0:
+            n += 1
+    return n
+
+
 def main():
     credentials_cli(sys.argv)
+    # Sizes in the layout are pixels and text sizes are points: without this, a scaled screen
+    # (125 %, 150 %, 200 %) grows the text and not the boxes around it.
+    if hasattr(QtCore.Qt, "HighDpiScaleFactorRoundingPolicy"):
+        QtGui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     app = QtWidgets.QApplication(sys.argv)
+    load_bundled_fonts()
     app.setApplicationName("reader's calendar")
     app.setDesktopFileName(APP)
     app.setWindowIcon(_icon())
