@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.5"
+VERSION = "1.14.6"
 
 
 def _config_dir():

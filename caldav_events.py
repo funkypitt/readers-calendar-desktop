@@ -488,7 +488,9 @@ class CalDAV:
     def __init__(self, url, username, password):
         self.base = url.strip()
         self.s = requests.Session()
-        self.s.auth = (username, password)
+        # As bytes: left as text, a password with an accent would be sent in Latin-1, which no
+        # server that counts in UTF-8 (and the phone does) takes for the same password.
+        self.s.auth = (username.encode("utf-8"), password.encode("utf-8"))
         self.s.headers["User-Agent"] = "readers-calendar"
 
     def _req(self, method, url, body=None, depth=None, headers=None, content_type="application/xml; charset=utf-8"):
