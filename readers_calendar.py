@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.6"
+VERSION = "1.14.7"
 
 
 def _config_dir():
@@ -374,7 +374,7 @@ def credentials_cli(argv):
 def credentials_dialog(parent, export, cfg):
     """The file picker for export (merging) or import. Returns (ok, message)."""
     title = _("export credentials…") if export else _("import credentials…")
-    start = os.path.expanduser("~/readers-credentials.json")
+    start = os.path.expanduser("~/readers-calendar-credentials.json")
     if export:
         path, _f = QtWidgets.QFileDialog.getSaveFileName(parent, title, start, _("Reader's credentials (*.json)"), options=QtWidgets.QFileDialog.DontConfirmOverwrite)
     else:
