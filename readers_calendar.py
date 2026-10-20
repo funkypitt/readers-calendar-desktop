@@ -23,7 +23,7 @@ import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
 APP = "readers-calendar"
-VERSION = "1.14.7"
+VERSION = "1.15.0"
 
 
 def _config_dir():
@@ -137,6 +137,66 @@ def save_config(cfg):
         json.dump(cfg, f, indent=2)
     os.chmod(tmp, 0o600)
     os.replace(tmp, CONFIG_FILE)
+
+# ------------------------------------------------------------------------------------------
+# The colour themes shared by the Reader's apps: the two inks, then the Plume palettes in order
+# ------------------------------------------------------------------------------------------
+
+PALETTES = [  # (key, background, text, accent, text on the accent)
+    ("DARK", "#000000", "#ffffff", "#ffffff", "#000000"),
+    ("LIGHT", "#ffffff", "#000000", "#000000", "#ffffff"),
+    ("LAVANDE", "#1f1a2e", "#f4efff", "#b8a4ff", "#1f1a2e"),
+    ("SAUGE", "#d9e0d4", "#1e2a21", "#4c7a5b", "#ffffff"),
+    ("NORDIQUE", "#2e3440", "#eceff4", "#88c0d0", "#2e3440"),
+    ("TERRACOTTA", "#e6d9cc", "#2b211b", "#c25e38", "#ffffff"),
+    ("COQUETTE", "#f3d9dc", "#4a1f2b", "#d2455e", "#ffffff"),
+    ("MILITANTE", "#f2eee4", "#121212", "#e8412e", "#ffffff"),
+    ("TORRIDE", "#1e0d13", "#f8e9e6", "#e02a50", "#fff4f2"),
+    ("NATURE", "#2b2a24", "#f2efe4", "#d19a4e", "#2b2a24"),
+]
+THEME_NAMES = {"DARK": "white on black", "LIGHT": "black on white", "LAVANDE": "lavender", "SAUGE": "sage", "NORDIQUE": "nordic",
+               "TERRACOTTA": "terracotta", "COQUETTE": "coquette", "MILITANTE": "activist", "TORRIDE": "sultry", "NATURE": "nature"}
+_THEME_TR = {"fr": ["lavande", "sauge", "nordique", "terracotta", "coquette", "militante", "torride", "nature"],
+             "de": ["Lavendel", "Salbei", "nordisch", "Terrakotta", "kokett", "kämpferisch", "glühend", "Natur"],
+             "es": ["lavanda", "salvia", "nórdico", "terracota", "coqueta", "militante", "tórrido", "naturaleza"],
+             "pt": ["lavanda", "sálvia", "nórdico", "terracota", "coquete", "militante", "tórrido", "natureza"],
+             "ru": ["лаванда", "шалфей", "северный", "терракота", "кокетка", "активистка", "знойный", "природа"]}
+for _l, _names in _THEME_TR.items():
+    _TR[_l].update(zip(list(THEME_NAMES.values())[2:], _names))
+
+
+def palette(key):
+    """(background, text, accent, text on the accent) of a theme; an unknown name is the default."""
+    return next((p[1:] for p in PALETTES if p[0] == key), PALETTES[1][1:])
+
+
+def next_theme(key):
+    """The theme after this one, round and round: the two inks, then the palettes."""
+    keys = [p[0] for p in PALETTES]
+    return keys[(keys.index(key) + 1) % len(keys)] if key in keys else keys[0]
+
+
+def theme_of(cfg):
+    """The theme a config names; an older config only says dark: true or false."""
+    key = cfg.get("theme")
+    return key if any(p[0] == key for p in PALETTES) else ("DARK" if cfg.get("dark") else "LIGHT")
+
+
+def theme_name(key):
+    return _(THEME_NAMES.get(key, THEME_NAMES["LIGHT"]))
+
+
+def is_dark(bg):
+    """A dark background: the hover tints and the dark flag of older settings follow it."""
+    c = QtGui.QColor(bg)
+    return 0.2126 * c.redF() + 0.7152 * c.greenF() + 0.0722 * c.blueF() < 0.5
+
+
+def rgba(color, alpha):
+    """The style-sheet form of a colour at an opacity: the dims and rules of the text colour."""
+    c = QtGui.QColor(color)
+    return "rgba(%d,%d,%d,%s)" % (c.red(), c.green(), c.blue(), alpha)
+
 
 CREDENTIAL_KEYS = ('url', 'username', 'password', 'subscriptions', 'google')
 CREDENTIAL_FALLBACK = {}   # when this app's section is absent: another app's section, these keys only
@@ -689,7 +749,7 @@ class MonthGrid(QtWidgets.QWidget):
         self.month = date.today().replace(day=1)
         self.marked = set()
         self.selected = None
-        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
+        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff"); self.accent = QtGui.QColor("#000"); self.on_accent = QtGui.QColor("#fff")
         self.week_monday = True
         self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         self.setCursor(QtCore.Qt.PointingHandCursor)
@@ -703,8 +763,9 @@ class MonthGrid(QtWidgets.QWidget):
     def minimumSizeHint(self):
         return self.sizeHint()
 
-    def set_colors(self, fg, bg):
-        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
+    def set_colors(self, fg, bg, accent=None, on_accent=None):
+        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg)
+        self.accent, self.on_accent = QtGui.QColor(accent or fg), QtGui.QColor(on_accent or bg); self.update()
 
     def set_month(self, month):
         self.month = month.replace(day=1); self.update()
@@ -735,7 +796,7 @@ class MonthGrid(QtWidgets.QWidget):
                 self._cells.append((rect, d))
                 in_month = d.month == self.month.month and d.year == self.month.year
                 if d == today:
-                    p.fillRect(rect, self.fg); p.setPen(self.bg)
+                    p.fillRect(rect, self.accent); p.setPen(self.on_accent)
                 else:
                     if d == self.selected:
                         p.setPen(QtGui.QPen(self.fg, 1)); p.drawRect(rect)
@@ -807,12 +868,13 @@ class MonthBoard(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.month = date.today().replace(day=1); self.occs = []; self.week_monday = True
-        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
+        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff"); self.accent = QtGui.QColor("#000"); self.on_accent = QtGui.QColor("#fff")
         self._lines = []; self._cells = []; self._press = None; self._target = None
         self.setMinimumHeight(420)
 
-    def set_colors(self, fg, bg):
-        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
+    def set_colors(self, fg, bg, accent=None, on_accent=None):
+        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg)
+        self.accent, self.on_accent = QtGui.QColor(accent or fg), QtGui.QColor(on_accent or bg); self.update()
 
     def set_data(self, month, occs, week_monday=True):
         self.month, self.occs, self.week_monday = month.replace(day=1), occs, week_monday; self.update()
@@ -854,7 +916,7 @@ class MonthBoard(QtWidgets.QWidget):
                 num = QtCore.QRectF(cell.left() + 6, cell.top() + 5, fm.horizontalAdvance("00") + 10, fm.height() + 2)
                 p.setFont(base)
                 if d == today:
-                    p.fillRect(num, self.fg); p.setPen(self.bg)
+                    p.fillRect(num, self.accent); p.setPen(self.on_accent)
                 else:
                     p.setPen(self.fg if d.month == self.month.month else dim)
                 p.drawText(num, QtCore.Qt.AlignCenter, str(d.day))
@@ -930,12 +992,13 @@ class WeekHead(QtWidgets.QWidget):
         super().__init__(parent)
         self.start = date.today(); self.ndays = 7; self.workdays = False
         self.occs = []
-        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
+        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff"); self.accent = QtGui.QColor("#000"); self.on_accent = QtGui.QColor("#fff")
         self._boxes = []
         self.setFixedHeight(64)
 
-    def set_colors(self, fg, bg):
-        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
+    def set_colors(self, fg, bg, accent=None, on_accent=None):
+        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg)
+        self.accent, self.on_accent = QtGui.QColor(accent or fg), QtGui.QColor(on_accent or bg); self.update()
 
     weekend_clicked = QtCore.pyqtSignal()
 
@@ -963,12 +1026,12 @@ class WeekHead(QtWidgets.QWidget):
                 rect = QtCore.QRectF(rect.center().x() - 30, rect.top(), 60, rect.height())
             self._heads.append((rect, d))
             if d == today:
-                p.fillRect(rect, self.fg); p.setPen(self.bg)
+                p.fillRect(rect, self.accent); p.setPen(self.on_accent)
             else:
                 p.setPen(dim)
             label = d.strftime("%a").lower()[:1 if narrow else 3]
             p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, label)
-            p.setPen(self.bg if d == today else self.fg); p.setFont(small if narrow else self.font())
+            p.setPen(self.on_accent if d == today else self.fg); p.setFont(small if narrow else self.font())
             p.drawText(rect.adjusted(0, rect.height() / 2 - 4, 0, 0), QtCore.Qt.AlignCenter, str(d.day))
         self._strip = None
         if self.workdays and self.ndays > 1:
@@ -1022,7 +1085,7 @@ class WeekGrid(QtWidgets.QWidget):
         super().__init__(parent)
         self.start = date.today(); self.ndays = 7; self.workdays = False
         self.occs = []
-        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff")
+        self.fg = QtGui.QColor("#000"); self.bg = QtGui.QColor("#fff"); self.accent = QtGui.QColor("#000"); self.on_accent = QtGui.QColor("#fff")
         self.setMinimumHeight(24 * self.HOUR + 2 * self.TOP)
         self._boxes = []
         self._press = None    # (occ, column index, start minute, end minute, press point) while the mouse is down on a block
@@ -1032,8 +1095,9 @@ class WeekGrid(QtWidgets.QWidget):
     def set_occs(self, occs):
         self.occs = occs; self._settled = None; self.update()
 
-    def set_colors(self, fg, bg):
-        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg); self.update()
+    def set_colors(self, fg, bg, accent=None, on_accent=None):
+        self.fg, self.bg = QtGui.QColor(fg), QtGui.QColor(bg)
+        self.accent, self.on_accent = QtGui.QColor(accent or fg), QtGui.QColor(on_accent or bg); self.update()
 
     def paintEvent(self, e):
         p = QtGui.QPainter(self)
@@ -1342,7 +1406,7 @@ class TextPrompt(QtWidgets.QDialog):
 
 
 class DatePick(QtWidgets.QDialog):
-    def __init__(self, initial, fg, bg, parent=None):
+    def __init__(self, initial, fg, bg, parent=None, accent=None, on_accent=None):
         super().__init__(parent)
         self.setWindowTitle(_("date"))
         self.value = initial
@@ -1355,7 +1419,7 @@ class DatePick(QtWidgets.QDialog):
             l.setCursor(QtCore.Qt.PointingHandCursor)
         nav.addWidget(prev); nav.addWidget(self.title, 1, QtCore.Qt.AlignCenter); nav.addWidget(nxt)
         lay.addLayout(nav)
-        self.grid = MonthGrid(); self.grid.set_colors(fg, bg); self.grid.set_month(initial); self.grid.selected = initial
+        self.grid = MonthGrid(); self.grid.set_colors(fg, bg, accent, on_accent); self.grid.set_month(initial); self.grid.selected = initial
         self.grid.setMinimumSize(320, 260)
         self.grid.day_clicked.connect(self._pick)
         lay.addWidget(self.grid)
@@ -1403,7 +1467,7 @@ class Main(QtWidgets.QMainWindow):
         self.occs = []               # expanded occurrences of the loaded window
         self.threads = []
         self.font_size = int(self.cfg.get("font_size", 13))
-        self.dark = bool(self.cfg.get("dark", False))
+        self.theme = theme_of(self.cfg)
         self.window_days = 60; self.back_days = 45   # the range read from the servers, around today
         self._sync_no = 0; self._sync_shown = 0       # a late answer never replaces a newer one
         self.setWindowTitle("reader's calendar")
@@ -1495,7 +1559,7 @@ class Main(QtWidgets.QMainWindow):
         self.w_next.mousePressEvent = lambda e: self.step_grid(1)
         self.w_today.mousePressEvent = lambda e: (self.show_week(date.today(), workdays=self.week.workdays) if self.week.ndays > 1 else self.show_day_grid(date.today()))
 
-        for seq, fn in (("Ctrl+T", self.toggle_theme), ("F5", self.sync), ("Ctrl+R", self.sync), ("Ctrl+N", lambda: self.edit_event(None)),
+        for seq, fn in (("Ctrl+T", self.next_theme), ("F5", self.sync), ("Ctrl+R", self.sync), ("Ctrl+N", lambda: self.edit_event(None)),
                         ("Ctrl+=", lambda: self.zoom(1)), ("Ctrl++", lambda: self.zoom(1)), ("Ctrl+-", lambda: self.zoom(-1)),
                         ("Ctrl+,", self.show_settings), ("Ctrl+F", self.show_search), ("Ctrl+M", lambda: self.show_month(date.today())), ("Ctrl+S", lambda: self.pages.currentIndex() == 3 and self.save_event()), ("Ctrl+Return", lambda: self.pages.currentIndex() == 3 and self.save_event()), ("Ctrl+Q", self.close), ("Escape", self.escape), ("Ctrl+W", lambda: self.show_week(date.today())), ("Ctrl+Shift+W", lambda: self.show_week(date.today(), workdays=True)), ("Ctrl+D", self.go_today), ("Ctrl+J", lambda: self.show_day_grid(date.today())),
                         ("Left", lambda: self.step(-1)), ("Right", lambda: self.step(1))):
@@ -1528,10 +1592,14 @@ class Main(QtWidgets.QMainWindow):
 
     # ---- look ------------------------------------------------------------------------
 
+    @property
+    def dark(self):
+        return is_dark(palette(self.theme)[0])
+
     def apply_style(self):
-        bg, fg = ("#000000", "#ffffff") if self.dark else ("#ffffff", "#000000")
-        dim = "rgba(255,255,255,0.55)" if self.dark else "rgba(0,0,0,0.55)"
-        rule = "rgba(255,255,255,0.25)" if self.dark else "rgba(0,0,0,0.25)"
+        # the accent fills what is painted "text colour as background": in the two inks it is the text colour itself
+        bg, fg, accent, on_accent = palette(self.theme)
+        dim = rgba(fg, 0.55); rule = rgba(fg, 0.25)
         s = self.font_size
         # the Android scale: a row (tile), menus and titles at 0.8, secondary lines at 0.62
         tile = s + 5; title = round(tile * 0.8); small = max(9, round(tile * 0.62)); big = round(tile * 1.45)
@@ -1548,18 +1616,19 @@ class Main(QtWidgets.QMainWindow):
             QLineEdit#search {{ border: none; border-bottom: 1px solid {rule}; font-size: {tile}pt; padding: 8px 0; }}
             QLineEdit#titleedit {{ border: none; border-bottom: 1px solid {rule}; font-size: {big}pt; padding: 6px 0 10px 0; }}
             QLineEdit#field, QPlainTextEdit#field {{ border: none; border-bottom: 1px solid {rule}; padding: 6px 0; font-size: {title}pt; }}
-            QLabel#primary {{ background: {fg}; color: {bg}; padding: 6px 18px; }}
+            QLabel#primary {{ background: {accent}; color: {on_accent}; padding: 6px 18px; }}
             QLabel[role="body"] {{ font-size: {title}pt; }}
             QFrame#sep {{ background: {rule}; }}
             QScrollArea, QScrollArea > QWidget > QWidget {{ background: {bg}; }}
             QScrollBar:vertical {{ background: {bg}; width: 6px; }} QScrollBar::handle:vertical {{ background: {rule}; min-height: 24px; }} QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
-            QMenu {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }} QMenu::item:selected {{ background: {fg}; color: {bg}; }}
-            QLineEdit, QPlainTextEdit, QComboBox {{ background: {bg}; color: {fg}; border: 1px solid {rule}; padding: 6px; }} QComboBox QAbstractItemView {{ background: {bg}; color: {fg}; selection-background-color: {fg}; selection-color: {bg}; }}
-            QPushButton {{ background: {bg}; color: {fg}; border: 1px solid {fg}; padding: 6px 18px; }} QPushButton:default {{ background: {fg}; color: {bg}; }}
+            QMenu {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }} QMenu::item:selected {{ background: {accent}; color: {on_accent}; }}
+            QLineEdit, QPlainTextEdit, QComboBox {{ background: {bg}; color: {fg}; border: 1px solid {rule}; padding: 6px; }} QComboBox QAbstractItemView {{ background: {bg}; color: {fg}; selection-background-color: {accent}; selection-color: {on_accent}; }}
+            QPushButton {{ background: {bg}; color: {fg}; border: 1px solid {fg}; padding: 6px 18px; }} QPushButton:default {{ background: {accent}; color: {on_accent}; }}
             QPushButton#quiet {{ border: none; color: {dim}; padding: 6px 4px; }}
             QDialog {{ background: {bg}; }} QToolTip {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }}
         """)
-        self.grid.set_colors(fg, bg); self.week.set_colors(fg, bg); self.week_head.set_colors(fg, bg); self.board.set_colors(fg, bg)
+        for w in (self.grid, self.week, self.week_head, self.board):
+            w.set_colors(fg, bg, accent, on_accent)
         for w in (self.week, self.week_head, self.board):
             w.coloured = bool(self.cfg.get("coloured_events", False))
         f = QtGui.QFont(fam); f.setPointSize(s); f.setWeight(QtGui.QFont.Light if weight == 300 else QtGui.QFont.Normal); self.grid.setFont(f); self.week.setFont(f); self.week_head.setFont(f); self.board.setFont(f)
@@ -1567,8 +1636,10 @@ class Main(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().setFont(f)
         self.render_current()
 
-    def toggle_theme(self):
-        self.dark = not self.dark; self.cfg["dark"] = self.dark; save_config(self.cfg); self.apply_style()
+    def next_theme(self):
+        """Ctrl+T and the colours row: the next theme of the cycle. "dark" is still written, for
+        an older version of the app reading the same settings."""
+        self.theme = next_theme(self.theme); self.cfg["theme"] = self.theme; self.cfg["dark"] = self.dark; save_config(self.cfg); self.apply_style()
 
     def zoom(self, delta):
         self.font_size = max(9, min(24, self.font_size + delta)); self.cfg["font_size"] = self.font_size; save_config(self.cfg); self.apply_style()
@@ -1939,7 +2010,7 @@ class Main(QtWidgets.QMainWindow):
         def heading(text, box):
             h = QtWidgets.QLabel(text); h.setObjectName("heading"); box.addWidget(h)
         heading(_("look"), left)
-        left.addWidget(row(_("white on black") if self.dark else _("black on white"), _("colours"), role="tile", click=lambda: (self.toggle_theme(), self.render_settings())))
+        left.addWidget(row(theme_name(self.theme), _("colours"), role="tile", click=lambda: (self.next_theme(), self.render_settings())))
         coloured = bool(self.cfg.get("coloured_events", False))
         left.addWidget(row(_("in their calendar's colour") if coloured else _("plain, with a colour dot"), _("events"), role="tile",
                            click=lambda: (self.cfg.__setitem__("coloured_events", not coloured), save_config(self.cfg), self.apply_style(), self.render_settings())))
@@ -2340,8 +2411,8 @@ class Main(QtWidgets.QMainWindow):
             self._set(key, dlg.value().strip())
 
     def _pick_date(self, key):
-        fg, bg = ("#ffffff", "#000000") if self.dark else ("#000000", "#ffffff")
-        dlg = DatePick(self._edit_state[key].date(), fg, bg, self)
+        bg, fg, accent, on_accent = palette(self.theme)
+        dlg = DatePick(self._edit_state[key].date(), fg, bg, self, accent, on_accent)
         if dlg.exec_() == QtWidgets.QDialog.Accepted:
             st = self._edit_state; old = st[key]; new = datetime.combine(dlg.value, old.time(), LOCAL)
             if key == "start":
@@ -2394,7 +2465,7 @@ class Main(QtWidgets.QMainWindow):
             acct = QtWidgets.QLabel(self.account_of(u)); acct.setObjectName("dim"); acct.setProperty("role", "small"); text.addWidget(acct)
             a = QtWidgets.QWidgetAction(m); a.setDefaultWidget(host)
             a.triggered.connect(lambda _c=False, v=u: chosen.append(v)); m.addAction(a)
-        m.setStyleSheet("QWidget#pick:hover { background: %s; }" % ("rgba(255,255,255,0.14)" if self.dark else "rgba(0,0,0,0.08)"))
+        m.setStyleSheet("QWidget#pick:hover { background: %s; }" % rgba(palette(self.theme)[1], 0.14 if self.dark else 0.08))
         m.exec_(QtGui.QCursor.pos())
         return chosen[0] if chosen else None
 
