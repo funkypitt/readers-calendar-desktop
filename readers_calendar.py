@@ -6,6 +6,7 @@ python-dateutil, one file. MIT licence."""
 
 import calendar
 import json
+from collections import namedtuple
 import re
 import os
 import sys
@@ -22,8 +23,9 @@ sys.path.append("/usr/lib/readers-calendar")
 import caldav_events as ce  # noqa: E402
 import google_calendar as gc  # noqa: E402
 
+
 APP = "readers-calendar"
-VERSION = "1.15.0"
+VERSION = "1.16.0"
 
 
 def _config_dir():
@@ -142,18 +144,23 @@ def save_config(cfg):
 # The colour themes shared by the Reader's apps: the two inks, then the Plume palettes in order
 # ------------------------------------------------------------------------------------------
 
-PALETTES = [  # (key, background, text, accent, text on the accent)
-    ("DARK", "#000000", "#ffffff", "#ffffff", "#000000"),
-    ("LIGHT", "#ffffff", "#000000", "#000000", "#ffffff"),
-    ("LAVANDE", "#1f1a2e", "#f4efff", "#b8a4ff", "#1f1a2e"),
-    ("SAUGE", "#d9e0d4", "#1e2a21", "#4c7a5b", "#ffffff"),
-    ("NORDIQUE", "#2e3440", "#eceff4", "#88c0d0", "#2e3440"),
-    ("TERRACOTTA", "#e6d9cc", "#2b211b", "#c25e38", "#ffffff"),
-    ("COQUETTE", "#f3d9dc", "#4a1f2b", "#d2455e", "#ffffff"),
-    ("MILITANTE", "#f2eee4", "#121212", "#e8412e", "#ffffff"),
-    ("TORRIDE", "#1e0d13", "#f8e9e6", "#e02a50", "#fff4f2"),
-    ("NATURE", "#2b2a24", "#f2efe4", "#d19a4e", "#2b2a24"),
+# A theme: the surface and the text, the accent and its text, then the three roles of the cards
+# (the "key" colour of a tile, a second one, the pressed/hovered one). The two inks have no cards:
+# their tile colours are the surface, and "tiles" is False — they stay text on the page.
+Theme = namedtuple("Theme", "bg fg accent on_accent tile tile2 press tiles")
+PALETTES = [  # (key, background, text, accent, text on the accent, tile, tile2, press)
+    ("DARK", "#000000", "#ffffff", "#ffffff", "#000000", "#000000", "#000000", "#000000"),
+    ("LIGHT", "#ffffff", "#000000", "#000000", "#ffffff", "#ffffff", "#ffffff", "#ffffff"),
+    ("LAVANDE", "#1f1a2e", "#f4efff", "#b8a4ff", "#1f1a2e", "#3B3352", "#2B2540", "#5A4F78"),
+    ("SAUGE", "#d9e0d4", "#1e2a21", "#4c7a5b", "#ffffff", "#F7F9F4", "#B5C2B2", "#B5C2B2"),
+    ("NORDIQUE", "#2e3440", "#eceff4", "#88c0d0", "#2e3440", "#3B4252", "#353B4A", "#4C566A"),
+    ("TERRACOTTA", "#e6d9cc", "#2b211b", "#c25e38", "#ffffff", "#FCF7F1", "#C8B6A5", "#C8B6A5"),
+    ("COQUETTE", "#f3d9dc", "#4a1f2b", "#d2455e", "#ffffff", "#FFF7F5", "#E7BFC6", "#E7BFC6"),
+    ("MILITANTE", "#f2eee4", "#121212", "#e8412e", "#ffffff", "#FFFFFF", "#D8D3C6", "#D8D3C6"),
+    ("TORRIDE", "#1e0d13", "#f8e9e6", "#e02a50", "#fff4f2", "#561A2C", "#34121D", "#7A2A42"),
+    ("NATURE", "#2b2a24", "#f2efe4", "#d19a4e", "#2b2a24", "#3A4733", "#2F3A2B", "#566650"),
 ]
+INKS = ("DARK", "LIGHT")
 THEME_NAMES = {"DARK": "white on black", "LIGHT": "black on white", "LAVANDE": "lavender", "SAUGE": "sage", "NORDIQUE": "nordic",
                "TERRACOTTA": "terracotta", "COQUETTE": "coquette", "MILITANTE": "activist", "TORRIDE": "sultry", "NATURE": "nature"}
 _THEME_TR = {"fr": ["lavande", "sauge", "nordique", "terracotta", "coquette", "militante", "torride", "nature"],
@@ -166,8 +173,10 @@ for _l, _names in _THEME_TR.items():
 
 
 def palette(key):
-    """(background, text, accent, text on the accent) of a theme; an unknown name is the default."""
-    return next((p[1:] for p in PALETTES if p[0] == key), PALETTES[1][1:])
+    """The Theme of a name — background, text, accent, text on the accent, tile, tile2, press and
+    whether the clickable things are cards; an unknown name is the default."""
+    p = next((p for p in PALETTES if p[0] == key), PALETTES[1])
+    return Theme(*p[1:], p[0] not in INKS)
 
 
 def next_theme(key):
@@ -668,12 +677,29 @@ def live_label(text, whole_as=None, on_phone=None, role="body"):
     return lab
 
 
+def led_row(lead, content, top=None):
+    """A row led by a small widget in its margin: a calendar's dot on the first line (top = its
+    offset), the loupe centred. A clickable row hands its card and its click to the whole line, so
+    the lead is inside the card and answers the click too."""
+    line = QtWidgets.QWidget(); hl = QtWidgets.QHBoxLayout(line); hl.setContentsMargins(0, 0, 0, 0); hl.setSpacing(12)
+    l, t, r, b = content.layout().getContentsMargins()
+    if content.objectName() == "card":
+        content.setObjectName(""); card(line); line.setCursor(content.cursor()); line.mousePressEvent = content.mousePressEvent
+        content.setProperty("row", "inner"); line.setProperty("row", "line")
+        hl.setContentsMargins(l, 0, 0, 0); content.layout().setContentsMargins(0, t, r, b)
+    if top is None:
+        hl.addWidget(lead, 0, QtCore.Qt.AlignVCenter)
+    else:
+        holder = QtWidgets.QWidget(); holder.setProperty("row", "lead"); holder.setProperty("top", top)
+        hv = QtWidgets.QVBoxLayout(holder); hv.setContentsMargins(0, top + t - 7, 0, 0); hv.setSpacing(0); hv.addWidget(lead); hv.addStretch(1)
+        hl.addWidget(holder, 0)
+    hl.addWidget(content, 1)
+    return line
+
+
 def dotted_row(color, content):
     """A row with its calendar's dot in the margin, on the first line."""
-    line = QtWidgets.QWidget(); hl = QtWidgets.QHBoxLayout(line); hl.setContentsMargins(0, 0, 0, 0); hl.setSpacing(12)
-    dot = Dot(color, size=9); holder = QtWidgets.QVBoxLayout(); holder.setContentsMargins(0, 16, 0, 0); holder.addWidget(dot); holder.addStretch(1)
-    hl.addLayout(holder); hl.addWidget(content, 1)
-    return line
+    return led_row(Dot(color, size=9), content, top=16)
 
 
 def is_google(ev):
@@ -1239,11 +1265,49 @@ class WeekGrid(QtWidgets.QWidget):
 # Small helpers: text rows, prompts
 # ------------------------------------------------------------------------------------------
 
-def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=None, role=None):
+# With a colour theme everything that can be clicked is a rounded card on the surface: the rows,
+# the buttons, the fields; the two inks stay text on the page. Set by Main.apply_style.
+LOOK = {"tiles": False}
+CARD_PAD = (12, 1)      # the inset of a card's text from its edge, sideways and above the row's own 7 px (3 px for a calendar line)
+
+
+def row_margins(kind="row"):
+    """The inner margins of a row ("row": a text row, "cal": a calendar's line of the left column):
+    with tiles, the padding of its card; in the inks, the row as it always was."""
+    top, pad = (7, CARD_PAD[1]) if kind == "row" else (3, 2)
+    return (CARD_PAD[0], top + pad, CARD_PAD[0], top + pad) if LOOK["tiles"] else (0, top, 0, top)
+
+
+def card(w):
+    """The widget is a card with a colour theme (the style sheet paints QWidget#card); in the
+    inks nothing is painted and it stays a plain row."""
+    w.setObjectName("card"); w.setAttribute(QtCore.Qt.WA_StyledBackground, True)
+    return w
+
+
+def remargin(root):
+    """After a theme change, the rows already on screen take the padding of a card or lose it;
+    the pages are redrawn anyway, this is for the left column."""
+    for w in root.findChildren(QtWidgets.QWidget):
+        kind = w.property("row")
+        if not kind or w.layout() is None: continue
+        l, t, r, b = row_margins("cal" if kind == "cal" else "row")
+        if kind in ("pad", "cal"): w.layout().setContentsMargins(l, t, r, b)
+        elif kind == "line": w.layout().setContentsMargins(l, 0, 0, 0)
+        elif kind == "inner": w.layout().setContentsMargins(0, t, r, b)
+        elif kind == "lead": w.layout().setContentsMargins(0, int(w.property("top")) + t - 7, 0, 0)
+
+
+def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=None, role=None, pad=False):
     """A line of text and, under it, a dim smaller line: the Reader's row. role "tile" is the
-    Android row size, "big" a page title; without it, the title size of the menus."""
+    Android row size, "big" a page title; without it, the title size of the menus. A row with a
+    click is a card with a colour theme; pad gives a flat row the same inset as the cards around it."""
     w = QtWidgets.QWidget()
-    lay = QtWidgets.QVBoxLayout(w); lay.setContentsMargins(0, 7, 0, 7); lay.setSpacing(1)
+    lay = QtWidgets.QVBoxLayout(w); lay.setSpacing(1)
+    if click or pad:
+        lay.setContentsMargins(*row_margins()); w.setProperty("row", "pad")
+    else:
+        lay.setContentsMargins(0, 7, 0, 7)
     t = QtWidgets.QLabel(text); t.setWordWrap(True)
     if role or size:
         t.setProperty("role", role or "tile")
@@ -1253,7 +1317,7 @@ def row(text, secondary=None, size=None, dim_secondary=True, click=None, obj=Non
     if secondary:
         s = QtWidgets.QLabel(secondary); s.setObjectName("dim"); s.setProperty("role", "small"); s.setWordWrap(True); lay.addWidget(s)
     if click:
-        w.setCursor(QtCore.Qt.PointingHandCursor); w.mousePressEvent = lambda e: void(click)
+        card(w); w.setCursor(QtCore.Qt.PointingHandCursor); w.mousePressEvent = lambda e: void(click)
     return w
 
 
@@ -1492,9 +1556,7 @@ class Main(QtWidgets.QMainWindow):
         self.nav_week = row(_("week"), click=lambda: self.show_week(date.today())); ll.addWidget(self.nav_week)
         self.nav_workdays = row(_("workdays"), click=lambda: self.show_week(date.today(), workdays=True)); ll.addWidget(self.nav_workdays)
         self.nav_month = row(_("month"), click=lambda: self.show_month(date.today())); ll.addWidget(self.nav_month)
-        self.nav_search = QtWidgets.QWidget(); sh = QtWidgets.QHBoxLayout(self.nav_search); sh.setContentsMargins(0, 0, 0, 0); sh.setSpacing(10)
-        sh.addWidget(Magnifier(16), 0, QtCore.Qt.AlignVCenter); sh.addWidget(row(_("search"), click=self.show_search), 1)
-        self.nav_search.setCursor(QtCore.Qt.PointingHandCursor); self.nav_search.mousePressEvent = lambda e: self.show_search(); ll.addWidget(self.nav_search)
+        self.nav_search = led_row(Magnifier(16), row(_("search"), click=self.show_search)); ll.addWidget(self.nav_search)
         self.nav_new = row(_("+ new event"), click=lambda: self.edit_event(None)); ll.addWidget(self.nav_new)
         ll.addSpacing(8)
         # the calendars: as many as the account has, scrolling when the column is full
@@ -1594,12 +1656,13 @@ class Main(QtWidgets.QMainWindow):
 
     @property
     def dark(self):
-        return is_dark(palette(self.theme)[0])
+        return is_dark(palette(self.theme).bg)
 
     def apply_style(self):
         # the accent fills what is painted "text colour as background": in the two inks it is the text colour itself
-        bg, fg, accent, on_accent = palette(self.theme)
+        th = palette(self.theme); bg, fg, accent, on_accent = th.bg, th.fg, th.accent, th.on_accent
         dim = rgba(fg, 0.55); rule = rgba(fg, 0.25)
+        LOOK["tiles"] = th.tiles
         s = self.font_size
         # the Android scale: a row (tile), menus and titles at 0.8, secondary lines at 0.62
         tile = s + 5; title = round(tile * 0.8); small = max(9, round(tile * 0.62)); big = round(tile * 1.45)
@@ -1626,7 +1689,21 @@ class Main(QtWidgets.QMainWindow):
             QPushButton {{ background: {bg}; color: {fg}; border: 1px solid {fg}; padding: 6px 18px; }} QPushButton:default {{ background: {accent}; color: {on_accent}; }}
             QPushButton#quiet {{ border: none; color: {dim}; padding: 6px 4px; }}
             QDialog {{ background: {bg}; }} QToolTip {{ background: {bg}; color: {fg}; border: 1px solid {rule}; }}
-        """)
+        """ + (f"""
+            QWidget#card {{ background: {th.tile}; border-radius: 12px; margin: 3px 0; }} QWidget#card:hover {{ background: {th.press}; }}
+            QWidget#card QWidget {{ background: transparent; }}
+            QFrame#sep {{ background: transparent; }}
+            QLabel#heading {{ padding-left: {CARD_PAD[0]}px; }}
+            QLabel#primary {{ border-radius: 10px; }}
+            QLineEdit, QPlainTextEdit, QComboBox, QLineEdit#search, QLineEdit#titleedit, QLineEdit#field, QPlainTextEdit#field {{ background: {th.tile}; border: none; border-radius: 10px; padding: 8px 12px; }}
+            QComboBox QAbstractItemView {{ background: {th.tile}; }}
+            QPushButton {{ background: {th.tile}; border: none; border-radius: 10px; padding: 8px 18px; }} QPushButton:hover {{ background: {th.press}; }}
+            QPushButton:default, QPushButton:default:hover {{ background: {accent}; color: {on_accent}; }}
+            QPushButton#quiet, QPushButton#quiet:hover {{ background: transparent; }}
+            QMenu {{ background: {th.tile}; border: 1px solid {th.press}; }} QToolTip {{ background: {th.tile}; border: 1px solid {th.press}; }}
+            QScrollBar::handle:vertical {{ background: {th.press}; }}
+        """ if th.tiles else ""))
+        remargin(self)
         for w in (self.grid, self.week, self.week_head, self.board):
             w.set_colors(fg, bg, accent, on_accent)
         for w in (self.week, self.week_head, self.board):
@@ -1762,7 +1839,7 @@ class Main(QtWidgets.QMainWindow):
         hidden = set(self.cfg.get("hidden_calendars", []))
         for i, (name, url, writable) in enumerate(self.calendars):
             shown = url not in hidden
-            line = QtWidgets.QWidget(); lay = QtWidgets.QHBoxLayout(line); lay.setContentsMargins(0, 3, 0, 3); lay.setSpacing(10)
+            line = card(QtWidgets.QWidget()); line.setProperty("row", "cal"); lay = QtWidgets.QHBoxLayout(line); lay.setContentsMargins(*row_margins("cal")); lay.setSpacing(10)
             lay.addWidget(Dot(ce.color_of(url), filled=shown), 0, QtCore.Qt.AlignTop); lay.itemAt(0).widget().setContentsMargins(0, 0, 0, 0)
             text = QtWidgets.QVBoxLayout(); text.setSpacing(0)
             lab = QtWidgets.QLabel(name); lab.setObjectName("" if shown else "dim"); lab.setWordWrap(True); text.addWidget(lab)
@@ -1914,7 +1991,7 @@ class Main(QtWidgets.QMainWindow):
             if d != cur:
                 cur = d
                 h = QtWidgets.QLabel(day_label(d, today)); h.setObjectName("" if d == today else "dim"); h.setProperty("role", "small")
-                h.setContentsMargins(0, 18, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_day_grid(dd)
+                h.setContentsMargins(row_margins()[0], 18, 0, 0); h.setCursor(QtCore.Qt.PointingHandCursor); h.mousePressEvent = lambda e, dd=d: self.show_day_grid(dd)
                 lay.insertWidget(i, h); i += 1
             sec = o.when() + (" · " + o.event.location if o.event.location else "")
             lay.insertWidget(i, row(o.event.summary, sec, size=self.font_size + 4, click=lambda oo=o: self.show_event(oo))); i += 1
@@ -2014,12 +2091,12 @@ class Main(QtWidgets.QMainWindow):
         coloured = bool(self.cfg.get("coloured_events", False))
         left.addWidget(row(_("in their calendar's colour") if coloured else _("plain, with a colour dot"), _("events"), role="tile",
                            click=lambda: (self.cfg.__setitem__("coloured_events", not coloured), save_config(self.cfg), self.apply_style(), self.render_settings())))
-        size_line = QtWidgets.QHBoxLayout(); size_line.setSpacing(4)
-        size_line.addWidget(row(f"{self.font_size} pt", _("text size"), role="tile"))
+        size_host = card(QtWidgets.QWidget()); size_line = QtWidgets.QHBoxLayout(size_host); size_line.setContentsMargins(0, 0, row_margins()[2], 0); size_line.setSpacing(4)
+        size_line.addWidget(row(f"{self.font_size} pt", _("text size"), role="tile", pad=True))
         size_line.addSpacing(18)
         size_line.addWidget(link("−", lambda: (self.zoom(-1), self.render_settings()), "arrow", "Ctrl+-"), 0, QtCore.Qt.AlignVCenter)
         size_line.addWidget(link("+", lambda: (self.zoom(1), self.render_settings()), "arrow", "Ctrl+="), 0, QtCore.Qt.AlignVCenter)
-        size_line.addStretch(1); left.addLayout(size_line)
+        size_line.addStretch(1); left.addWidget(size_host)
         fonts = [("sans", "sans-serif"), ("serif", "serif"), ("mono", "mono")]
         cur = self.cfg.get("font", "sans") if self.cfg.get("font") in dict(fonts) else "sans"
         nxt = fonts[([f for f, _x in fonts].index(cur) + 1) % 3][0]
@@ -2362,7 +2439,7 @@ class Main(QtWidgets.QMainWindow):
         day = st["start"].strftime("%A %-d %B %Y").lower()
         col.addWidget(row(day, _("day"), role="tile", click=lambda: self._pick_date("start")))
         if st["all_day"]:
-            col.addWidget(row(_("all day"), None, role="tile"))
+            col.addWidget(row(_("all day"), None, role="tile", click=lambda: self._set("all_day", False)))
         else:
             col.addWidget(row(f"{fmt_time(st['start'])} – {fmt_time(st['end'])}", _("time"), role="tile", click=self._pick_times))
         other_day = st["end"].date() != st["start"].date()
@@ -2377,10 +2454,10 @@ class Main(QtWidgets.QMainWindow):
         cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
         # one occurrence (or the series from it on) stays in its series' calendar
         fixed = st.get("scope") in ("this", "following")
-        col.addWidget(dotted_row(ce.color_of(st["cal"]), row(cal_name, _("calendar") + " · " + self.account_of(st["cal"]), click=None if fixed else self._pick_calendar)))
+        col.addWidget(dotted_row(ce.color_of(st["cal"]), row(cal_name, _("calendar") + " · " + self.account_of(st["cal"]), click=None if fixed else self._pick_calendar, pad=True)))
         col.addWidget(row(reminder_label(st["reminder"]), _("reminder"), click=self._pick_reminder))
         if st.get("scope") == "this":
-            col.addWidget(row(_("part of a series"), _("repeat")))
+            col.addWidget(row(_("part of a series"), _("repeat"), pad=True))
         else:
             col.addWidget(row(dict(REPEATS).get(st["rrule"], _("repeats (custom rule)")), _("repeat"), click=self._pick_repeat))
         col.addWidget(rule_line(6, 10))
@@ -2411,8 +2488,8 @@ class Main(QtWidgets.QMainWindow):
             self._set(key, dlg.value().strip())
 
     def _pick_date(self, key):
-        bg, fg, accent, on_accent = palette(self.theme)
-        dlg = DatePick(self._edit_state[key].date(), fg, bg, self, accent, on_accent)
+        th = palette(self.theme)
+        dlg = DatePick(self._edit_state[key].date(), th.fg, th.bg, self, th.accent, th.on_accent)
         if dlg.exec_() == QtWidgets.QDialog.Accepted:
             st = self._edit_state; old = st[key]; new = datetime.combine(dlg.value, old.time(), LOCAL)
             if key == "start":
@@ -2465,7 +2542,8 @@ class Main(QtWidgets.QMainWindow):
             acct = QtWidgets.QLabel(self.account_of(u)); acct.setObjectName("dim"); acct.setProperty("role", "small"); text.addWidget(acct)
             a = QtWidgets.QWidgetAction(m); a.setDefaultWidget(host)
             a.triggered.connect(lambda _c=False, v=u: chosen.append(v)); m.addAction(a)
-        m.setStyleSheet("QWidget#pick:hover { background: %s; }" % rgba(palette(self.theme)[1], 0.14 if self.dark else 0.08))
+        th = palette(self.theme)
+        m.setStyleSheet("QWidget#pick:hover { background: %s; }" % (th.press if th.tiles else rgba(th.fg, 0.14 if self.dark else 0.08)))
         m.exec_(QtGui.QCursor.pos())
         return chosen[0] if chosen else None
 
