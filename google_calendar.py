@@ -273,8 +273,9 @@ class Google:
             _put_reminder(body, reminder)
         return self._req("PUT", path, body=body, etag=ev.etag)
 
-    def shift(self, ev, delta, series=False):
-        """Move an occurrence (or its whole series) by delta, nothing else touched."""
+    def shift(self, ev, delta, series=False, end_delta=None):
+        """Move an occurrence (or its whole series) by delta, nothing else touched. end_delta,
+        when given, moves the end apart from the start (a block stretched by its lower edge)."""
         g = ev.google
         event_id = g["recurring"] if series and g.get("recurring") else g["id"]
         path = self._events_path(g["cal"], event_id)
@@ -282,10 +283,11 @@ class Google:
         old = _read_time(body["start"])
         for key in ("start", "end"):
             t = body[key]
+            d = end_delta if key == "end" and end_delta is not None else delta
             if "date" in t:
-                t["date"] = (date.fromisoformat(t["date"]) + timedelta(days=delta.days)).isoformat()
+                t["date"] = (date.fromisoformat(t["date"]) + timedelta(days=d.days)).isoformat()
             else:
-                t["dateTime"] = (datetime.fromisoformat(t["dateTime"].replace("Z", "+00:00")) + delta).isoformat()
+                t["dateTime"] = (datetime.fromisoformat(t["dateTime"].replace("Z", "+00:00")) + d).isoformat()
         new = _read_time(body["start"])
         body["recurrence"] = [("RRULE:" + _retarget_byday(x[6:], old, new)) if x.upper().startswith("RRULE:") else x for x in body.get("recurrence", [])] or None
         if body["recurrence"] is None:
