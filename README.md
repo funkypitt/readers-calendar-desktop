@@ -13,11 +13,12 @@ landscape mode. No account with the app, only your own server.
 - Drag an event to move it: to another day in the month, by quarter hours and whole days in the grids.
 - Ctrl+N new event, Ctrl+S saves, Ctrl+F search (title, place, notes, calendar; one year back, two ahead), ← / → previous and next, Escape back.
 - Syncs every 5 minutes and on F5. Ctrl+T flips white on black / black on white; ⚙ or Ctrl+, holds the settings and the accounts.
-- Account: server, username and password, asked at first run and kept in `~/.config/readers-calendar/config.json`, readable by you only. Infomaniak: `https://sync.infomaniak.com` and the `AB12345` login.
+- Account: server, username and password, asked at first run and kept in `config.json`, readable by you only: `~/.config/readers-calendar/` on Linux, `~/Library/Application Support/readers-calendar/` on macOS, `%APPDATA%\Readers Calendar\` on Windows. Infomaniak: `https://sync.infomaniak.com` and the `AB12345` login.
 - Google Calendar: a secret iCal address as a read-only feed, or your own account, read and write, with an OAuth client you create yourself (steps in the notes). Other `.ics` feeds work too.
 - A new computer: *export credentials…* writes a JSON file that Reader's Calendar, Tasks and Notes share; *import credentials…* reads it back. It holds passwords in clear: delete it once imported.
 - Limits: no invitations or attendees, no time zones other than yours; a Google series offers "only this event" or "the whole series", not "this and the following ones".
 - English, French, German, Spanish, Portuguese and Russian, following the system language; dates follow the locale.
+- 1.17.1: on a Mac opened from the Finder the days and months speak the interface's language, not English; a server certificate trusted in the Keychain is trusted by the app, and a refused one is said as such, not as an unreachable server.
 - A repeating event asks what a change is for — only this event, this and the following ones, or
   the whole series — when it is edited, dragged or deleted. Occurrences changed on another device
   are shown as they were changed, and kept when the series is saved.
@@ -28,7 +29,7 @@ More detail: [docs/NOTES.md](docs/NOTES.md).
 
 - Debian, Ubuntu, Pop!_OS: add the [apt repository](https://funkypitt.github.io/apt-repo/), then `sudo apt install readers-calendar`. Or take the `.deb` from the [latest release](https://github.com/funkypitt/readers-calendar-desktop/releases/latest): `sudo apt install ./readers-calendar_*_all.deb`.
 - Arch, Manjaro: `git clone https://github.com/funkypitt/readers-calendar-desktop && cd readers-calendar-desktop/packaging && makepkg -si`.
-- Windows (`.exe`) and macOS (`.dmg`, `apple-silicon` or `intel`): from the latest release. They are unsigned: on Windows *More info* › *Run anyway*, on macOS right click on the app › *Open* the first time.
+- Windows (`.exe`) and macOS (`.dmg`, `apple-silicon` or `intel`): from the latest release. They are unsigned: on Windows *More info* › *Run anyway*; on macOS, after the first refusal, System Settings › Privacy & Security › *Open Anyway* (macOS 15 and later; right click on the app › *Open* on macOS 14), or in a Terminal `xattr -dr com.apple.quarantine "/Applications/Readers Calendar.app"`.
 - Anywhere else: `python3 readers_calendar.py` with PyQt5, requests and python-dateutil installed.
 
 ## Build

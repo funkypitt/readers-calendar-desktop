@@ -11,9 +11,11 @@ shows a blue "Windows protected your PC" panel the first time: *More info* › *
 
 **macOS** — take the `.dmg` for your Mac (`apple-silicon` for an M1 and later, `intel` for an
 older one), open it and drag the app onto *Applications*. It is not signed by a paid Apple
-certificate either, so the first opening must be a **right click on the app › Open** › *Open*; a
-double click at that point says the app "cannot be opened" and offers nothing but the bin. Once
-opened that way it starts normally ever after. If macOS still refuses, in a Terminal:
+certificate either, so the first opening is refused: the app "cannot be opened" (or "Apple could
+not verify…"), and the panel offers nothing but *Done* or the bin. Then **System Settings ›
+Privacy & Security**, at the bottom, *Open Anyway*, and confirm (macOS 15 and later); on macOS 14
+a **right click on the app › Open** › *Open* is enough. Once let through it starts normally ever
+after. Or, in a Terminal, instead of all that:
 `xattr -dr com.apple.quarantine "/Applications/Readers Calendar.app"`.
 
 ## Account
@@ -21,8 +23,15 @@ opened that way it starts normally ever after. If macOS still refuses, in a Term
 The first run asks for the server, the username and a password. Infomaniak:
 `https://sync.infomaniak.com`, the `AB12345` login of the Workspace, and an application
 password if two-factor authentication is on. Nextcloud and Radicale take their usual
-address. The password is stored in `~/.config/readers-calendar/config.json`, readable by
-you only. Ctrl+, reopens the dialog.
+address. The password is stored in `config.json`, readable by you only:
+`~/.config/readers-calendar/` on Linux, `~/Library/Application Support/readers-calendar/` on
+macOS, `%APPDATA%\Readers Calendar\` on Windows. Ctrl+, (⌘, on a Mac) reopens the dialog.
+
+A server under a certificate authority of your own (a Nextcloud or Radicale at home): on Linux,
+add the authority to the system's certificates (`update-ca-certificates`); on macOS, to the
+Keychain, trusted for SSL; on Windows, to the trusted root authorities. The app trusts what the
+system trusts. When it does not, the status line says "the server's certificate is not trusted",
+not "cannot reach the server".
 
 ## Google Calendar
 
@@ -65,7 +74,8 @@ The account dialog, or the settings page › *export credentials…* writes the 
 Calendar, Tasks and Notes can all write into the same file, each in its own section. On the new
 computer, *import credentials…* at the same place brings them back — or, before the first
 window, `readers-calendar --import-credentials readers-credentials.json` (and `--export-credentials FILE` the
-other way). The look (colours, text size, font) stays out of it.
+other way). On macOS the command is
+`"/Applications/Readers Calendar.app/Contents/MacOS/Readers Calendar" --import-credentials readers-credentials.json`. The look (colours, text size, font) stays out of it.
 
 The file holds your passwords in clear and is written readable by you only: carry it on a USB key
 or in your own cloud folder, not by e-mail, and delete it once imported.

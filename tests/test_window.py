@@ -5,12 +5,16 @@ Runs the real window off screen against a stand-in server that, like a real one,
 the events of the range asked:  QT_QPA_PLATFORM=offscreen python3 tests/test_window.py [shot.png]"""
 import os, sys, tempfile, time
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp(prefix="readers-calendar-test-")   # never the real config
+# never the real config: Linux reads XDG_CONFIG_HOME, macOS ~/Library under HOME, Windows APPDATA
+TMP = tempfile.mkdtemp(prefix="readers-calendar-test-")
+for var in ("HOME", "XDG_CONFIG_HOME", "APPDATA"):
+    os.environ[var] = TMP
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from datetime import date, datetime, timedelta
 from PyQt5 import QtWidgets
 import caldav_events as ce
 import readers_calendar as rc
+rc.CONFIG_DIR = os.path.join(TMP, "readers-calendar"); rc.CONFIG_FILE = os.path.join(rc.CONFIG_DIR, "config.json")
 
 L = ce.LOCAL
 TODAY = date.today()

@@ -4,7 +4,6 @@
 navigation on the left, agenda / week grid / event page on the right. PyQt5 + requests +
 python-dateutil, one file. MIT licence."""
 
-import calendar
 import json
 from collections import namedtuple
 import re
@@ -17,6 +16,17 @@ from urllib.parse import urljoin
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+# macOS and Windows: trust the certificates the system trusts (a Nextcloud or Radicale under a
+# private authority added to the Keychain), not only the list requests carries. Before requests is
+# imported, since it prepares its TLS context at import. Linux already reads the system's list;
+# without truststore (a distribution's Python) everything stays as it was.
+if sys.platform in ("darwin", "win32"):
+    try:
+        import truststore
+        truststore.inject_into_ssl()
+    except Exception:
+        pass
+
 # the module next to this file first; the installed copy only as a fallback
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.append("/usr/lib/readers-calendar")
@@ -25,7 +35,7 @@ import google_calendar as gc  # noqa: E402
 
 
 APP = "readers-calendar"
-VERSION = "1.17.0"
+VERSION = "1.17.1"
 
 
 def _config_dir():
@@ -121,7 +131,51 @@ def _(key, *args):
     s = _TR.get(_LANG, {}).get(key, key)
     for i, a in enumerate(args):
         s = s.replace("%" + str(i + 1), str(a))
+    if sys.platform == "darwin":       # Qt reads Ctrl as the Command key on a Mac: say so
+        s = s.replace("Ctrl+,", "⌘,").replace("Strg+,", "⌘,")
     return s
+
+
+_DATE_LOCALE = None
+
+
+def _date_locale():
+    """The locale the names of days and months come from: the system's when it speaks the
+    interface's language (its region kept), otherwise that language itself."""
+    global _DATE_LOCALE
+    if _DATE_LOCALE is None:
+        sys_loc = QtCore.QLocale.system()
+        _DATE_LOCALE = sys_loc if sys_loc.name()[:2].lower() == _LANG else QtCore.QLocale(_LANG)
+    return _DATE_LOCALE
+
+
+def _c_dates_match():
+    """True where the C library already names days and months in the interface's language: Linux
+    with LANG set, where Qt has called setlocale. A Mac opened from the Finder has no LANG, so its
+    C library says "Monday" under a French interface; Windows does not know %-d at all."""
+    if not sys.platform.startswith("linux"):
+        return False
+    import locale
+    try:
+        return locale.setlocale(locale.LC_TIME)[:2].lower() == _LANG
+    except locale.Error:
+        return False
+
+
+_DATE_CODE = re.compile(r"%-?[aAbBdY]")
+
+
+def fmt_date(d, fmt):
+    """d.strftime(fmt) for %A %a %B %b %-d %Y, the names always in the interface's language."""
+    if _c_dates_match():
+        return d.strftime(fmt)
+    loc = _date_locale()
+    names = {"%A": lambda: loc.dayName(d.isoweekday(), QtCore.QLocale.LongFormat),
+             "%a": lambda: loc.dayName(d.isoweekday(), QtCore.QLocale.ShortFormat),
+             "%B": lambda: loc.monthName(d.month, QtCore.QLocale.LongFormat),
+             "%b": lambda: loc.monthName(d.month, QtCore.QLocale.ShortFormat),
+             "%-d": lambda: str(d.day), "%d": lambda: "%02d" % d.day, "%Y": lambda: str(d.year)}
+    return _DATE_CODE.sub(lambda m: names[m.group(0)](), fmt)
 
 
 def load_config():
@@ -263,6 +317,7 @@ _ERR_TR = {
         "Google answered with an error (HTTP %1): %2": "Google a répondu par une erreur (HTTP %1) : %2",
         "the server did not answer in time": "le serveur n'a pas répondu à temps", "this server address is not valid": "cette adresse de serveur n'est pas valable",
         "cannot reach the server": "serveur injoignable", "network error — %1": "erreur réseau — %1", "the server sent an unreadable answer": "le serveur a envoyé une réponse illisible",
+        "the server's certificate is not trusted — check the address, or have the system trust your own certificate authority": "le certificat du serveur n'est pas reconnu — vérifiez l'adresse, ou faites reconnaître votre propre autorité de certification par le système",
         "error — %1": "erreur — %1", "cannot use this file — %1": "impossible d'utiliser ce fichier — %1",
         "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar est connecté. Vous pouvez fermer cet onglet.",
         "Something went wrong. Close this tab and try again.": "Quelque chose n'a pas fonctionné. Fermez cet onglet et réessayez."},
@@ -277,6 +332,7 @@ _ERR_TR = {
         "Google answered with an error (HTTP %1): %2": "Google hat mit einem Fehler geantwortet (HTTP %1): %2",
         "the server did not answer in time": "der Server hat nicht rechtzeitig geantwortet", "this server address is not valid": "diese Serveradresse ist ungültig",
         "cannot reach the server": "Server nicht erreichbar", "network error — %1": "Netzwerkfehler — %1", "the server sent an unreadable answer": "der Server hat eine unlesbare Antwort gesendet",
+        "the server's certificate is not trusted — check the address, or have the system trust your own certificate authority": "das Zertifikat des Servers ist nicht vertrauenswürdig — prüfen Sie die Adresse, oder lassen Sie das System Ihrer eigenen Zertifizierungsstelle vertrauen",
         "error — %1": "Fehler — %1", "cannot use this file — %1": "diese Datei kann nicht verwendet werden — %1",
         "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar ist verbunden. Sie können diesen Tab schließen.",
         "Something went wrong. Close this tab and try again.": "Etwas ist schiefgegangen. Schließen Sie diesen Tab und versuchen Sie es erneut."},
@@ -291,6 +347,7 @@ _ERR_TR = {
         "Google answered with an error (HTTP %1): %2": "Google ha respondido con un error (HTTP %1): %2",
         "the server did not answer in time": "el servidor no ha respondido a tiempo", "this server address is not valid": "esta dirección de servidor no es válida",
         "cannot reach the server": "no se puede contactar con el servidor", "network error — %1": "error de red — %1", "the server sent an unreadable answer": "el servidor ha enviado una respuesta ilegible",
+        "the server's certificate is not trusted — check the address, or have the system trust your own certificate authority": "el certificado del servidor no es de confianza — compruebe la dirección, o haga que el sistema confíe en su propia autoridad de certificación",
         "error — %1": "error — %1", "cannot use this file — %1": "no se puede usar este archivo — %1",
         "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar está conectado. Puede cerrar esta pestaña.",
         "Something went wrong. Close this tab and try again.": "Algo ha fallado. Cierre esta pestaña e inténtelo de nuevo."},
@@ -305,6 +362,7 @@ _ERR_TR = {
         "Google answered with an error (HTTP %1): %2": "a Google respondeu com um erro (HTTP %1): %2",
         "the server did not answer in time": "o servidor não respondeu a tempo", "this server address is not valid": "este endereço de servidor não é válido",
         "cannot reach the server": "não é possível contactar o servidor", "network error — %1": "erro de rede — %1", "the server sent an unreadable answer": "o servidor enviou uma resposta ilegível",
+        "the server's certificate is not trusted — check the address, or have the system trust your own certificate authority": "o certificado do servidor não é de confiança — verifique o endereço, ou faça o sistema confiar na sua própria autoridade de certificação",
         "error — %1": "erro — %1", "cannot use this file — %1": "não é possível usar este ficheiro — %1",
         "Reader's Calendar is connected. You can close this tab.": "O Reader's Calendar está ligado. Pode fechar este separador.",
         "Something went wrong. Close this tab and try again.": "Algo correu mal. Feche este separador e tente novamente."},
@@ -319,6 +377,7 @@ _ERR_TR = {
         "Google answered with an error (HTTP %1): %2": "Google ответил ошибкой (HTTP %1): %2",
         "the server did not answer in time": "сервер не ответил вовремя", "this server address is not valid": "неверный адрес сервера",
         "cannot reach the server": "сервер недоступен", "network error — %1": "ошибка сети — %1", "the server sent an unreadable answer": "сервер прислал нечитаемый ответ",
+        "the server's certificate is not trusted — check the address, or have the system trust your own certificate authority": "сертификат сервера не считается доверенным — проверьте адрес или добавьте свой центр сертификации в доверенные в системе",
         "error — %1": "ошибка — %1", "cannot use this file — %1": "не удаётся использовать этот файл — %1",
         "Reader's Calendar is connected. You can close this tab.": "Reader's Calendar подключён. Эту вкладку можно закрыть.",
         "Something went wrong. Close this tab and try again.": "Что-то пошло не так. Закройте эту вкладку и попробуйте ещё раз."},
@@ -362,6 +421,8 @@ def err_text(e):
         return _("the server did not answer in time")
     if isinstance(e, (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL)):
         return _("this server address is not valid")
+    if isinstance(e, requests.exceptions.SSLError):     # a ConnectionError too, but the server did answer
+        return _("the server's certificate is not trusted — check the address, or have the system trust your own certificate authority")
     if isinstance(e, requests.exceptions.ConnectionError):
         return _("cannot reach the server")
     if isinstance(e, requests.exceptions.RequestException):
@@ -462,7 +523,7 @@ def credentials_dialog(parent, export, cfg):
 
 def month_year(d):
     """ "september 2026": the month's standalone name (Russian "сентябрь", not the "сентября" of a date)."""
-    return f"{QtCore.QLocale().standaloneMonthName(d.month)} {d.year}"
+    return f"{_date_locale().standaloneMonthName(d.month)} {d.year}"
 
 
 def add_months(d, n):
@@ -476,7 +537,7 @@ def urlhost(url):
 
 
 def day_label(d, today):
-    base = d.strftime("%A %-d %B").lower()
+    base = fmt_date(d, "%A %-d %B").lower()
     if d == today:
         return _("today · ") + base
     if d == today + timedelta(days=1):
@@ -741,7 +802,7 @@ class Occ:
             return _("all day")
         if self.end.date() == self.start.date():
             return f"{fmt_time(self.start)} – {fmt_time(self.end)}"
-        return f"{fmt_time(self.start)} – {self.end.strftime('%-d %b')} {fmt_time(self.end)}"
+        return f"{fmt_time(self.start)} – {fmt_date(self.end, '%-d %b')} {fmt_time(self.end)}"
 
 
 # ------------------------------------------------------------------------------------------
@@ -809,7 +870,7 @@ class MonthGrid(QtWidgets.QWidget):
         # header
         p.setFont(small); p.setPen(dim)
         for i in range(7):
-            name = calendar.day_abbr[(first + i) % 7][:1].lower()
+            name = fmt_date(date(2024, 1, 1) + timedelta(days=(first + i) % 7), "%a")[:1].lower()   # 2024-01-01: a Monday
             p.drawText(QtCore.QRectF(i * cw, 0, cw, ch), QtCore.Qt.AlignCenter, name)
         # days
         self._cells = []
@@ -927,7 +988,7 @@ class MonthBoard(QtWidgets.QWidget):
         self._lines = []; self._cells = []
         p.setFont(small); p.setPen(dim)
         for i in range(7):
-            p.drawText(QtCore.QRectF(i * cw + 8, 0, cw - 16, head), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, (start + timedelta(days=i)).strftime("%a").lower())
+            p.drawText(QtCore.QRectF(i * cw + 8, 0, cw - 16, head), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, fmt_date(start + timedelta(days=i), "%a").lower())
         p.setPen(QtGui.QPen(rule, 1))
         for r in range(7):
             y = head + r * ch; p.drawLine(QtCore.QPointF(0, y), QtCore.QPointF(w, y))
@@ -1055,7 +1116,7 @@ class WeekHead(QtWidgets.QWidget):
                 p.fillRect(rect, self.accent); p.setPen(self.on_accent)
             else:
                 p.setPen(dim)
-            label = d.strftime("%a").lower()[:1 if narrow else 3]
+            label = fmt_date(d, "%a").lower()[:1 if narrow else 3]
             p.setFont(small); p.drawText(rect.adjusted(0, 4, 0, -rect.height() / 2), QtCore.Qt.AlignCenter, label)
             p.setPen(self.on_accent if d == today else self.fg); p.setFont(small if narrow else self.font())
             p.drawText(rect.adjusted(0, rect.height() / 2 - 4, 0, 0), QtCore.Qt.AlignCenter, str(d.day))
@@ -1067,7 +1128,7 @@ class WeekHead(QtWidgets.QWidget):
             p.setFont(small)
             for i, d in enumerate([self.start + timedelta(days=k) for k in range(self.ndays) if (self.start + timedelta(days=k)).weekday() >= 5]):
                 p.setPen(self.fg if d == today else dim)
-                p.drawText(QtCore.QRectF(sx, 8 + i * 22, sw, 20), QtCore.Qt.AlignCenter, d.strftime("%a").lower()[:2] + ("·" if d in busy else ""))
+                p.drawText(QtCore.QRectF(sx, 8 + i * 22, sw, 20), QtCore.Qt.AlignCenter, fmt_date(d, "%a").lower()[:2] + ("·" if d in busy else ""))
         for d, x, colw in cols:
             y = header
             for o in self.occs:
@@ -2180,7 +2241,7 @@ class Main(QtWidgets.QMainWindow):
         start = d - timedelta(days=(d.weekday() - first) % 7)
         self.week.start = start; self.week.ndays = 7; self.week_head.ndays = 7
         self.week.workdays = workdays; self.week_head.workdays = workdays
-        self.w_title.setText(start.strftime("%-d %b") + " – " + (start + timedelta(days=6)).strftime("%-d %b %Y").lower())
+        self.w_title.setText(fmt_date(start, "%-d %b") + " – " + fmt_date(start + timedelta(days=6), "%-d %b %Y").lower())
         self._open_grid()
 
     def show_day_grid(self, d):
@@ -2313,9 +2374,9 @@ class Main(QtWidgets.QMainWindow):
         title = QtWidgets.QLabel(ev.summary); title.setObjectName("big"); title.setWordWrap(True); title.setContentsMargins(0, 10, 0, 6); col.addWidget(title)
         last = o.end - timedelta(seconds=1)
         if o.start.date() == last.date():
-            when = o.start.strftime("%A %-d %B %Y").lower()
+            when = fmt_date(o.start, "%A %-d %B %Y").lower()
         else:
-            when = o.start.strftime("%-d %B").lower() + " – " + last.strftime("%-d %B %Y").lower()
+            when = fmt_date(o.start, "%-d %B").lower() + " – " + fmt_date(last, "%-d %B %Y").lower()
         d = QtWidgets.QLabel(when); d.setProperty("role", "tile"); col.addWidget(d)
         t = QtWidgets.QLabel(o.when()); t.setObjectName("dim"); t.setProperty("role", "tile"); col.addWidget(t)
         col.addWidget(rule_line(18, 8))
@@ -2484,7 +2545,7 @@ class Main(QtWidgets.QMainWindow):
         title.textChanged.connect(lambda v: st.__setitem__("summary", v)); title.returnPressed.connect(self.save_event)
         col.addWidget(title); self.edit_title = title
         col.addSpacing(10)
-        day = st["start"].strftime("%A %-d %B %Y").lower()
+        day = fmt_date(st["start"], "%A %-d %B %Y").lower()
         col.addWidget(row(day, _("day"), role="tile", click=lambda: self._pick_date("start")))
         if st["all_day"]:
             col.addWidget(row(_("all day"), None, role="tile", click=lambda: self._set("all_day", False)))
@@ -2497,7 +2558,7 @@ class Main(QtWidgets.QMainWindow):
             links.addWidget(link(_("ends another day"), lambda: self._pick_date("end"), "dim"))
         links.addStretch(1); col.addLayout(links)
         if other_day:
-            col.addWidget(row(st["end"].strftime("%A %-d %B %Y").lower(), _("ends"), role="tile", click=lambda: self._pick_date("end")))
+            col.addWidget(row(fmt_date(st["end"], "%A %-d %B %Y").lower(), _("ends"), role="tile", click=lambda: self._pick_date("end")))
         col.addWidget(rule_line(14, 6))
         cal_name = next((n for n, u, _ in self.calendars if u == st["cal"]), "…")
         # one occurrence (or the series from it on) stays in its series' calendar
