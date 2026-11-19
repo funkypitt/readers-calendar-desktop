@@ -35,7 +35,7 @@ import google_calendar as gc  # noqa: E402
 
 
 APP = "readers-calendar"
-VERSION = "1.17.1"
+VERSION = "1.18.0"
 
 
 def _config_dir():
@@ -60,7 +60,7 @@ LOCAL = ce.LOCAL
 # ------------------------------------------------------------------------------------------
 
 _TR = {
- "fr": {"Google account": "compte Google", "client ID": "ID client", "client secret": "secret client", "connect the Google account": "connecter le compte Google", "forget the Google account": "oublier le compte Google", "waiting for the browser…": "en attente du navigateur…", "Google account connected": "compte Google connecté", "Google: %1": "Google : %1", "workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
+ "fr": {"show more calendars": "afficher plus d'agendas", "Google account": "compte Google", "client ID": "ID client", "client secret": "secret client", "connect the Google account": "connecter le compte Google", "forget the Google account": "oublier le compte Google", "waiting for the browser…": "en attente du navigateur…", "Google account connected": "compte Google connecté", "Google: %1": "Google : %1", "workdays": "jours ouvrés", "opens on": "s'ouvre sur", "today · ": "aujourd'hui · ", "tomorrow · ": "demain · ", "all day": "toute la journée", "cancel": "annuler", "ok": "ok", "date": "date", "does not repeat": "ne se répète pas", "every day": "chaque jour", "every week": "chaque semaine", "every month": "chaque mois", "every year": "chaque année",
         "no reminder": "pas de rappel", "at the time of the event": "à l'heure de l'événement", "%1 minutes before": "%1 minutes avant", "%1 hours before": "%1 heures avant", "%1 days before": "%1 jours avant",
         "agenda": "agenda", "day": "jour", "week": "semaine", "+ new event": "+ nouvel événement", "server": "serveur", "username": "identifiant", "app password": "mot de passe d'application", "feeds": "flux", "connect": "se connecter",
         "not connected — Ctrl+, to set up": "non connecté — Ctrl+, pour configurer", "connecting…": "connexion…", "  (read only)": "  (lecture seule)", "syncing…": "synchronisation…", "synced %1": "synchronisé %1", "nothing planned": "rien de prévu", "show more days": "afficher plus de jours", "today": "aujourd'hui",
@@ -70,7 +70,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Agendas CalDAV. Infomaniak : https://sync.infomaniak.com, identifiant du type AB12345,\nun mot de passe d'application si la double authentification est active. Nextcloud, Radicale… fonctionnent aussi.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Flux en lecture seule, un par ligne sous la forme  nom | adresse  (.ics ou webcal). Google Agenda : paramètres de\nl'agenda › Intégrer l'agenda › Adresse secrète au format iCal. Ils s'affichent à côté des agendas CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · développé avec Claude Code"},
- "de": {"Google account": "Google-Konto", "client ID": "Client-ID", "client secret": "Client-Geheimnis", "connect the Google account": "Google-Konto verbinden", "forget the Google account": "Google-Konto vergessen", "waiting for the browser…": "warte auf den Browser…", "Google account connected": "Google-Konto verbunden", "Google: %1": "Google: %1", "workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
+ "de": {"show more calendars": "weitere Kalender anzeigen", "Google account": "Google-Konto", "client ID": "Client-ID", "client secret": "Client-Geheimnis", "connect the Google account": "Google-Konto verbinden", "forget the Google account": "Google-Konto vergessen", "waiting for the browser…": "warte auf den Browser…", "Google account connected": "Google-Konto verbunden", "Google: %1": "Google: %1", "workdays": "Werktage", "opens on": "öffnet mit", "today · ": "heute · ", "tomorrow · ": "morgen · ", "all day": "ganztägig", "cancel": "abbrechen", "ok": "ok", "date": "Datum", "does not repeat": "einmalig", "every day": "täglich", "every week": "wöchentlich", "every month": "monatlich", "every year": "jährlich",
         "no reminder": "keine Erinnerung", "at the time of the event": "zum Zeitpunkt des Termins", "%1 minutes before": "%1 Minuten vorher", "%1 hours before": "%1 Stunden vorher", "%1 days before": "%1 Tage vorher",
         "agenda": "Agenda", "day": "Tag", "week": "Woche", "+ new event": "+ neuer Termin", "server": "Server", "username": "Benutzername", "app password": "App-Passwort", "feeds": "Feeds", "connect": "verbinden",
         "not connected — Ctrl+, to set up": "nicht verbunden — Strg+, zum Einrichten", "connecting…": "verbinde…", "  (read only)": "  (nur lesen)", "syncing…": "synchronisiere…", "synced %1": "synchronisiert %1", "nothing planned": "nichts geplant", "show more days": "mehr Tage zeigen", "today": "heute",
@@ -80,7 +80,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "CalDAV-Kalender. Infomaniak: https://sync.infomaniak.com, Benutzername wie AB12345,\nein App-Passwort bei Zwei-Faktor-Anmeldung. Nextcloud, Radicale… gehen ebenso.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Nur-Lese-Feeds, je Zeile  Name | Adresse  (.ics oder webcal). Google Kalender: Einstellungen des\nKalenders › Kalender integrieren › Privatadresse im iCal-Format. Sie erscheinen neben den CalDAV-Kalendern.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · entwickelt mit Claude Code"},
- "es": {"Google account": "cuenta de Google", "client ID": "ID de cliente", "client secret": "secreto de cliente", "connect the Google account": "conectar la cuenta de Google", "forget the Google account": "olvidar la cuenta de Google", "waiting for the browser…": "esperando al navegador…", "Google account connected": "cuenta de Google conectada", "Google: %1": "Google: %1", "workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
+ "es": {"show more calendars": "mostrar más calendarios", "Google account": "cuenta de Google", "client ID": "ID de cliente", "client secret": "secreto de cliente", "connect the Google account": "conectar la cuenta de Google", "forget the Google account": "olvidar la cuenta de Google", "waiting for the browser…": "esperando al navegador…", "Google account connected": "cuenta de Google conectada", "Google: %1": "Google: %1", "workdays": "días laborables", "opens on": "se abre en", "today · ": "hoy · ", "tomorrow · ": "mañana · ", "all day": "todo el día", "cancel": "cancelar", "ok": "ok", "date": "fecha", "does not repeat": "no se repite", "every day": "cada día", "every week": "cada semana", "every month": "cada mes", "every year": "cada año",
         "no reminder": "sin recordatorio", "at the time of the event": "a la hora del evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 días antes",
         "agenda": "agenda", "day": "día", "week": "semana", "+ new event": "+ nuevo evento", "server": "servidor", "username": "usuario", "app password": "contraseña de aplicación", "feeds": "feeds", "connect": "conectar",
         "not connected — Ctrl+, to set up": "sin conexión — Ctrl+, para configurar", "connecting…": "conectando…", "  (read only)": "  (solo lectura)", "syncing…": "sincronizando…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar más días", "today": "hoy",
@@ -90,7 +90,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendarios CalDAV. Infomaniak: https://sync.infomaniak.com, usuario tipo AB12345,\nuna contraseña de aplicación si tiene la verificación en dos pasos. Nextcloud, Radicale… también funcionan.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds de solo lectura, uno por línea como  nombre | dirección  (.ics o webcal). Google Calendar: ajustes del\ncalendario › Integrar el calendario › Dirección secreta en formato iCal. Se muestran junto a los calendarios CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desarrollado con Claude Code"},
- "pt": {"Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
+ "pt": {"show more calendars": "mostrar mais calendários", "Google account": "conta Google", "client ID": "ID de cliente", "client secret": "segredo de cliente", "connect the Google account": "ligar a conta Google", "forget the Google account": "esquecer a conta Google", "waiting for the browser…": "à espera do navegador…", "Google account connected": "conta Google ligada", "Google: %1": "Google: %1", "workdays": "dias úteis", "opens on": "abre em", "today · ": "hoje · ", "tomorrow · ": "amanhã · ", "all day": "todo o dia", "cancel": "cancelar", "ok": "ok", "date": "data", "does not repeat": "não se repete", "every day": "todos os dias", "every week": "todas as semanas", "every month": "todos os meses", "every year": "todos os anos",
         "no reminder": "sem lembrete", "at the time of the event": "à hora do evento", "%1 minutes before": "%1 minutos antes", "%1 hours before": "%1 horas antes", "%1 days before": "%1 dias antes",
         "agenda": "agenda", "day": "dia", "week": "semana", "+ new event": "+ novo evento", "server": "servidor", "username": "utilizador", "app password": "palavra-passe de aplicação", "feeds": "feeds", "connect": "ligar",
         "not connected — Ctrl+, to set up": "sem ligação — Ctrl+, para configurar", "connecting…": "a ligar…", "  (read only)": "  (só leitura)", "syncing…": "a sincronizar…", "synced %1": "sincronizado %1", "nothing planned": "nada previsto", "show more days": "mostrar mais dias", "today": "hoje",
@@ -100,7 +100,7 @@ _TR = {
         "CalDAV calendars. Infomaniak: https://sync.infomaniak.com, username like AB12345,\nan application password if two-factor authentication is on. Nextcloud, Radicale… work too.": "Calendários CalDAV. Infomaniak: https://sync.infomaniak.com, utilizador tipo AB12345,\numa palavra-passe de aplicação se tiver a verificação em dois passos. Nextcloud, Radicale… também funcionam.",
         "Read-only feeds, one per line as  name | address  (.ics or webcal). Google Calendar: the calendar's\nsettings › Integrate calendar › Secret address in iCal format. They show alongside the CalDAV calendars.": "Feeds só de leitura, um por linha como  nome | endereço  (.ics ou webcal). Google Calendar: definições do\ncalendário › Integrar o calendário › Endereço secreto em formato iCal. Aparecem ao lado dos calendários CalDAV.",
         "Pierre Gallaz · developed with Claude Code": "Pierre Gallaz · desenvolvido com Claude Code"},
- "ru": {"Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
+ "ru": {"show more calendars": "показать другие календари", "Google account": "аккаунт Google", "client ID": "ID клиента", "client secret": "секрет клиента", "connect the Google account": "подключить аккаунт Google", "forget the Google account": "забыть аккаунт Google", "waiting for the browser…": "ожидание браузера…", "Google account connected": "аккаунт Google подключён", "Google: %1": "Google: %1", "workdays": "будни", "opens on": "открывается на", "today · ": "сегодня · ", "tomorrow · ": "завтра · ", "all day": "весь день", "cancel": "отмена", "ok": "ок", "date": "дата", "does not repeat": "не повторяется", "every day": "каждый день", "every week": "каждую неделю", "every month": "каждый месяц", "every year": "каждый год",
         "no reminder": "без напоминания", "at the time of the event": "в момент события", "%1 minutes before": "за %1 мин", "%1 hours before": "за %1 ч", "%1 days before": "за %1 дн",
         "agenda": "расписание", "day": "день", "week": "неделя", "+ new event": "+ новое событие", "server": "сервер", "username": "имя пользователя", "app password": "пароль приложения", "feeds": "ленты", "connect": "подключиться",
         "not connected — Ctrl+, to set up": "нет подключения — Ctrl+, для настройки", "connecting…": "подключение…", "  (read only)": "  (только чтение)", "syncing…": "синхронизация…", "synced %1": "синхронизировано %1", "nothing planned": "ничего не запланировано", "show more days": "показать больше дней", "today": "сегодня",
@@ -543,6 +543,17 @@ def day_label(d, today):
     if d == today + timedelta(days=1):
         return _("tomorrow · ") + base
     return base if d.year == today.year else base + f" {d.year}"
+
+
+class MoreLine(QtWidgets.QLabel):
+    """A line of a menu that acts without closing it (a click on an ordinary line closes the menu)."""
+    clicked = QtCore.pyqtSignal()
+
+    def mousePressEvent(self, e): e.accept()
+
+    def mouseReleaseEvent(self, e):
+        e.accept()
+        if self.rect().contains(e.pos()): self.clicked.emit()
 
 
 class Dot(QtWidgets.QWidget):
@@ -2208,10 +2219,10 @@ class Main(QtWidgets.QMainWindow):
         left.addWidget(row(_("monday") if monday else _("sunday"), _("first day of the week"), role="tile", click=lambda: (self._cfg("week_monday", not monday), setattr(self.grid, "week_monday", not monday), self.grid.update())))
         left.addWidget(row(reminder_label(self.cfg.get("default_reminder", 10)), _("default reminder"), role="tile",
                            click=lambda: (lambda m: m is not None and self._cfg("default_reminder", None if m == "none" else m))(self._menu_pick([(reminder_label(m), ("none" if m is None else m)) for m in REMINDERS]))))
-        writable = [(n, u) for n, u, w in self.calendars if w]
+        writable = self.writable_calendars()
         if writable:
             dc = self.cfg.get("default_calendar"); du = dc if any(u == dc for _x, u in writable) else writable[0][1]
-            left.addWidget(dotted_row(ce.color_of(du), row(next(n for n, u in writable if u == du), _("default calendar"), role="tile", click=lambda: (lambda u: u is not None and self._cfg("default_calendar", u))(self.pick_calendar()))))
+            left.addWidget(dotted_row(ce.color_of(du), row(next(n for n, u in writable if u == du), _("default calendar"), role="tile", click=lambda: (lambda u: u is not None and self._cfg("default_calendar", u))(self.pick_calendar(du)))))
         left.addStretch(1)
         heading(_("accounts"), right)
         right.addWidget(row(urlhost(self.cfg["url"]) if self.cfg.get("url") else "—", "CalDAV", role="tile", click=self.setup))
@@ -2486,7 +2497,7 @@ class Main(QtWidgets.QMainWindow):
         occurrence of a Google series, "series" for all of it."""
         if o is not None and not o.event.writable:
             self.status.setText(self.read_only_reason(o.event)); return
-        writable = [(n, u) for n, u, w in self.calendars if w]
+        writable = self.writable_calendars()
         if not writable:
             self.status.setText(_("no writable calendar")); return
         if o is not None and scope is None and is_google(o.event) and o.event.google.get("recurring"):
@@ -2637,12 +2648,18 @@ class Main(QtWidgets.QMainWindow):
         server = self.cfg.get("url", "")
         return " · ".join(x for x in (self.cfg.get("username", ""), urlhost(server)) if x) or "CalDAV"
 
-    def pick_calendar(self):
-        """The writable calendars, each with its account in small letters under its name."""
-        m = QtWidgets.QMenu(self); chosen = []
-        for n, u, w in self.calendars:
-            if not w:
-                continue
+    def writable_calendars(self):
+        """(name, url) of the calendars that take events: the ones shown in the views first — an
+        event nearly always goes to one of them —, then the hidden ones, each group in its order."""
+        hidden = set(self.cfg.get("hidden_calendars", []))
+        return sorted(((n, u) for n, u, w in self.calendars if w), key=lambda c: c[1] in hidden)
+
+    def pick_calendar(self, current=None):
+        """The writable calendars shown in the views (and the one in use), each with its account in
+        small letters under its name; "show more calendars" unfolds the hidden ones under them."""
+        hidden = set(self.cfg.get("hidden_calendars", []))
+        m = QtWidgets.QMenu(self); chosen = []; folded = []
+        for n, u in self.writable_calendars():
             host = QtWidgets.QWidget(); host.setAttribute(QtCore.Qt.WA_StyledBackground, True); host.setObjectName("pick")
             lay = QtWidgets.QHBoxLayout(host); lay.setContentsMargins(12, 6, 18, 6); lay.setSpacing(10)
             lay.addWidget(Dot(ce.color_of(u)), 0, QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
@@ -2651,13 +2668,29 @@ class Main(QtWidgets.QMainWindow):
             acct = QtWidgets.QLabel(self.account_of(u)); acct.setObjectName("dim"); acct.setProperty("role", "small"); text.addWidget(acct)
             a = QtWidgets.QWidgetAction(m); a.setDefaultWidget(host)
             a.triggered.connect(lambda _c=False, v=u: chosen.append(v)); m.addAction(a)
+            if u in hidden and u != current: folded.append(a)
+        if folded and len(folded) < len(m.actions()):
+            for a in folded: a.setVisible(False)
+            rule = m.addSeparator()
+            more = MoreLine(_("show more calendars")); more.setObjectName("pick"); more.setContentsMargins(12, 8, 18, 8)
+            line = QtWidgets.QWidgetAction(m); line.setDefaultWidget(more); m.addAction(line)
+
+            def unfold():
+                # in the menu as it stands: closing it to open a longer one would be one click more to follow
+                for a in folded: a.setVisible(True)
+                rule.setVisible(False); line.setVisible(False)
+                m.adjustSize()
+                screen = QtWidgets.QApplication.screenAt(m.pos()) or QtWidgets.QApplication.primaryScreen()
+                room = screen.availableGeometry()
+                m.move(m.x(), max(room.top(), min(m.y(), room.bottom() - m.height())))
+            more.clicked.connect(unfold)
         th = palette(self.theme)
         m.setStyleSheet("QWidget#pick:hover { background: %s; }" % (th.press if th.tiles else rgba(th.fg, 0.14 if self.dark else 0.08)))
         m.exec_(QtGui.QCursor.pos())
         return chosen[0] if chosen else None
 
     def _pick_calendar(self):
-        v = self.pick_calendar()
+        v = self.pick_calendar(self._edit_state.get("cal"))
         if v is not None: self._set("cal", v)
 
     def _to_other_calendar(self, st, kw, overrides):
